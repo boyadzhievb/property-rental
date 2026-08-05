@@ -3,6 +3,7 @@ import { Calendar, Home, Users, Settings as SettingsIcon, LayoutGrid, Plus } fro
 import { RoomProvider } from './context/RoomContext';
 import { GuestProvider } from './context/GuestContext';
 import { ReservationProvider } from './context/ReservationContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import TodayView from './components/TodayView';
 import CalendarView from './components/CalendarView';
 import RoomsView from './components/RoomsView';
@@ -45,7 +46,9 @@ export default function App() {
         
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto no-scrollbar relative w-full">
-          {renderContent()}
+          <ErrorBoundary>
+            {renderContent()}
+          </ErrorBoundary>
         </main>
 
         {/* Floating Action Button */}
