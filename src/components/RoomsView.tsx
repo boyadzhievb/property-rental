@@ -36,23 +36,22 @@ export default function RoomsView() {
 
       <div className="px-5 space-y-5 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
         {rooms.map(room => (
-          <div key={room.id} className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
-            <div className="h-48 relative">
-              <img src={room.image} alt={room.name} className="w-full h-full object-cover" />
-              <div className="absolute top-4 left-4">
-                <div className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md ${getStatusColor(room.status).replace('/15', '/90')} text-white shadow-sm`}>
+          <div key={room.id} className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h3 className="text-xl font-bold text-ios-text mb-2">{room.name}</h3>
+                <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(room.status)}`}>
                   {room.status}
                 </div>
               </div>
-              <div className="absolute bottom-4 right-4">
-                <div className="px-3 py-1 bg-black/50 backdrop-blur-md text-white rounded-full text-sm font-semibold">
-                  ${room.pricePerNight} / night
-                </div>
+              <div className="text-right">
+                <div className="font-semibold text-lg text-ios-text">${room.pricePerNight}</div>
+                <div className="text-xs text-ios-text-secondary">/ night</div>
               </div>
             </div>
-            <div className="p-5">
-              <h3 className="text-xl font-bold text-ios-text mb-1">{room.name}</h3>
-              <div className="text-sm text-ios-text-secondary mt-1">
+
+            <div className="mt-4 pt-4 border-t border-ios-border/30">
+              <div className="text-sm text-ios-text-secondary">
                 {room.isAvailable() ? 'Ready for next guest' : room.status}
               </div>
             </div>
