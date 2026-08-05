@@ -1,19 +1,21 @@
-import { format } from 'date-fns';
 import { LogIn, LogOut, Home, SprayCan } from 'lucide-react';
 import { useToday } from '../hooks/useToday';
+import { usePropertyContext } from '../context/PropertyContext';
 
 export default function TodayView() {
   const { data, loading } = useToday();
+  const { propertyName } = usePropertyContext();
   const today = new Date();
+  const localDate = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 
   if (loading || !data) {
     return (
       <div className="pb-24">
         <header className="px-5 pt-12 pb-6 bg-ios-bg sticky top-0 z-10">
           <h2 className="text-ios-text-secondary text-sm font-semibold uppercase tracking-wider mb-1">
-            {format(today, 'EEEE, MMMM d')}
+            {localDate}
           </h2>
-          <h1 className="text-3xl font-bold text-ios-text">Villa Blanca</h1>
+          <h1 className="text-3xl font-bold text-ios-text">{propertyName}</h1>
         </header>
         <div className="px-5 text-center text-ios-text-secondary py-12">Loading...</div>
       </div>
@@ -24,9 +26,9 @@ export default function TodayView() {
     <div className="pb-24">
       <header className="px-5 pt-12 pb-6 bg-ios-bg sticky top-0 z-10">
         <h2 className="text-ios-text-secondary text-sm font-semibold uppercase tracking-wider mb-1">
-          {format(today, 'EEEE, MMMM d')}
+          {localDate}
         </h2>
-        <h1 className="text-3xl font-bold text-ios-text">Villa Blanca</h1>
+        <h1 className="text-3xl font-bold text-ios-text">{propertyName}</h1>
       </header>
 
       <div className="px-5 space-y-6">

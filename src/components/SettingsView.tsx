@@ -1,6 +1,11 @@
-import { ChevronRight, Settings as SettingsIcon, Bell, Cloud, User, Palette } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronRight, Settings as SettingsIcon, Bell, Cloud, RotateCcw, Palette, Check } from 'lucide-react';
+import { usePropertyContext } from '../context/PropertyContext';
 
 export default function SettingsView() {
+  const { propertyName, updateName, resetData } = usePropertyContext();
+  const [editing, setEditing] = useState(false);
+  const [nameInput, setNameInput] = useState(propertyName);
   const Group = ({ children, title }: { children: React.ReactNode, title?: string }) => (
     <div className="mb-6">
       {title && <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-4 mb-2">{title}</div>}
@@ -31,15 +36,39 @@ export default function SettingsView() {
 
       <div className="px-5 max-w-screen-md mx-auto">
         <Group>
-          <div className="flex items-center p-4">
+          <div className="flex items-center p-4" onClick={() => { setEditing(true); setNameInput(propertyName); }}>
             <div className="w-16 h-16 rounded-full bg-ios-gray-light flex items-center justify-center text-2xl font-bold text-ios-text-secondary mr-4">
-              VB
+              {propertyName.slice(0, 2).toUpperCase()}
             </div>
             <div className="flex-1">
-              <div className="text-xl font-bold text-ios-text">Villa Blanca</div>
+              {editing ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    value={nameInput}
+                    onChange={(e) => setNameInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        updateName(nameInput);
+                        setEditing(false);
+                      }
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-xl font-bold text-ios-text bg-transparent border-b-2 border-ios-blue outline-none w-full"
+                  />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); updateName(nameInput); setEditing(false); }}
+                    className="text-ios-blue"
+                  >
+                    <Check size={22} />
+                  </button>
+                </div>
+              ) : (
+                <div className="text-xl font-bold text-ios-text">{propertyName}</div>
+              )}
               <div className="text-sm text-ios-text-secondary">Owner Account</div>
             </div>
-            <ChevronRight className="text-ios-border" size={20} />
+            {!editing && <ChevronRight className="text-ios-border" size={20} />}
           </div>
         </Group>
 
@@ -51,7 +80,9 @@ export default function SettingsView() {
 
         <Group title="Data">
           <Item icon={Cloud} label="Backup & Restore" color="bg-ios-blue" value="Yesterday" />
-          <Item icon={User} label="Team Management" color="bg-ios-green" />
+          <div onClick={() => { if (confirm('This will download a backup and then erase all data. Continue?')) resetData(); }}>
+            <Item icon={RotateCcw} label="Reset Data" color="bg-ios-red" />
+          </div>
         </Group>
       </div>
     </div>

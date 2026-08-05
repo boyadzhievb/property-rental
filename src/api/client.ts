@@ -3,7 +3,7 @@ export interface Room {
   name: string;
   status: 'Available' | 'Occupied' | 'Cleaning' | 'Not available';
   pricePerNight: number;
-  image: string;
+  maxGuests: number;
 }
 
 export interface Guest {
@@ -11,7 +11,6 @@ export interface Guest {
   name: string;
   phone: string;
   email: string;
-  avatar: string;
   previousStays: number;
   notes: string;
 }
@@ -28,8 +27,14 @@ export interface Reservation {
   notes?: string;
 }
 
+export interface PropertySettings {
+  id: string;
+  name: string;
+  isConfigured: boolean;
+}
+
 const DB_NAME = 'property-rental';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const today = new Date();
 const fmt = (d: Date) => d.toISOString().split('T')[0];
@@ -37,16 +42,16 @@ const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
 const subDays = (d: Date, n: number) => new Date(d.getTime() - n * 86400000);
 
 const SEED_ROOMS: Room[] = [
-  { id: '101', name: 'Suite 1', status: 'Occupied', pricePerNight: 250, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&h=400&fit=crop&auto=format' },
-  { id: '102', name: 'Ocean View', status: 'Available', pricePerNight: 200, image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=600&h=400&fit=crop&auto=format' },
-  { id: '103', name: 'Standard Room', status: 'Cleaning', pricePerNight: 150, image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600&h=400&fit=crop&auto=format' },
-  { id: '104', name: 'Garden Villa', status: 'Occupied', pricePerNight: 300, image: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&h=400&fit=crop&auto=format' },
+  { id: '101', name: 'Suite 1', status: 'Occupied', pricePerNight: 250, maxGuests: 4 },
+  { id: '102', name: 'Ocean View', status: 'Available', pricePerNight: 200, maxGuests: 2 },
+  { id: '103', name: 'Standard Room', status: 'Cleaning', pricePerNight: 150, maxGuests: 2 },
+  { id: '104', name: 'Garden Villa', status: 'Occupied', pricePerNight: 300, maxGuests: 6 },
 ];
 
 const SEED_GUESTS: Guest[] = [
-  { id: 'g1', name: 'John Smith', phone: '+1 555-0100', email: 'john@example.com', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&auto=format', previousStays: 2, notes: 'Prefers extra pillows.' },
-  { id: 'g2', name: 'Mary Brown', phone: '+1 555-0101', email: 'mary@example.com', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&auto=format', previousStays: 0, notes: 'Allergic to feathers.' },
-  { id: 'g3', name: 'Peter Jones', phone: '+1 555-0102', email: 'peter@example.com', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&auto=format', previousStays: 5, notes: 'VIP Guest.' },
+  { id: 'g1', name: 'John Smith', phone: '+1 555-0100', email: 'john@example.com', previousStays: 2, notes: 'Prefers extra pillows.' },
+  { id: 'g2', name: 'Mary Brown', phone: '+1 555-0101', email: 'mary@example.com', previousStays: 0, notes: 'Allergic to feathers.' },
+  { id: 'g3', name: 'Peter Jones', phone: '+1 555-0102', email: 'peter@example.com', previousStays: 5, notes: 'VIP Guest.' },
 ];
 
 const SEED_RESERVATIONS: Reservation[] = [
@@ -72,6 +77,9 @@ function openDB(): Promise<IDBDatabase> {
         store.createIndex('roomId', 'roomId', { unique: false });
         store.createIndex('arrivalDate', 'arrivalDate', { unique: false });
       }
+      if (!db.objectStoreNames.contains('settings')) {
+        db.createObjectStore('settings', { keyPath: 'id' });
+      }
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -79,23 +87,105 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-async function seedIfEmpty(db: IDBDatabase) {
-  const tx = db.transaction(['rooms', 'guests', 'reservations'], 'readonly');
-  const roomCount = await new Promise<number>((resolve) => {
-    const req = tx.objectStore('rooms').count();
+async function ensureSettings(db: IDBDatabase) {
+  const tx = db.transaction('settings', 'readonly');
+  const existing = await new Promise<PropertySettings | undefined>((resolve) => {
+    const req = tx.objectStore('settings').get('property');
     req.onsuccess = () => resolve(req.result);
   });
 
-  if (roomCount > 0) return;
+  if (existing) return;
 
-  const seedTx = db.transaction(['rooms', 'guests', 'reservations'], 'readwrite');
-  for (const room of SEED_ROOMS) seedTx.objectStore('rooms').put(room);
-  for (const guest of SEED_GUESTS) seedTx.objectStore('guests').put(guest);
-  for (const res of SEED_RESERVATIONS) seedTx.objectStore('reservations').put(res);
-
+  const seedTx = db.transaction('settings', 'readwrite');
+  seedTx.objectStore('settings').put({ id: 'property', name: 'My Property', isConfigured: false });
   await new Promise<void>((resolve, reject) => {
     seedTx.oncomplete = () => resolve();
     seedTx.onerror = () => reject(seedTx.error);
+  });
+}
+
+export async function seedDemoData() {
+  const db = await getDB();
+  const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readwrite');
+  for (const room of SEED_ROOMS) tx.objectStore('rooms').put(room);
+  for (const guest of SEED_GUESTS) tx.objectStore('guests').put(guest);
+  for (const res of SEED_RESERVATIONS) tx.objectStore('reservations').put(res);
+  tx.objectStore('settings').put({ id: 'property', name: 'Villa Blanca', isConfigured: true });
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export interface BackupData {
+  settings?: PropertySettings;
+  rooms?: Room[];
+  guests?: Guest[];
+  reservations?: Reservation[];
+}
+
+export async function exportBackup(): Promise<BackupData> {
+  const db = await getDB();
+  const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readonly');
+
+  const [rooms, guests, reservations, settings] = await Promise.all([
+    new Promise<Room[]>((resolve) => { const r = tx.objectStore('rooms').getAll(); r.onsuccess = () => resolve(r.result); }),
+    new Promise<Guest[]>((resolve) => { const r = tx.objectStore('guests').getAll(); r.onsuccess = () => resolve(r.result); }),
+    new Promise<Reservation[]>((resolve) => { const r = tx.objectStore('reservations').getAll(); r.onsuccess = () => resolve(r.result); }),
+    new Promise<PropertySettings>((resolve) => { const r = tx.objectStore('settings').get('property'); r.onsuccess = () => resolve(r.result); }),
+  ]);
+
+  return { settings, rooms, guests, reservations };
+}
+
+export async function importBackup(data: BackupData) {
+  const db = await getDB();
+  const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readwrite');
+
+  tx.objectStore('rooms').clear();
+  tx.objectStore('guests').clear();
+  tx.objectStore('reservations').clear();
+
+  if (data.rooms) for (const room of data.rooms) tx.objectStore('rooms').put(room);
+  if (data.guests) for (const guest of data.guests) tx.objectStore('guests').put(guest);
+  if (data.reservations) for (const res of data.reservations) tx.objectStore('reservations').put(res);
+  if (data.settings) tx.objectStore('settings').put({ ...data.settings, id: 'property', isConfigured: true });
+  else tx.objectStore('settings').put({ id: 'property', name: 'My Property', isConfigured: true });
+
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function resetData() {
+  const db = await getDB();
+  const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readwrite');
+  tx.objectStore('rooms').clear();
+  tx.objectStore('guests').clear();
+  tx.objectStore('reservations').clear();
+  tx.objectStore('settings').put({ id: 'property', name: 'My Property', isConfigured: false });
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function configureProperty(name: string, roomCount: number) {
+  const db = await getDB();
+  const rooms: Room[] = Array.from({ length: roomCount }).map((_, i) => ({
+    id: `room-${i + 1}`,
+    name: `Room ${i + 1}`,
+    status: 'Available' as const,
+    pricePerNight: 100,
+    maxGuests: 2,
+  }));
+  const tx = db.transaction(['rooms', 'settings'], 'readwrite');
+  for (const room of rooms) tx.objectStore('rooms').put(room);
+  tx.objectStore('settings').put({ id: 'property', name: name || 'My Property', isConfigured: true });
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
   });
 }
 
@@ -104,7 +194,7 @@ let dbPromise: Promise<IDBDatabase> | null = null;
 function getDB(): Promise<IDBDatabase> {
   if (!dbPromise) {
     dbPromise = openDB().then(async (db) => {
-      await seedIfEmpty(db);
+      await ensureSettings(db);
       return db;
     });
   }
@@ -183,5 +273,12 @@ export const api = {
     update: (id: string, data: Partial<Reservation>) =>
       getById<Reservation>('reservations', id).then(existing => put('reservations', { ...existing, ...data })),
     delete: (id: string) => deleteById('reservations', id),
+  },
+  settings: {
+    getProperty: (): Promise<PropertySettings> =>
+      getById<PropertySettings>('settings', 'property').then(s => s ?? { id: 'property', name: 'My Property', isConfigured: false }),
+    saveProperty: (data: Partial<PropertySettings>) =>
+      getById<PropertySettings>('settings', 'property')
+        .then(existing => put('settings', { ...{ id: 'property', name: 'My Property', isConfigured: false }, ...existing, ...data })),
   },
 };

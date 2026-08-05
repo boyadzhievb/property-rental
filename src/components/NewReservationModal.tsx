@@ -30,7 +30,7 @@ function validateForm(form: FormData): FormErrors {
     name: form.guestName.trim(),
     phone: form.phone.trim(),
     email: form.email.trim(),
-    avatar: '',
+
     previousStays: 0,
     notes: '',
   });
@@ -69,7 +69,7 @@ function validateForm(form: FormData): FormErrors {
 }
 
 export default function NewReservationModal({ onClose }: { onClose: () => void }) {
-  const { rooms } = useRooms();
+  const { rooms, refresh: refreshRooms } = useRooms();
   const { refresh: refreshReservations } = useReservationContext();
   const { refresh: refreshGuests } = useGuestContext();
   const [step, setStep] = useState(1);
@@ -98,7 +98,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
       name: form.guestName.trim(),
       phone: form.phone.trim(),
       email: form.email.trim(),
-      avatar: '',
+  
       previousStays: 0,
       notes: '',
     });
@@ -131,7 +131,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
         name: form.guestName.trim(),
         phone: form.phone.trim(),
         email: form.email.trim(),
-        avatar: '',
+    
         previousStays: 0,
         notes: '',
       });
@@ -147,7 +147,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
         price: parseFloat(form.price),
       });
 
-      await Promise.all([refreshReservations(), refreshGuests()]);
+      await Promise.all([refreshReservations(), refreshGuests(), refreshRooms()]);
       onClose();
     } catch (e: any) {
       if (e instanceof ZodError) {

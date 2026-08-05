@@ -5,7 +5,7 @@ export interface RoomData {
   name: string;
   status: RoomStatus;
   pricePerNight: number;
-  image: string;
+  maxGuests: number;
 }
 
 export class Room {
@@ -13,14 +13,14 @@ export class Room {
   readonly name: string;
   private _status: RoomStatus;
   readonly pricePerNight: number;
-  readonly image: string;
+  readonly maxGuests: number;
 
   constructor(data: RoomData) {
     this.id = data.id;
     this.name = data.name;
     this._status = data.status;
     this.pricePerNight = data.pricePerNight;
-    this.image = data.image;
+    this.maxGuests = data.maxGuests ?? 2;
   }
 
   get status(): RoomStatus {
@@ -53,7 +53,7 @@ export class Room {
       name: this.name,
       status: this._status,
       pricePerNight: this.pricePerNight,
-      image: this.image,
+      maxGuests: this.maxGuests,
     };
   }
 }
