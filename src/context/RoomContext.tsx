@@ -21,6 +21,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
       const data = await roomService.getRooms();
+      data.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
       setRooms(data);
     } catch (e: any) {
       setError(e.message);
