@@ -36,29 +36,34 @@ export interface PropertySettings {
 const DB_NAME = 'property-rental';
 const DB_VERSION = 2;
 
-const today = new Date();
 const fmt = (d: Date) => d.toISOString().split('T')[0];
 const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
 const subDays = (d: Date, n: number) => new Date(d.getTime() - n * 86400000);
 
-const SEED_ROOMS: Room[] = [
-  { id: '101', name: 'Suite 1', status: 'Occupied', pricePerNight: 250, maxGuests: 4 },
-  { id: '102', name: 'Ocean View', status: 'Available', pricePerNight: 200, maxGuests: 2 },
-  { id: '103', name: 'Standard Room', status: 'Cleaning', pricePerNight: 150, maxGuests: 2 },
-  { id: '104', name: 'Garden Villa', status: 'Occupied', pricePerNight: 300, maxGuests: 6 },
-];
+function getSeedData() {
+  const today = new Date();
 
-const SEED_GUESTS: Guest[] = [
-  { id: 'g1', name: 'John Smith', phone: '+1 555-0100', email: 'john@example.com', previousStays: 2, notes: 'Prefers extra pillows.' },
-  { id: 'g2', name: 'Mary Brown', phone: '+1 555-0101', email: 'mary@example.com', previousStays: 0, notes: 'Allergic to feathers.' },
-  { id: 'g3', name: 'Peter Jones', phone: '+1 555-0102', email: 'peter@example.com', previousStays: 5, notes: 'VIP Guest.' },
-];
+  const rooms: Room[] = [
+    { id: '101', name: 'Suite 1', status: 'Occupied', pricePerNight: 250, maxGuests: 4 },
+    { id: '102', name: 'Ocean View', status: 'Available', pricePerNight: 200, maxGuests: 2 },
+    { id: '103', name: 'Standard Room', status: 'Cleaning', pricePerNight: 150, maxGuests: 2 },
+    { id: '104', name: 'Garden Villa', status: 'Occupied', pricePerNight: 300, maxGuests: 6 },
+  ];
 
-const SEED_RESERVATIONS: Reservation[] = [
-  { id: 'r1', roomId: '101', guestId: 'g1', arrivalDate: fmt(subDays(today, 1)), departureDate: fmt(addDays(today, 2)), guestsCount: 2, status: 'Checked In', price: 750 },
-  { id: 'r2', roomId: '104', guestId: 'g2', arrivalDate: fmt(today), departureDate: fmt(addDays(today, 4)), guestsCount: 1, status: 'Confirmed', price: 1200 },
-  { id: 'r3', roomId: '103', guestId: 'g3', arrivalDate: fmt(subDays(today, 3)), departureDate: fmt(today), guestsCount: 2, status: 'Checked Out', price: 450 },
-];
+  const guests: Guest[] = [
+    { id: 'g1', name: 'John Smith', phone: '+1 555-0100', email: 'john@example.com', previousStays: 2, notes: 'Prefers extra pillows.' },
+    { id: 'g2', name: 'Mary Brown', phone: '+1 555-0101', email: 'mary@example.com', previousStays: 0, notes: 'Allergic to feathers.' },
+    { id: 'g3', name: 'Peter Jones', phone: '+1 555-0102', email: 'peter@example.com', previousStays: 5, notes: 'VIP Guest.' },
+  ];
+
+  const reservations: Reservation[] = [
+    { id: 'r1', roomId: '101', guestId: 'g1', arrivalDate: fmt(subDays(today, 1)), departureDate: fmt(addDays(today, 2)), guestsCount: 2, status: 'Checked In', price: 750 },
+    { id: 'r2', roomId: '104', guestId: 'g2', arrivalDate: fmt(today), departureDate: fmt(addDays(today, 4)), guestsCount: 1, status: 'Confirmed', price: 1200 },
+    { id: 'r3', roomId: '103', guestId: 'g3', arrivalDate: fmt(subDays(today, 3)), departureDate: fmt(today), guestsCount: 2, status: 'Checked Out', price: 450 },
+  ];
+
+  return { rooms, guests, reservations };
+}
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -105,11 +110,12 @@ async function ensureSettings(db: IDBDatabase) {
 }
 
 export async function seedDemoData() {
+  const { rooms, guests, reservations } = getSeedData();
   const db = await getDB();
   const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readwrite');
-  for (const room of SEED_ROOMS) tx.objectStore('rooms').put(room);
-  for (const guest of SEED_GUESTS) tx.objectStore('guests').put(guest);
-  for (const res of SEED_RESERVATIONS) tx.objectStore('reservations').put(res);
+  for (const room of rooms) tx.objectStore('rooms').put(room);
+  for (const guest of guests) tx.objectStore('guests').put(guest);
+  for (const res of reservations) tx.objectStore('reservations').put(res);
   tx.objectStore('settings').put({ id: 'property', name: 'Villa Blanca', isConfigured: true });
   await new Promise<void>((resolve, reject) => {
     tx.oncomplete = () => resolve();
@@ -139,6 +145,14 @@ export async function exportBackup(): Promise<BackupData> {
 }
 
 export async function importBackup(data: BackupData) {
+  const { RoomSchema } = await import('../schemas/RoomSchema');
+  const { GuestSchema } = await import('../schemas/GuestSchema');
+  const { ReservationSchema } = await import('../schemas/ReservationSchema');
+
+  const validRooms = (data.rooms ?? []).filter(r => RoomSchema.safeParse(r).success);
+  const validGuests = (data.guests ?? []).filter(g => GuestSchema.safeParse(g).success);
+  const validReservations = (data.reservations ?? []).filter(r => ReservationSchema.safeParse(r).success);
+
   const db = await getDB();
   const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readwrite');
 
@@ -146,9 +160,9 @@ export async function importBackup(data: BackupData) {
   tx.objectStore('guests').clear();
   tx.objectStore('reservations').clear();
 
-  if (data.rooms) for (const room of data.rooms) tx.objectStore('rooms').put(room);
-  if (data.guests) for (const guest of data.guests) tx.objectStore('guests').put(guest);
-  if (data.reservations) for (const res of data.reservations) tx.objectStore('reservations').put(res);
+  for (const room of validRooms) tx.objectStore('rooms').put(room);
+  for (const guest of validGuests) tx.objectStore('guests').put(guest);
+  for (const res of validReservations) tx.objectStore('reservations').put(res);
   if (data.settings) tx.objectStore('settings').put({ ...data.settings, id: 'property', isConfigured: true });
   else tx.objectStore('settings').put({ id: 'property', name: 'My Property', isConfigured: true });
 

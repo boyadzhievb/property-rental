@@ -18,13 +18,8 @@ export class RoomRepository {
 
   async save(room: Room): Promise<Room> {
     const data = room.toData();
-    const existing = await this.getById(data.id);
-    if (existing) {
-      const updated = await api.rooms.update(data.id, data);
-      return new Room(updated);
-    }
-    const created = await api.rooms.create(data);
-    return new Room(created);
+    const saved = await api.rooms.create(data);
+    return new Room(saved);
   }
 
   async delete(id: string): Promise<void> {

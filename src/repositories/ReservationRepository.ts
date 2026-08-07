@@ -23,13 +23,8 @@ export class ReservationRepository {
 
   async save(reservation: Reservation): Promise<Reservation> {
     const data = reservation.toData();
-    const existing = await this.getById(data.id);
-    if (existing) {
-      const updated = await api.reservations.update(data.id, data);
-      return new Reservation(updated);
-    }
-    const created = await api.reservations.create(data);
-    return new Reservation(created);
+    const saved = await api.reservations.create(data);
+    return new Reservation(saved);
   }
 
   async delete(id: string): Promise<void> {

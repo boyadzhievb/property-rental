@@ -52,8 +52,7 @@ export default function RoomsView() {
   };
 
   const saveEdit = async (room: Room) => {
-    await roomService.createRoom({
-      ...room.toData(),
+    await roomService.updateRoom(room.id, {
       name: editName.trim() || room.name,
       pricePerNight: parseFloat(editPrice) || room.pricePerNight,
       maxGuests: parseInt(editMaxGuests) || room.maxGuests,

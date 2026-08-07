@@ -51,16 +51,26 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetData = useCallback(async () => {
-    const backup = await exportBackup();
+    let backup: BackupData;
+    try {
+      backup = await exportBackup();
+    } catch {
+      throw new Error('Failed to export backup. Reset aborted.');
+    }
+
+    const json = JSON.stringify(backup, null, 2);
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `property-backup-${timestamp}.json`;
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+
+    const confirmed = window.confirm('Backup download started. Press OK to proceed with reset, or Cancel to abort.');
+    if (!confirmed) return;
 
     await resetDataDb();
     setPropertyName('My Property');

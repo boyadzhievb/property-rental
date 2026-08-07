@@ -17,7 +17,7 @@ export default function SettingsView() {
     </div>
   );
 
-  const Item = ({ icon: Icon, label, color = 'bg-ios-blue', value }: any) => (
+  const Item = ({ icon: Icon, label, color = 'bg-ios-blue', value }: { icon: React.ComponentType<{ size?: number }>; label: string; color?: string; value?: string }) => (
     <div className="flex items-center p-4 active:bg-ios-gray-light/30 transition-colors cursor-pointer">
       <div className={`w-8 h-8 rounded-lg ${color} text-white flex items-center justify-center mr-4`}>
         <Icon size={18} />

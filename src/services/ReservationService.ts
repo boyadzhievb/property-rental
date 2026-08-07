@@ -23,6 +23,13 @@ export class ReservationService {
     const validated = ReservationSchema.parse(data);
     const reservation = new Reservation(validated);
 
+    const room = await roomRepository.getById(reservation.roomId);
+    if (room && reservation.guestsCount > room.maxGuests) {
+      throw new Error(
+        `Guest count (${reservation.guestsCount}) exceeds room capacity (${room.maxGuests})`
+      );
+    }
+
     const existing = await reservationRepository.getAll();
     const conflict = existing.find(
       r => r.roomId === reservation.roomId && r.isActive() && r.overlaps(reservation)
