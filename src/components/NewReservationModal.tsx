@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { ZodError } from 'zod';
 import { useRooms } from '../hooks/useRooms';
@@ -91,6 +91,18 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
     setForm(prev => ({ ...prev, [field]: value }));
     setErrors(prev => ({ ...prev, [field]: undefined }));
   };
+
+  useEffect(() => {
+    if (!form.roomId || !form.checkIn || !form.checkOut) return;
+    const room = rooms.find(r => r.id === form.roomId);
+    if (!room) return;
+    const arrival = new Date(form.checkIn);
+    const departure = new Date(form.checkOut);
+    const nights = Math.ceil((departure.getTime() - arrival.getTime()) / (1000 * 60 * 60 * 24));
+    if (nights > 0) {
+      setForm(prev => ({ ...prev, price: String(nights * room.pricePerNight) }));
+    }
+  }, [form.roomId, form.checkIn, form.checkOut, rooms]);
 
   const handleNext = () => {
     const guestResult = GuestSchema.safeParse({
