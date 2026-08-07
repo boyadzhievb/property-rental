@@ -4,6 +4,7 @@ import { RoomProvider } from './context/RoomContext';
 import { GuestProvider } from './context/GuestContext';
 import { ReservationProvider } from './context/ReservationContext';
 import { PropertyProvider, usePropertyContext } from './context/PropertyContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import TodayView from './components/TodayView';
 import CalendarView from './components/CalendarView';
@@ -108,8 +109,10 @@ function AppContent() {
 
 export default function App() {
   return (
-    <PropertyProvider>
-      <AppContent />
-    </PropertyProvider>
+    <ThemeProvider>
+      <PropertyProvider>
+        <AppContent />
+      </PropertyProvider>
+    </ThemeProvider>
   );
 }

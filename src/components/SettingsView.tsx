@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { ChevronRight, Settings as SettingsIcon, Bell, Cloud, RotateCcw, Palette, Check } from 'lucide-react';
 import { usePropertyContext } from '../context/PropertyContext';
+import { useTheme, type ThemeMode } from '../context/ThemeContext';
+
+const THEME_LABELS: Record<ThemeMode, string> = { light: 'Light', dark: 'Dark', system: 'System' };
 
 export default function SettingsView() {
   const { propertyName, updateName, resetData } = usePropertyContext();
+  const { mode, setMode } = useTheme();
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(propertyName);
+  const [showThemePicker, setShowThemePicker] = useState(false);
   const Group = ({ children, title }: { children: React.ReactNode, title?: string }) => (
     <div className="mb-6">
       {title && <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-4 mb-2">{title}</div>}
@@ -75,7 +80,26 @@ export default function SettingsView() {
         <Group title="Preferences">
           <Item icon={SettingsIcon} label="Property Details" color="bg-ios-gray" />
           <Item icon={Bell} label="Notifications" color="bg-ios-red" />
-          <Item icon={Palette} label="Appearance" color="bg-ios-blue" value="Light" />
+          <div onClick={() => setShowThemePicker(!showThemePicker)}>
+            <Item icon={Palette} label="Appearance" color="bg-ios-blue" value={THEME_LABELS[mode]} />
+          </div>
+          {showThemePicker && (
+            <div className="px-4 py-3 flex gap-2">
+              {(['light', 'dark', 'system'] as ThemeMode[]).map(option => (
+                <button
+                  key={option}
+                  onClick={() => { setMode(option); setShowThemePicker(false); }}
+                  className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                    mode === option
+                      ? 'bg-ios-blue text-white'
+                      : 'bg-ios-gray-light text-ios-text'
+                  }`}
+                >
+                  {THEME_LABELS[option]}
+                </button>
+              ))}
+            </div>
+          )}
         </Group>
 
         <Group title="Data">

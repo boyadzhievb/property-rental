@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --color-ios-bg: #F2F2F7;
@@ -10,9 +12,24 @@
   --color-ios-orange: #FF9500;
   --color-ios-red: #FF3B30;
   --color-ios-gray: #8E8E93;
+  --color-ios-gray-light: #E5E5EA;
   --color-ios-border: #C6C6C8;
   --color-ios-text: #000000;
   --color-ios-text-secondary: rgba(60, 60, 67, 0.6);
+}
+
+.dark {
+  --color-ios-bg: #000000;
+  --color-ios-card: #1C1C1E;
+  --color-ios-blue: #0A84FF;
+  --color-ios-green: #30D158;
+  --color-ios-orange: #FF9F0A;
+  --color-ios-red: #FF453A;
+  --color-ios-gray: #8E8E93;
+  --color-ios-gray-light: #2C2C2E;
+  --color-ios-border: #38383A;
+  --color-ios-text: #FFFFFF;
+  --color-ios-text-secondary: rgba(235, 235, 245, 0.6);
 }
 
 body {
