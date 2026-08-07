@@ -31,10 +31,12 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const clearError = useCallback(() => setError(null), []);
+
   useEffect(() => { refresh(); }, [refresh]);
 
   return (
-    <RoomContext.Provider value={{ rooms, loading, error, refresh }}>
+    <RoomContext.Provider value={{ rooms, loading, error, clearError, refresh }}>
       {children}
     </RoomContext.Provider>
   );

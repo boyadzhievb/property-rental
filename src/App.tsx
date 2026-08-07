@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Calendar, Home, Users, Settings as SettingsIcon, LayoutGrid, Plus } from 'lucide-react';
-import { RoomProvider } from './context/RoomContext';
-import { GuestProvider } from './context/GuestContext';
-import { ReservationProvider } from './context/ReservationContext';
+import { RoomProvider, useRoomContext } from './context/RoomContext';
+import { GuestProvider, useGuestContext } from './context/GuestContext';
+import { ReservationProvider, useReservationContext } from './context/ReservationContext';
 import { PropertyProvider, usePropertyContext } from './context/PropertyContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBanner from './components/ui/ErrorBanner';
 import TodayView from './components/today/TodayView';
 import CalendarView from './components/calendar/CalendarView';
 import RoomsView from './components/rooms/RoomsView';
@@ -24,6 +25,30 @@ const NAV_ITEMS = [
   { id: 'guests', label: 'Guests', icon: Users },
   { id: 'settings', label: 'Settings', icon: SettingsIcon },
 ];
+
+function ErrorMessages() {
+  const { error: propertyError, clearError: clearPropertyError } = usePropertyContext();
+  const { error: roomError, clearError: clearRoomError } = useRoomContext();
+  const { error: guestError, clearError: clearGuestError } = useGuestContext();
+  const { error: resError, clearError: clearResError } = useReservationContext();
+
+  const errors = [
+    { message: propertyError, clear: clearPropertyError },
+    { message: roomError, clear: clearRoomError },
+    { message: guestError, clear: clearGuestError },
+    { message: resError, clear: clearResError },
+  ].filter(e => e.message);
+
+  if (errors.length === 0) return null;
+
+  return (
+    <div className="pt-2">
+      {errors.map((e, i) => (
+        <ErrorBanner key={i} message={e.message!} onDismiss={e.clear} />
+      ))}
+    </div>
+  );
+}
 
 function AppContent() {
   const { isConfigured, loading, configureApp, seedData, importData } = usePropertyContext();
@@ -67,6 +92,7 @@ function AppContent() {
       <div className="w-full h-full min-h-screen max-w-screen-xl relative flex flex-col sm:border-x sm:border-ios-border/20 shadow-sm bg-ios-bg">
         <main className="flex-1 overflow-y-auto no-scrollbar relative w-full">
           <ErrorBoundary>
+            <ErrorMessages />
             {renderContent()}
           </ErrorBoundary>
         </main>

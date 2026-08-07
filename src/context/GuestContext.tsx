@@ -6,6 +6,7 @@ interface GuestContextValue {
   guests: Guest[];
   loading: boolean;
   error: string | null;
+  clearError: () => void;
   refresh: () => Promise<void>;
 }
 
@@ -29,10 +30,12 @@ export function GuestProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const clearError = useCallback(() => setError(null), []);
+
   useEffect(() => { refresh(); }, [refresh]);
 
   return (
-    <GuestContext.Provider value={{ guests, loading, error, refresh }}>
+    <GuestContext.Provider value={{ guests, loading, error, clearError, refresh }}>
       {children}
     </GuestContext.Provider>
   );

@@ -5,6 +5,8 @@ interface PropertyContextValue {
   propertyName: string;
   isConfigured: boolean;
   loading: boolean;
+  error: string | null;
+  clearError: () => void;
   updateName: (name: string) => Promise<void>;
   configureApp: (name: string, roomCount: number) => Promise<void>;
   seedData: () => Promise<void>;
@@ -18,36 +20,58 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   const [propertyName, setPropertyName] = useState('');
   const [isConfigured, setIsConfigured] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => {
     api.settings.getProperty().then((s) => {
       setPropertyName(s.name);
       setIsConfigured(s.isConfigured);
       setLoading(false);
+    }).catch((e: any) => {
+      setError(e.message || 'Failed to load property settings');
+      setLoading(false);
     });
   }, []);
 
   const updateName = useCallback(async (name: string) => {
-    await api.settings.saveProperty({ name });
-    setPropertyName(name);
+    try {
+      await api.settings.saveProperty({ name });
+      setPropertyName(name);
+    } catch (e: any) {
+      setError(e.message || 'Failed to update property name');
+    }
   }, []);
 
   const configureApp = useCallback(async (name: string, roomCount: number) => {
-    await configureProperty(name, roomCount);
-    setPropertyName(name || 'My Property');
-    setIsConfigured(true);
+    try {
+      await configureProperty(name, roomCount);
+      setPropertyName(name || 'My Property');
+      setIsConfigured(true);
+    } catch (e: any) {
+      setError(e.message || 'Failed to configure property');
+    }
   }, []);
 
   const seedData = useCallback(async () => {
-    await seedDemoData();
-    setPropertyName('Villa Blanca');
-    setIsConfigured(true);
+    try {
+      await seedDemoData();
+      setPropertyName('Villa Blanca');
+      setIsConfigured(true);
+    } catch (e: any) {
+      setError(e.message || 'Failed to seed demo data');
+    }
   }, []);
 
   const importData = useCallback(async (data: BackupData) => {
-    await importBackup(data);
-    setPropertyName(data.settings?.name || 'My Property');
-    setIsConfigured(true);
+    try {
+      await importBackup(data);
+      setPropertyName(data.settings?.name || 'My Property');
+      setIsConfigured(true);
+    } catch (e: any) {
+      setError(e.message || 'Failed to import backup');
+    }
   }, []);
 
   const resetData = useCallback(async () => {
@@ -55,7 +79,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     try {
       backup = await exportBackup();
     } catch {
-      throw new Error('Failed to export backup. Reset aborted.');
+      setError('Failed to export backup. Reset aborted.');
+      return;
     }
 
     const json = JSON.stringify(backup, null, 2);
@@ -72,13 +97,17 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     const confirmed = window.confirm('Backup download started. Press OK to proceed with reset, or Cancel to abort.');
     if (!confirmed) return;
 
-    await resetDataDb();
-    setPropertyName('My Property');
-    setIsConfigured(false);
+    try {
+      await resetDataDb();
+      setPropertyName('My Property');
+      setIsConfigured(false);
+    } catch (e: any) {
+      setError(e.message || 'Failed to reset data');
+    }
   }, []);
 
   return (
-    <PropertyContext.Provider value={{ propertyName, isConfigured, loading, updateName, configureApp, seedData, importData, resetData }}>
+    <PropertyContext.Provider value={{ propertyName, isConfigured, loading, error, clearError, updateName, configureApp, seedData, importData, resetData }}>
       {children}
     </PropertyContext.Provider>
   );

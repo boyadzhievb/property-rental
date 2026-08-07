@@ -6,6 +6,7 @@ interface ReservationContextValue {
   reservations: Reservation[];
   loading: boolean;
   error: string | null;
+  clearError: () => void;
   refresh: () => Promise<void>;
 }
 
@@ -29,10 +30,12 @@ export function ReservationProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const clearError = useCallback(() => setError(null), []);
+
   useEffect(() => { refresh(); }, [refresh]);
 
   return (
-    <ReservationContext.Provider value={{ reservations, loading, error, refresh }}>
+    <ReservationContext.Provider value={{ reservations, loading, error, clearError, refresh }}>
       {children}
     </ReservationContext.Provider>
   );
