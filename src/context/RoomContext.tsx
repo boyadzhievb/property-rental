@@ -6,6 +6,7 @@ interface RoomContextValue {
   rooms: Room[];
   loading: boolean;
   error: string | null;
+  clearError: () => void;
   refresh: () => Promise<void>;
 }
 

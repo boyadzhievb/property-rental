@@ -1,5 +1,6 @@
 import { Search, ChevronRight } from 'lucide-react';
-import { useGuests } from '../hooks/useGuests';
+import { useGuests } from '../../hooks/useGuests';
+import PageHeader from '../layout/PageHeader';
 
 export default function GuestsView() {
   const { guests, loading } = useGuests();
@@ -7,9 +8,7 @@ export default function GuestsView() {
   if (loading) {
     return (
       <div className="pb-24">
-        <header className="px-5 pt-12 pb-4 bg-ios-bg sticky top-0 z-10">
-          <h1 className="text-3xl font-bold text-ios-text">Guests</h1>
-        </header>
+        <PageHeader title="Guests" />
         <div className="px-5 text-center text-ios-text-secondary py-12">Loading...</div>
       </div>
     );

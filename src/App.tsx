@@ -6,15 +6,24 @@ import { ReservationProvider } from './context/ReservationContext';
 import { PropertyProvider, usePropertyContext } from './context/PropertyContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import TodayView from './components/TodayView';
-import CalendarView from './components/CalendarView';
-import RoomsView from './components/RoomsView';
-import GuestsView from './components/GuestsView';
-import SettingsView from './components/SettingsView';
+import TodayView from './components/today/TodayView';
+import CalendarView from './components/calendar/CalendarView';
+import RoomsView from './components/rooms/RoomsView';
+import GuestsView from './components/guests/GuestsView';
+import SettingsView from './components/settings/SettingsView';
 import SetupView from './components/SetupView';
-import NewReservationModal from './components/NewReservationModal';
+import NewReservationModal from './components/reservations/NewReservationModal';
+import TabBar from './components/layout/TabBar';
 
 type Tab = 'today' | 'calendar' | 'rooms' | 'guests' | 'settings';
+
+const NAV_ITEMS = [
+  { id: 'today', label: 'Today', icon: LayoutGrid },
+  { id: 'calendar', label: 'Calendar', icon: Calendar },
+  { id: 'rooms', label: 'Rooms', icon: Home },
+  { id: 'guests', label: 'Guests', icon: Users },
+  { id: 'settings', label: 'Settings', icon: SettingsIcon },
+];
 
 function AppContent() {
   const { isConfigured, loading, configureApp, seedData, importData } = usePropertyContext();
@@ -50,14 +59,6 @@ function AppContent() {
     }
   };
 
-  const navItems = [
-    { id: 'today', label: 'Today', icon: LayoutGrid },
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'rooms', label: 'Rooms', icon: Home },
-    { id: 'guests', label: 'Guests', icon: Users },
-    { id: 'settings', label: 'Settings', icon: SettingsIcon },
-  ];
-
   return (
     <RoomProvider>
     <GuestProvider>
@@ -77,26 +78,7 @@ function AppContent() {
           <Plus size={28} />
         </button>
 
-        <div className="absolute bottom-0 left-0 right-0 z-30">
-          <nav className="h-20 bg-ios-bg/80 backdrop-blur-xl border-t border-ios-border/30 px-2 pb-6 pt-2 flex justify-around sm:justify-center sm:gap-16 items-center w-full max-w-screen-xl mx-auto">
-            {navItems.map(item => {
-              const isActive = activeTab === item.id;
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id as Tab)}
-                  className={`flex flex-col items-center justify-center w-16 gap-1 transition-colors ${
-                    isActive ? 'text-ios-blue' : 'text-ios-gray hover:text-ios-text-secondary'
-                  }`}
-                >
-                  <Icon size={24} />
-                  <span className="text-[10px] font-medium tracking-wide">{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+        <TabBar items={NAV_ITEMS} activeTab={activeTab} onTabChange={(id) => setActiveTab(id as Tab)} />
 
         {isModalOpen && <NewReservationModal onClose={() => setIsModalOpen(false)} />}
       </div>
