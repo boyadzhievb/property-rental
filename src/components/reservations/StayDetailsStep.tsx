@@ -77,7 +77,7 @@ export default function StayDetailsStep({ rooms, roomId, checkIn, checkOut, gues
                 onClick={() => onUpdate('guestsCount', Math.max(1, guestsCount - 1))}
                 className="w-8 h-8 rounded-full bg-ios-gray-light flex items-center justify-center font-bold text-lg text-ios-blue active:opacity-70"
               >-</button>
-              <span className="font-semibold text-lg w-4 text-center">{guestsCount}</span>
+              <span className="font-semibold text-lg w-4 text-center text-ios-text">{guestsCount}</span>
               <button
                 onClick={() => onUpdate('guestsCount', guestsCount + 1)}
                 className="w-8 h-8 rounded-full bg-ios-gray-light flex items-center justify-center font-bold text-lg text-ios-blue active:opacity-70"

@@ -32,6 +32,13 @@
   --color-ios-text-secondary: rgba(235, 235, 245, 0.6);
 }
 
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
 body {
   background-color: var(--color-ios-bg);
   color: var(--color-ios-text);

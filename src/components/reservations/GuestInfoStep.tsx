@@ -24,7 +24,7 @@ export default function GuestInfoStep({ guestName, phone, email, errors, onUpdat
               placeholder="Guest Name"
               value={guestName}
               onChange={(e) => onUpdate('guestName', e.target.value)}
-              className="w-full p-4 border-b border-ios-border/40 focus:outline-none"
+              className="w-full p-4 border-b border-ios-border/40 focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
               autoFocus
             />
             {errors.guestName && <div className="px-4 pb-2 text-xs text-ios-red">{errors.guestName}</div>}
@@ -35,7 +35,7 @@ export default function GuestInfoStep({ guestName, phone, email, errors, onUpdat
               placeholder="Phone Number"
               value={phone}
               onChange={(e) => onUpdate('phone', e.target.value)}
-              className="w-full p-4 border-b border-ios-border/40 focus:outline-none"
+              className="w-full p-4 border-b border-ios-border/40 focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
             />
             {errors.phone && <div className="px-4 pb-2 text-xs text-ios-red">{errors.phone}</div>}
           </div>
@@ -45,7 +45,7 @@ export default function GuestInfoStep({ guestName, phone, email, errors, onUpdat
               placeholder="Email (Optional)"
               value={email}
               onChange={(e) => onUpdate('email', e.target.value)}
-              className="w-full p-4 focus:outline-none"
+              className="w-full p-4 focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
             />
             {errors.email && <div className="px-4 pb-2 text-xs text-ios-red">{errors.email}</div>}
           </div>
