@@ -2,9 +2,9 @@ Code Quality Summary
 Area	Assessment
 Type safety	Good — Zod schemas, typed domain models, typed contexts. One any was fixed.
 Separation of concerns	Mostly good. The api/client.ts doing both DB access AND seed/backup logic is a gray area.
-Component size	Reasonable — NewReservationModal is the largest at ~300 lines but manageable.
-Error handling	Weak — contexts store errors but no UI reads them. IndexedDB failures are silently caught.
-Testing	None. No test files exist.
+- Component size	Reasonable — NewReservationModal is the largest at ~300 lines but manageable.
+- Error handling	Weak — contexts store errors but no UI reads them. IndexedDB failures are silently caught.
+- Testing	None. No test files exist.
 Dead code	PropertyService, Property domain class, useReservation hook (unused), GuestService.getAllGuests.
 Want me to fix any of these? The highest-impact items would be #3 (GuestRepository consistency), #8 (ID collisions), and #9 (dark mode borders).
 
