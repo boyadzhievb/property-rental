@@ -1,4 +1,11 @@
-export type RoomStatus = 'Available' | 'Occupied' | 'Cleaning' | 'Not available';
+export enum RoomStatus {
+  AVAILABLE = 'Available',
+  OCCUPIED = 'Occupied',
+  CLEANING = 'Cleaning',
+  MAINTENANCE = 'Maintenance',
+}
+
+export type RoomStatusAction = 'clean' | 'maintenance' | 'available';
 
 export interface RoomData {
   id: string;
@@ -28,23 +35,36 @@ export class Room {
   }
 
   isAvailable(): boolean {
-    return this._status === 'Available';
+    return this._status === RoomStatus.AVAILABLE;
   }
 
   occupy(): void {
-    this._status = 'Occupied';
+    this._status = RoomStatus.OCCUPIED;
   }
 
   vacate(): void {
-    this._status = 'Available';
+    if (this._status !== RoomStatus.CLEANING) {
+      throw new Error('Room can only be marked available from Cleaning status');
+    }
+    this._status = RoomStatus.AVAILABLE;
   }
 
   markCleaning(): void {
-    this._status = 'Cleaning';
+    this._status = RoomStatus.CLEANING;
   }
 
   markMaintenance(): void {
-    this._status = 'Not available';
+    if (this._status === RoomStatus.OCCUPIED) {
+      throw new Error('An occupied room cannot be marked for maintenance');
+    }
+    this._status = RoomStatus.MAINTENANCE;
+  }
+
+  markAvailable(): void {
+    if (this._status !== RoomStatus.MAINTENANCE) {
+      throw new Error('Only a maintenance room can be marked available this way');
+    }
+    this._status = RoomStatus.AVAILABLE;
   }
 
   toData(): RoomData {

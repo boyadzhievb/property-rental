@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { Room } from '../Room'
+import { Room, RoomStatus } from '../Room'
+import type { RoomData } from '../Room'
 
-function makeRoom(overrides: Partial<import('../Room').RoomData> = {}) {
+function makeRoom(overrides: Partial<RoomData> = {}) {
   return new Room({
     id: '1',
     name: 'Suite 101',
-    status: 'Available',
+    status: RoomStatus.AVAILABLE,
     pricePerNight: 120,
     maxGuests: 2,
     ...overrides,
@@ -17,40 +18,81 @@ describe('Room', () => {
     const room = makeRoom()
     expect(room.id).toBe('1')
     expect(room.name).toBe('Suite 101')
-    expect(room.status).toBe('Available')
+    expect(room.status).toBe(RoomStatus.AVAILABLE)
     expect(room.pricePerNight).toBe(120)
     expect(room.maxGuests).toBe(2)
   })
 
   it('isAvailable returns true only when status is Available', () => {
-    expect(makeRoom({ status: 'Available' }).isAvailable()).toBe(true)
-    expect(makeRoom({ status: 'Occupied' }).isAvailable()).toBe(false)
-    expect(makeRoom({ status: 'Cleaning' }).isAvailable()).toBe(false)
-    expect(makeRoom({ status: 'Not available' }).isAvailable()).toBe(false)
+    expect(makeRoom({ status: RoomStatus.AVAILABLE }).isAvailable()).toBe(true)
+    expect(makeRoom({ status: RoomStatus.OCCUPIED }).isAvailable()).toBe(false)
+    expect(makeRoom({ status: RoomStatus.CLEANING }).isAvailable()).toBe(false)
+    expect(makeRoom({ status: RoomStatus.MAINTENANCE }).isAvailable()).toBe(false)
   })
 
   it('occupy changes status to Occupied', () => {
     const room = makeRoom()
     room.occupy()
-    expect(room.status).toBe('Occupied')
-  })
-
-  it('vacate changes status to Available', () => {
-    const room = makeRoom({ status: 'Occupied' })
-    room.vacate()
-    expect(room.status).toBe('Available')
+    expect(room.status).toBe(RoomStatus.OCCUPIED)
   })
 
   it('markCleaning changes status to Cleaning', () => {
     const room = makeRoom()
     room.markCleaning()
-    expect(room.status).toBe('Cleaning')
+    expect(room.status).toBe(RoomStatus.CLEANING)
   })
 
-  it('markMaintenance changes status to Not available', () => {
-    const room = makeRoom()
-    room.markMaintenance()
-    expect(room.status).toBe('Not available')
+  describe('vacate (mark as cleaned)', () => {
+    it('changes Cleaning to Available', () => {
+      const room = makeRoom({ status: RoomStatus.CLEANING })
+      room.vacate()
+      expect(room.status).toBe(RoomStatus.AVAILABLE)
+    })
+
+    it('throws if room is not in Cleaning status', () => {
+      expect(() => makeRoom({ status: RoomStatus.AVAILABLE }).vacate())
+        .toThrow('Room can only be marked available from Cleaning status')
+      expect(() => makeRoom({ status: RoomStatus.OCCUPIED }).vacate())
+        .toThrow('Room can only be marked available from Cleaning status')
+      expect(() => makeRoom({ status: RoomStatus.MAINTENANCE }).vacate())
+        .toThrow('Room can only be marked available from Cleaning status')
+    })
+  })
+
+  describe('markMaintenance', () => {
+    it('changes Available to Maintenance', () => {
+      const room = makeRoom({ status: RoomStatus.AVAILABLE })
+      room.markMaintenance()
+      expect(room.status).toBe(RoomStatus.MAINTENANCE)
+    })
+
+    it('changes Cleaning to Maintenance', () => {
+      const room = makeRoom({ status: RoomStatus.CLEANING })
+      room.markMaintenance()
+      expect(room.status).toBe(RoomStatus.MAINTENANCE)
+    })
+
+    it('throws if room is Occupied', () => {
+      expect(() => makeRoom({ status: RoomStatus.OCCUPIED }).markMaintenance())
+        .toThrow('An occupied room cannot be marked for maintenance')
+    })
+  })
+
+  describe('markAvailable (from maintenance)', () => {
+    it('changes Maintenance to Available', () => {
+      const room = makeRoom({ status: RoomStatus.MAINTENANCE })
+      room.markAvailable()
+      expect(room.status).toBe(RoomStatus.AVAILABLE)
+    })
+
+    it('throws if room is not in Maintenance status', () => {
+      expect(() => makeRoom({ status: RoomStatus.AVAILABLE }).markAvailable())
+        .toThrow('Only a maintenance room can be marked available this way')
+      expect(() => makeRoom({ status: RoomStatus.OCCUPIED }).markAvailable())
+        .toThrow('Only a maintenance room can be marked available this way')
+      expect(() => makeRoom({ status: RoomStatus.CLEANING }).markAvailable())
+        .toThrow('Only a maintenance room can be marked available this way')
+    })
   })
 
   it('toData returns a plain object matching the input', () => {
@@ -60,7 +102,7 @@ describe('Room', () => {
     expect(data).toEqual({
       id: '1',
       name: 'Suite 101',
-      status: 'Occupied',
+      status: RoomStatus.OCCUPIED,
       pricePerNight: 120,
       maxGuests: 2,
     })

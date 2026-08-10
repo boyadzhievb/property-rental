@@ -1,4 +1,4 @@
-import { Room } from './Room';
+import { Room, RoomStatus } from './Room';
 import { Reservation } from './Reservation';
 
 export class Property {
@@ -28,7 +28,7 @@ export class Property {
   }
 
   occupiedRooms(): number {
-    return this.rooms.filter(r => r.status === 'Occupied').length;
+    return this.rooms.filter(r => r.status === RoomStatus.OCCUPIED).length;
   }
 
   availableRooms(): number {

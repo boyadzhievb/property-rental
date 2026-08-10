@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RoomStatus } from '../../domain/Room';
 import { roomService } from '../../services/RoomService';
 
 interface AddRoomFormProps {
@@ -16,7 +17,7 @@ export default function AddRoomForm({ onAdded, onCancel }: AddRoomFormProps) {
     await roomService.createRoom({
       id: `room-${Date.now()}`,
       name: name.trim(),
-      status: 'Available',
+      status: RoomStatus.AVAILABLE,
       pricePerNight: parseFloat(price) || 100,
       maxGuests: parseInt(maxGuests) || 2,
     });

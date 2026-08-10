@@ -1,7 +1,7 @@
 export interface Room {
   id: string;
   name: string;
-  status: 'Available' | 'Occupied' | 'Cleaning' | 'Not available';
+  status: 'Available' | 'Occupied' | 'Cleaning' | 'Maintenance';
   pricePerNight: number;
   maxGuests: number;
 }
@@ -191,7 +191,7 @@ export async function configureProperty(name: string, roomCount: number) {
   const rooms: Room[] = Array.from({ length: roomCount }).map((_, i) => ({
     id: `room-${i + 1}`,
     name: `Room ${i + 1}`,
-    status: 'Available' as const,
+    status: 'Available' as Room['status'],
     pricePerNight: 100,
     maxGuests: 2,
   }));

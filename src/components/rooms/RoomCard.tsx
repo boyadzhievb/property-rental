@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Users, Pencil, Check, X } from 'lucide-react';
-import { type Room } from '../../domain/Room';
+import { Users, Pencil, Check, X, SprayCan, Wrench, CheckCircle } from 'lucide-react';
+import { type Room, RoomStatus, type RoomStatusAction } from '../../domain/Room';
 import { roomService } from '../../services/RoomService';
 
 interface RoomCardProps {
@@ -8,12 +8,12 @@ interface RoomCardProps {
   onUpdated: () => Promise<void>;
 }
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: RoomStatus) => {
   switch (status) {
-    case 'Available': return 'bg-ios-green/15 text-ios-green';
-    case 'Occupied': return 'bg-ios-blue/15 text-ios-blue';
-    case 'Cleaning': return 'bg-ios-orange/15 text-ios-orange';
-    default: return 'bg-ios-gray-light text-ios-text-secondary';
+    case RoomStatus.AVAILABLE: return 'bg-ios-green/15 text-ios-green';
+    case RoomStatus.OCCUPIED: return 'bg-ios-blue/15 text-ios-blue';
+    case RoomStatus.CLEANING: return 'bg-ios-orange/15 text-ios-orange';
+    case RoomStatus.MAINTENANCE: return 'bg-ios-red/15 text-ios-red';
   }
 };
 
@@ -39,6 +39,11 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
       maxGuests: parseInt(editMaxGuests) || room.maxGuests,
     });
     setEditing(false);
+    await onUpdated();
+  };
+
+  const handleStatusAction = async (action: RoomStatusAction) => {
+    await roomService.updateRoomStatus(room.id, action);
     await onUpdated();
   };
 
@@ -116,6 +121,33 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
               <span className="text-xs text-ios-text-secondary"> / night</span>
             </div>
           </div>
+
+          {room.status === RoomStatus.CLEANING && (
+            <button
+              onClick={() => handleStatusAction('clean')}
+              className="mt-4 w-full py-2.5 rounded-xl bg-ios-green/10 text-ios-green font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity"
+            >
+              <SprayCan size={16} /> Mark as Cleaned
+            </button>
+          )}
+
+          {room.status === RoomStatus.AVAILABLE && (
+            <button
+              onClick={() => handleStatusAction('maintenance')}
+              className="mt-4 w-full py-2.5 rounded-xl bg-ios-red/10 text-ios-red font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity"
+            >
+              <Wrench size={16} /> Mark for Maintenance
+            </button>
+          )}
+
+          {room.status === RoomStatus.MAINTENANCE && (
+            <button
+              onClick={() => handleStatusAction('available')}
+              className="mt-4 w-full py-2.5 rounded-xl bg-ios-green/10 text-ios-green font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity"
+            >
+              <CheckCircle size={16} /> Mark as Available
+            </button>
+          )}
         </>
       )}
     </div>

@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { useRoomContext } from '../context/RoomContext';
 import { useGuestContext } from '../context/GuestContext';
 import { useReservationContext } from '../context/ReservationContext';
-import { type Room } from '../domain/Room';
+import { type Room, RoomStatus } from '../domain/Room';
 import { type Guest } from '../domain/Guest';
 import { type Reservation } from '../domain/Reservation';
 
@@ -39,8 +39,8 @@ export function useToday() {
     return {
       arrivals,
       departures,
-      occupiedCount: rooms.filter(r => r.status === 'Occupied').length,
-      cleaningCount: rooms.filter(r => r.status === 'Cleaning').length,
+      occupiedCount: rooms.filter(r => r.status === RoomStatus.OCCUPIED).length,
+      cleaningCount: rooms.filter(r => r.status === RoomStatus.CLEANING).length,
       rooms,
       guests,
       timeline,

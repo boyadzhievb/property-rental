@@ -1,4 +1,4 @@
-import { Room, type RoomData } from '../domain/Room';
+import { Room, type RoomData, type RoomStatusAction } from '../domain/Room';
 import { RoomSchema } from '../schemas/RoomSchema';
 import { roomRepository } from '../repositories/RoomRepository';
 
@@ -26,15 +26,14 @@ export class RoomService {
     return roomRepository.save(room);
   }
 
-  async updateRoomStatus(id: string, action: 'occupy' | 'vacate' | 'cleaning' | 'maintenance'): Promise<Room | null> {
+  async updateRoomStatus(id: string, action: RoomStatusAction): Promise<Room> {
     const room = await roomRepository.getById(id);
-    if (!room) return null;
+    if (!room) throw new Error('Room not found');
 
     switch (action) {
-      case 'occupy': room.occupy(); break;
-      case 'vacate': room.vacate(); break;
-      case 'cleaning': room.markCleaning(); break;
+      case 'clean': room.vacate(); break;
       case 'maintenance': room.markMaintenance(); break;
+      case 'available': room.markAvailable(); break;
     }
 
     return roomRepository.save(room);
