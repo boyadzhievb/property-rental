@@ -140,6 +140,20 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
 
     setSubmitting(true);
     try {
+      const room = rooms.find(r => r.id === form.roomId);
+      if (room && form.guestsCount > room.maxGuests) {
+        setErrors({ guestsCount: `Guest count (${form.guestsCount}) exceeds room capacity (${room.maxGuests})` });
+        return;
+      }
+
+      const conflict = reservations.find(
+        r => r.roomId === form.roomId && r.isActive() && r.overlaps(form.checkIn, form.checkOut)
+      );
+      if (conflict) {
+        setErrors({ checkIn: `Room is already booked from ${conflict.arrivalDate} to ${conflict.departureDate}` });
+        return;
+      }
+
       let guestId = form.guestId;
 
       if (form.isNewGuest) {
