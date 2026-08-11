@@ -57,7 +57,8 @@ The app runs on the Vite dev server (default port 8443). On first launch, use th
 |----------------------|---------------------------------|
 | `npm run dev`        | Start Vite dev server           |
 | `npm run build`      | Production build                |
-| `npm test`           | Run tests                       |
+| `npm test`           | Run tests once                  |
+| `npm run test:watch` | Run tests in watch mode         |
 | `npm run format`     | Format code with oxfmt          |
 
 ## Project Structure

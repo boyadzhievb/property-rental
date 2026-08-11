@@ -1,18 +1,114 @@
-import { useState } from 'react';
-import { Settings as SettingsIcon, Bell, Cloud, RotateCcw, Palette, Check } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Download, Upload, RotateCcw, Palette, Check } from 'lucide-react';
 import { usePropertyContext } from '../../context/PropertyContext';
 import { useTheme, type ThemeMode } from '../../context/ThemeContext';
+import { useRoomContext } from '../../context/RoomContext';
+import { useGuestContext } from '../../context/GuestContext';
+import { useReservationContext } from '../../context/ReservationContext';
+import { exportBackup, importBackup, type BackupData } from '../../api/client';
 import { SettingsGroup, SettingsItem } from '../ui/SettingsGroup';
 import PageHeader from '../layout/PageHeader';
 
 const THEME_LABELS: Record<ThemeMode, string> = { light: 'Light', dark: 'Dark', system: 'System' };
 
+function validateBackupFormat(data: unknown): { valid: boolean; error?: string; data?: BackupData } {
+  if (data === null || typeof data !== 'object') {
+    return { valid: false, error: 'Invalid file: not a JSON object' };
+  }
+
+  const obj = data as Record<string, unknown>;
+
+  if (obj.rooms !== undefined && !Array.isArray(obj.rooms)) {
+    return { valid: false, error: 'Invalid format: "rooms" must be an array' };
+  }
+  if (obj.guests !== undefined && !Array.isArray(obj.guests)) {
+    return { valid: false, error: 'Invalid format: "guests" must be an array' };
+  }
+  if (obj.reservations !== undefined && !Array.isArray(obj.reservations)) {
+    return { valid: false, error: 'Invalid format: "reservations" must be an array' };
+  }
+  if (obj.settings !== undefined && (typeof obj.settings !== 'object' || obj.settings === null)) {
+    return { valid: false, error: 'Invalid format: "settings" must be an object' };
+  }
+
+  if (!obj.rooms && !obj.guests && !obj.reservations && !obj.settings) {
+    return { valid: false, error: 'Invalid backup: file contains no recognizable data (rooms, guests, reservations, or settings)' };
+  }
+
+  return { valid: true, data: obj as BackupData };
+}
+
 export default function SettingsView() {
   const { propertyName, updateName, resetData } = usePropertyContext();
   const { mode, setMode } = useTheme();
+  const { refresh: refreshRooms } = useRoomContext();
+  const { refresh: refreshGuests } = useGuestContext();
+  const { refresh: refreshReservations } = useReservationContext();
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(propertyName);
   const [showThemePicker, setShowThemePicker] = useState(false);
+  const [restoreStatus, setRestoreStatus] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBackup = async () => {
+    try {
+      const data = await exportBackup();
+      const json = JSON.stringify(data, null, 2);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `property-backup-${timestamp}.json`;
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setRestoreStatus('Failed to export backup');
+    }
+  };
+
+  const handleRestore = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json')) {
+      setRestoreStatus('Error: file must be a .json file');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        setRestoreStatus('Error: file is not valid JSON');
+        e.target.value = '';
+        return;
+      }
+
+      const result = validateBackupFormat(parsed);
+      if (!result.valid) {
+        setRestoreStatus(`Error: ${result.error}`);
+        e.target.value = '';
+        return;
+      }
+
+      await importBackup(result.data!);
+      await Promise.all([refreshRooms(), refreshGuests(), refreshReservations()]);
+      setRestoreStatus('Backup restored successfully');
+    } catch {
+      setRestoreStatus('Error: failed to restore backup');
+    }
+
+    e.target.value = '';
+  };
 
   return (
     <div className="pb-24">
@@ -56,8 +152,6 @@ export default function SettingsView() {
         </SettingsGroup>
 
         <SettingsGroup title="Preferences">
-          <SettingsItem icon={SettingsIcon} label="Property Details" color="bg-ios-gray" />
-          <SettingsItem icon={Bell} label="Notifications" color="bg-ios-red" />
           <div onClick={() => setShowThemePicker(!showThemePicker)}>
             <SettingsItem icon={Palette} label="Appearance" color="bg-ios-blue" value={THEME_LABELS[mode]} />
           </div>
@@ -81,11 +175,33 @@ export default function SettingsView() {
         </SettingsGroup>
 
         <SettingsGroup title="Data">
-          <SettingsItem icon={Cloud} label="Backup & Restore" color="bg-ios-blue" value="Yesterday" />
+          <div onClick={handleBackup}>
+            <SettingsItem icon={Download} label="Export Backup" color="bg-ios-blue" />
+          </div>
+          <div onClick={handleRestore}>
+            <SettingsItem icon={Upload} label="Restore Backup" color="bg-ios-green" />
+          </div>
           <div onClick={() => { if (confirm('This will download a backup and then erase all data. Continue?')) resetData(); }}>
             <SettingsItem icon={RotateCcw} label="Reset Data" color="bg-ios-red" />
           </div>
         </SettingsGroup>
+
+        {restoreStatus && (
+          <div className={`mt-4 px-4 py-3 rounded-2xl text-sm font-medium ${
+            restoreStatus.startsWith('Error') ? 'bg-red-50 text-ios-red' : 'bg-green-50 text-green-700'
+          }`}>
+            {restoreStatus}
+            <button onClick={() => setRestoreStatus(null)} className="float-right text-ios-text-secondary">✕</button>
+          </div>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
       </div>
     </div>
   );
