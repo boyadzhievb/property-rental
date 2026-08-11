@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { format, addDays, subDays, startOfWeek, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, LogIn, LogOut } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogIn, LogOut, X, XCircle } from 'lucide-react';
 import { useCalendar } from '../../hooks/useCalendar';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
 import { reservationService } from '../../services/ReservationService';
+import { type Reservation } from '../../domain/Reservation';
+import { type Room } from '../../domain/Room';
+import { type Guest } from '../../domain/Guest';
 import PageHeader from '../layout/PageHeader';
 import CalendarRow from './CalendarRow';
 
@@ -14,26 +17,45 @@ export default function CalendarView() {
   const { data, loading, refresh: refreshCalendar } = useCalendar(weekStart);
   const { refresh: refreshReservations } = useReservationContext();
   const { refresh: refreshRooms } = useRoomContext();
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const days = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
 
-  const handleCheckIn = async (id: string) => {
-    setLoadingId(id);
+  const refreshAll = () => Promise.all([refreshCalendar(), refreshReservations(), refreshRooms()]);
+
+  const handleCheckIn = async () => {
+    if (!selectedReservation) return;
+    setActionLoading(true);
     try {
-      await reservationService.checkIn(id);
-      await Promise.all([refreshCalendar(), refreshReservations(), refreshRooms()]);
+      await reservationService.checkIn(selectedReservation.id);
+      await refreshAll();
+      setSelectedReservation(null);
     } finally {
-      setLoadingId(null);
+      setActionLoading(false);
     }
   };
 
-  const handleCheckOut = async (id: string) => {
-    setLoadingId(id);
+  const handleCheckOut = async () => {
+    if (!selectedReservation) return;
+    setActionLoading(true);
     try {
-      await reservationService.checkOut(id);
-      await Promise.all([refreshCalendar(), refreshReservations(), refreshRooms()]);
+      await reservationService.checkOut(selectedReservation.id);
+      await refreshAll();
+      setSelectedReservation(null);
     } finally {
-      setLoadingId(null);
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!selectedReservation) return;
+    setActionLoading(true);
+    try {
+      await reservationService.cancel(selectedReservation.id);
+      await refreshAll();
+      setSelectedReservation(null);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -45,6 +67,13 @@ export default function CalendarView() {
       </div>
     );
   }
+
+  const selectedGuest = selectedReservation
+    ? data.guests.find((g: Guest) => g.id === selectedReservation.guestId)
+    : null;
+  const selectedRoom = selectedReservation
+    ? data.rooms.find((r: Room) => r.id === selectedReservation.roomId)
+    : null;
 
   return (
     <div className="pb-24">
@@ -71,7 +100,7 @@ export default function CalendarView() {
         }
       />
 
-      <div className="px-5 space-y-6">
+      <div className="px-5">
         <div className="bg-ios-card rounded-3xl shadow-sm border border-black/[0.04] overflow-hidden">
           <div className="flex border-b border-ios-border/40">
             <div className="w-20 flex-shrink-0 border-r border-ios-border/40 p-3 bg-ios-bg/30"></div>
@@ -97,72 +126,102 @@ export default function CalendarView() {
                 guests={data.guests}
                 weekStart={weekStart}
                 days={days}
+                onReservationClick={setSelectedReservation}
               />
             ))}
           </div>
         </div>
+      </div>
 
-        <div>
-          <h3 className="text-xl font-bold mb-4">Reservations</h3>
-          <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
-            {data.reservations.length === 0 ? (
-              <div className="p-8 text-center text-ios-text-secondary">
-                No reservations this week.
+      {selectedReservation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedReservation(null)} />
+          <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
+            <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
+              <h3 className="text-lg font-bold text-ios-text">Reservation</h3>
+              <button
+                onClick={() => setSelectedReservation(null)}
+                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-3">
+              <div>
+                <div className="text-sm text-ios-text-secondary">Guest</div>
+                <div className="font-semibold text-ios-text">{selectedGuest?.name}</div>
               </div>
-            ) : (
-              <div className="divide-y divide-ios-border/40">
-                {data.reservations.map(res => {
-                  const guest = data.guests.find(g => g.id === res.guestId);
-                  const room = data.rooms.find(r => r.id === res.roomId);
-                  const canCheckIn = res.status === 'Confirmed';
-                  const canCheckOut = res.status === 'Checked In';
-
-                  return (
-                    <div key={res.id} className="flex items-center p-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-ios-text truncate">{guest?.name}</div>
-                        <div className="text-sm text-ios-text-secondary truncate">
-                          {room?.name} · {res.arrivalDate} → {res.departureDate}
-                        </div>
-                        <div className={`text-xs font-semibold mt-0.5 ${
-                          res.status === 'Confirmed' ? 'text-ios-blue' :
-                          res.status === 'Checked In' ? 'text-ios-green' :
-                          res.status === 'Checked Out' ? 'text-ios-orange' :
-                          'text-ios-red'
-                        }`}>
-                          {res.status}
-                        </div>
-                      </div>
-
-                      {canCheckIn && (
-                        <button
-                          onClick={() => handleCheckIn(res.id)}
-                          disabled={loadingId === res.id}
-                          className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-blue text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
-                        >
-                          <LogIn size={14} />
-                          Check In
-                        </button>
-                      )}
-
-                      {canCheckOut && (
-                        <button
-                          onClick={() => handleCheckOut(res.id)}
-                          disabled={loadingId === res.id}
-                          className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-orange text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
-                        >
-                          <LogOut size={14} />
-                          Check Out
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
+              <div>
+                <div className="text-sm text-ios-text-secondary">Room</div>
+                <div className="font-semibold text-ios-text">{selectedRoom?.name}</div>
               </div>
-            )}
+              <div className="flex gap-4">
+                <div>
+                  <div className="text-sm text-ios-text-secondary">Arrival</div>
+                  <div className="font-semibold text-ios-text">{selectedReservation.arrivalDate}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-ios-text-secondary">Departure</div>
+                  <div className="font-semibold text-ios-text">{selectedReservation.departureDate}</div>
+                </div>
+              </div>
+              <div>
+                <div className="text-sm text-ios-text-secondary">Status</div>
+                <div className={`font-semibold ${
+                  selectedReservation.status === 'Confirmed' ? 'text-ios-blue' :
+                  selectedReservation.status === 'Checked In' ? 'text-ios-green' :
+                  selectedReservation.status === 'Checked Out' ? 'text-ios-orange' :
+                  'text-ios-red'
+                }`}>
+                  {selectedReservation.status}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-ios-border/40 space-y-3">
+              {selectedReservation.status === 'Confirmed' && (
+                <button
+                  onClick={handleCheckIn}
+                  disabled={actionLoading}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                >
+                  <LogIn size={18} />
+                  Check In
+                </button>
+              )}
+
+              {selectedReservation.status === 'Checked In' && (
+                <button
+                  onClick={handleCheckOut}
+                  disabled={actionLoading}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-ios-orange text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                >
+                  <LogOut size={18} />
+                  Check Out
+                </button>
+              )}
+
+              {(selectedReservation.status === 'Confirmed' || selectedReservation.status === 'Checked In') && (
+                <button
+                  onClick={handleCancel}
+                  disabled={actionLoading}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-ios-red/10 text-ios-red font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                >
+                  <XCircle size={18} />
+                  Cancel Reservation
+                </button>
+              )}
+
+              {(selectedReservation.status === 'Checked Out' || selectedReservation.status === 'Cancelled') && (
+                <div className="text-center text-ios-text-secondary text-sm py-2">
+                  No actions available — reservation is {selectedReservation.status.toLowerCase()}.
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

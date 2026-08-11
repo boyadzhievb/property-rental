@@ -9,9 +9,10 @@ interface CalendarRowProps {
   guests: Guest[];
   weekStart: Date;
   days: Date[];
+  onReservationClick?: (reservation: Reservation) => void;
 }
 
-export default function CalendarRow({ room, reservations, guests, weekStart, days }: CalendarRowProps) {
+export default function CalendarRow({ room, reservations, guests, weekStart, days, onReservationClick }: CalendarRowProps) {
   const roomReservations = reservations.filter(r => r.roomId === room.id);
 
   return (
@@ -35,10 +36,21 @@ export default function CalendarRow({ room, reservations, guests, weekStart, day
           const span = actualEnd - actualStart;
           if (span <= 0) return null;
 
+          const barColor = res.status === 'Checked In' ? 'bg-ios-green/15 border-ios-green/30'
+            : res.status === 'Checked Out' ? 'bg-ios-orange/15 border-ios-orange/30'
+            : res.status === 'Cancelled' ? 'bg-ios-red/15 border-ios-red/30'
+            : 'bg-ios-blue/15 border-ios-blue/30';
+
+          const textColor = res.status === 'Checked In' ? 'text-ios-green'
+            : res.status === 'Checked Out' ? 'text-ios-orange'
+            : res.status === 'Cancelled' ? 'text-ios-red'
+            : 'text-ios-blue';
+
           return (
             <div
               key={res.id}
-              className="absolute top-2 bottom-2 rounded-xl bg-ios-blue/15 border border-ios-blue/30 px-3 py-1 overflow-hidden flex items-center"
+              onClick={() => onReservationClick?.(res)}
+              className={`absolute top-2 bottom-2 rounded-xl ${barColor} border px-3 py-1 overflow-hidden flex items-center cursor-pointer active:scale-[0.98] transition-transform`}
               style={{
                 left: `${(actualStart / 7) * 100}%`,
                 width: `${(span / 7) * 100}%`,
@@ -46,7 +58,7 @@ export default function CalendarRow({ room, reservations, guests, weekStart, day
                 marginRight: '4px'
               }}
             >
-              <div className="text-xs font-semibold text-ios-blue truncate">{guest?.name}</div>
+              <div className={`text-xs font-semibold ${textColor} truncate`}>{guest?.name}</div>
             </div>
           );
         })}
