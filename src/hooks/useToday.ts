@@ -28,8 +28,8 @@ export function useToday() {
     if (loading) return null;
 
     const todayStr = format(new Date(), 'yyyy-MM-dd');
-    const arrivals = reservations.filter(r => r.arrivalDate === todayStr);
-    const departures = reservations.filter(r => r.departureDate === todayStr);
+    const arrivals = reservations.filter(r => r.arrivalDate === todayStr && r.status === 'Confirmed');
+    const departures = reservations.filter(r => r.departureDate === todayStr && r.status === 'Checked In');
 
     const timeline = [
       ...arrivals.map(r => ({ type: 'Arrival', reservation: r, time: '14:00' })),
