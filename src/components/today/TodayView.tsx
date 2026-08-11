@@ -132,22 +132,18 @@ export default function TodayView() {
                       <div key={i} className="flex items-center p-4">
                         <div className="flex-shrink-0 w-16 text-right mr-4">
                           <div className="font-medium text-ios-text">{event.time}</div>
-                          <div className={`text-xs font-semibold ${isArrival ? 'text-ios-blue' : 'text-ios-orange'}`}>
-                            {event.type}
+                          <div className={`text-xs font-semibold ${
+                            event.reservation.status === 'Checked In' ? 'text-ios-green' :
+                            event.reservation.status === 'Checked Out' ? 'text-ios-orange' :
+                            isArrival ? 'text-ios-blue' : 'text-ios-orange'
+                          }`}>
+                            {event.reservation.status === 'Confirmed' ? event.type : event.reservation.status}
                           </div>
                         </div>
 
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-ios-text truncate">{guest?.name}</div>
                           <div className="text-sm text-ios-text-secondary truncate">{room?.name}</div>
-                          <div className={`text-xs font-semibold mt-0.5 ${
-                            event.reservation.status === 'Confirmed' ? 'text-ios-blue' :
-                            event.reservation.status === 'Checked In' ? 'text-ios-green' :
-                            event.reservation.status === 'Checked Out' ? 'text-ios-orange' :
-                            'text-ios-red'
-                          }`}>
-                            {event.reservation.status}
-                          </div>
                         </div>
 
                         {canCheckIn && (
