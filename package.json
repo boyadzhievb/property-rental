@@ -8,8 +8,6 @@
   },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "dev:api": "cd server && npx tsx watch index.ts",
-    "db:seed": "cd server && npx tsx seed.ts",
     "build": "vite build",
     "preview": "vite preview",
     "format": "oxfmt",
