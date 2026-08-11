@@ -86,7 +86,7 @@ function validateStayStep(form: FormData): FormErrors {
 export default function NewReservationModal({ onClose }: { onClose: () => void }) {
   const { rooms, refresh: refreshRooms } = useRooms();
   const { guests } = useGuests();
-  const { refresh: refreshReservations } = useReservationContext();
+  const { reservations, refresh: refreshReservations } = useReservationContext();
   const { refresh: refreshGuests } = useGuestContext();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -220,6 +220,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
           ) : (
             <StayDetailsStep
               rooms={rooms}
+              reservations={reservations}
               roomId={form.roomId}
               checkIn={form.checkIn}
               checkOut={form.checkOut}

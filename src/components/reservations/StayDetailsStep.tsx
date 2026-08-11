@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react';
 import { type Room } from '../../domain/Room';
+import { type Reservation } from '../../domain/Reservation';
 
 interface FormErrors {
   roomId?: string;
@@ -10,6 +11,7 @@ interface FormErrors {
 
 interface StayDetailsStepProps {
   rooms: Room[];
+  reservations: Reservation[];
   roomId: string;
   checkIn: string;
   checkOut: string;
@@ -19,8 +21,10 @@ interface StayDetailsStepProps {
   onUpdate: (field: string, value: string | number) => void;
 }
 
-export default function StayDetailsStep({ rooms, roomId, checkIn, checkOut, guestsCount, price, errors, onUpdate }: StayDetailsStepProps) {
-  const availableRooms = rooms.filter(room => room.isAvailable());
+export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, checkOut, guestsCount, price, errors, onUpdate }: StayDetailsStepProps) {
+  const occupiedDates = reservations
+    .filter(r => r.roomId === roomId && r.isActive())
+    .sort((a, b) => a.arrivalDate.localeCompare(b.arrivalDate));
 
   return (
     <div className="space-y-6">
@@ -31,10 +35,7 @@ export default function StayDetailsStep({ rooms, roomId, checkIn, checkOut, gues
           <div>
             <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold px-4 pt-3">Room</div>
             <div className="px-4 pb-3 pt-2 flex flex-wrap gap-2">
-              {availableRooms.length === 0 && (
-                <span className="text-sm text-ios-text-secondary">No available rooms</span>
-              )}
-              {availableRooms.map(room => (
+              {rooms.map(room => (
                 <button
                   key={room.id}
                   onClick={() => onUpdate('roomId', room.id)}
@@ -51,6 +52,19 @@ export default function StayDetailsStep({ rooms, roomId, checkIn, checkOut, gues
             </div>
             {errors.roomId && <div className="px-4 pb-2 text-xs text-ios-red">{errors.roomId}</div>}
           </div>
+
+          {roomId && occupiedDates.length > 0 && (
+            <div className="px-4 py-3">
+              <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold mb-2">Occupied Dates</div>
+              <div className="space-y-1">
+                {occupiedDates.map(r => (
+                  <div key={r.id} className="text-sm text-ios-red font-medium">
+                    {r.arrivalDate} → {r.departureDate}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col p-4">
             <div className="flex justify-between items-center mb-4">

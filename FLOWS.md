@@ -38,16 +38,17 @@ flowchart TD
     A[Start] --> B{Select or create guest?}
     B -->|Existing| C[Select guest from list]
     B -->|New| D[Fill guest details and create]
-    C --> E[Select room]
+    C --> E[Select room - all rooms visible]
     D --> E
-    E --> F{Room available?}
-    F -->|No| G[Reject: room not available]
-    F -->|Yes| H{Date overlap with active reservation?}
-    H -->|Yes| I[Reject: date conflict]
-    H -->|No| J{Guest count <= room max?}
-    J -->|No| K[Reject: exceeds capacity]
-    J -->|Yes| L[Create reservation - status: Confirmed]
+    E --> F[Select dates]
+    F --> G{Date overlap with active reservation for this room?}
+    G -->|Yes| H[Reject: date conflict]
+    G -->|No| I{Guest count <= room max?}
+    I -->|No| J[Reject: exceeds capacity]
+    I -->|Yes| K[Create reservation - status: Confirmed]
 ```
+
+- All rooms are shown regardless of current status, since a reservation can be for future dates after the current guest checks out.
 
 ## Check-In Flow
 
