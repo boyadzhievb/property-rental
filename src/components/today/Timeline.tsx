@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LogIn } from 'lucide-react';
+import { LogIn, LogOut } from 'lucide-react';
 import { type Reservation } from '../../domain/Reservation';
 import { type Room } from '../../domain/Room';
 import { type Guest } from '../../domain/Guest';
@@ -34,6 +34,16 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
     }
   };
 
+  const handleCheckOut = async (id: string) => {
+    setLoadingId(id);
+    try {
+      await reservationService.checkOut(id);
+      await Promise.all([refreshReservations(), refreshRooms()]);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
   return (
     <div>
       <h3 className="text-xl font-bold mb-4">Today's Schedule</h3>
@@ -48,7 +58,9 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
               const guest = guests.find(g => g.id === event.reservation.guestId);
               const room = rooms.find(r => r.id === event.reservation.roomId);
               const isArrival = event.type === 'Arrival';
+              const isDeparture = event.type === 'Departure';
               const canCheckIn = isArrival && event.reservation.status === 'Confirmed';
+              const canCheckOut = isDeparture && event.reservation.status === 'Checked In';
 
               return (
                 <div key={i} className="flex items-center p-4">
@@ -72,6 +84,17 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
                     >
                       <LogIn size={14} />
                       Check In
+                    </button>
+                  )}
+
+                  {canCheckOut && (
+                    <button
+                      onClick={() => handleCheckOut(event.reservation.id)}
+                      disabled={loadingId === event.reservation.id}
+                      className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-orange text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      <LogOut size={14} />
+                      Check Out
                     </button>
                   )}
                 </div>

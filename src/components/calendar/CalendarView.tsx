@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format, addDays, subDays, startOfWeek, isSameDay } from 'date-fns';
-import { ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogIn, LogOut } from 'lucide-react';
 import { useCalendar } from '../../hooks/useCalendar';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
@@ -21,6 +21,16 @@ export default function CalendarView() {
     setLoadingId(id);
     try {
       await reservationService.checkIn(id);
+      await Promise.all([refreshCalendar(), refreshReservations(), refreshRooms()]);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleCheckOut = async (id: string) => {
+    setLoadingId(id);
+    try {
+      await reservationService.checkOut(id);
       await Promise.all([refreshCalendar(), refreshReservations(), refreshRooms()]);
     } finally {
       setLoadingId(null);
@@ -105,6 +115,7 @@ export default function CalendarView() {
                   const guest = data.guests.find(g => g.id === res.guestId);
                   const room = data.rooms.find(r => r.id === res.roomId);
                   const canCheckIn = res.status === 'Confirmed';
+                  const canCheckOut = res.status === 'Checked In';
 
                   return (
                     <div key={res.id} className="flex items-center p-4">
@@ -131,6 +142,17 @@ export default function CalendarView() {
                         >
                           <LogIn size={14} />
                           Check In
+                        </button>
+                      )}
+
+                      {canCheckOut && (
+                        <button
+                          onClick={() => handleCheckOut(res.id)}
+                          disabled={loadingId === res.id}
+                          className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-orange text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                        >
+                          <LogOut size={14} />
+                          Check Out
                         </button>
                       )}
                     </div>

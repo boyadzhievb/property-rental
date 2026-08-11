@@ -1,15 +1,50 @@
+import { useState } from 'react';
 import { LogIn, LogOut, Home, SprayCan } from 'lucide-react';
 import { useToday } from '../../hooks/useToday';
 import { usePropertyContext } from '../../context/PropertyContext';
+import { useReservationContext } from '../../context/ReservationContext';
+import { useRoomContext } from '../../context/RoomContext';
+import { reservationService } from '../../services/ReservationService';
+import { RoomStatus } from '../../domain/Room';
 import PageHeader from '../layout/PageHeader';
 import StatCard from '../ui/StatCard';
 import Timeline from './Timeline';
 
+type StatFilter = 'arrivals' | 'departures' | 'occupied' | 'cleaning' | null;
+
 export default function TodayView() {
   const { data, loading } = useToday();
   const { propertyName } = usePropertyContext();
+  const { refresh: refreshReservations } = useReservationContext();
+  const { refresh: refreshRooms } = useRoomContext();
+  const [activeFilter, setActiveFilter] = useState<StatFilter>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const today = new Date();
   const localDate = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+
+  const toggleFilter = (filter: StatFilter) => {
+    setActiveFilter(prev => prev === filter ? null : filter);
+  };
+
+  const handleCheckIn = async (id: string) => {
+    setLoadingId(id);
+    try {
+      await reservationService.checkIn(id);
+      await Promise.all([refreshReservations(), refreshRooms()]);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleCheckOut = async (id: string) => {
+    setLoadingId(id);
+    try {
+      await reservationService.checkOut(id);
+      await Promise.all([refreshReservations(), refreshRooms()]);
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   if (loading || !data) {
     return (
@@ -20,17 +55,175 @@ export default function TodayView() {
     );
   }
 
+  const occupiedRooms = data.rooms.filter(r => r.status === RoomStatus.OCCUPIED);
+  const cleaningRooms = data.rooms.filter(r => r.status === RoomStatus.CLEANING);
+
   return (
     <div className="pb-24">
       <PageHeader title={propertyName} subtitle={localDate} />
 
       <div className="px-5 space-y-6">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-          <StatCard icon={<LogIn size={24} className="text-ios-blue" />} value={data.arrivals.length} label="Arrivals" />
-          <StatCard icon={<LogOut size={24} className="text-ios-orange" />} value={data.departures.length} label="Departures" />
-          <StatCard icon={<Home size={24} className="text-ios-red" />} value={data.occupiedCount} label="Occupied" />
-          <StatCard icon={<SprayCan size={24} className="text-ios-green" />} value={data.cleaningCount} label="Cleaning" />
+          <StatCard
+            icon={<LogIn size={24} className="text-ios-blue" />}
+            value={data.arrivals.length}
+            label="Arrivals"
+            active={activeFilter === 'arrivals'}
+            onClick={() => toggleFilter('arrivals')}
+          />
+          <StatCard
+            icon={<LogOut size={24} className="text-ios-orange" />}
+            value={data.departures.length}
+            label="Departures"
+            active={activeFilter === 'departures'}
+            onClick={() => toggleFilter('departures')}
+          />
+          <StatCard
+            icon={<Home size={24} className="text-ios-red" />}
+            value={occupiedRooms.length}
+            label="Occupied"
+            active={activeFilter === 'occupied'}
+            onClick={() => toggleFilter('occupied')}
+          />
+          <StatCard
+            icon={<SprayCan size={24} className="text-ios-green" />}
+            value={cleaningRooms.length}
+            label="Cleaning"
+            active={activeFilter === 'cleaning'}
+            onClick={() => toggleFilter('cleaning')}
+          />
         </div>
+
+        {activeFilter === 'arrivals' && (
+          <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
+            {data.arrivals.length === 0 ? (
+              <div className="p-8 text-center text-ios-text-secondary">No arrivals today.</div>
+            ) : (
+              <div className="divide-y divide-ios-border/40">
+                {data.arrivals.map(res => {
+                  const guest = data.guests.find(g => g.id === res.guestId);
+                  const room = data.rooms.find(r => r.id === res.roomId);
+                  const canCheckIn = res.status === 'Confirmed';
+
+                  return (
+                    <div key={res.id} className="flex items-center p-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-ios-text truncate">{guest?.name}</div>
+                        <div className="text-sm text-ios-text-secondary truncate">{room?.name}</div>
+                        <div className={`text-xs font-semibold mt-0.5 ${
+                          res.status === 'Confirmed' ? 'text-ios-blue' : 'text-ios-green'
+                        }`}>
+                          {res.status}
+                        </div>
+                      </div>
+                      {canCheckIn && (
+                        <button
+                          onClick={() => handleCheckIn(res.id)}
+                          disabled={loadingId === res.id}
+                          className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-blue text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                        >
+                          <LogIn size={14} />
+                          Check In
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeFilter === 'departures' && (
+          <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
+            {data.departures.length === 0 ? (
+              <div className="p-8 text-center text-ios-text-secondary">No departures today.</div>
+            ) : (
+              <div className="divide-y divide-ios-border/40">
+                {data.departures.map(res => {
+                  const guest = data.guests.find(g => g.id === res.guestId);
+                  const room = data.rooms.find(r => r.id === res.roomId);
+                  const canCheckOut = res.status === 'Checked In';
+
+                  return (
+                    <div key={res.id} className="flex items-center p-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-ios-text truncate">{guest?.name}</div>
+                        <div className="text-sm text-ios-text-secondary truncate">{room?.name}</div>
+                        <div className={`text-xs font-semibold mt-0.5 ${
+                          res.status === 'Checked In' ? 'text-ios-green' : 'text-ios-orange'
+                        }`}>
+                          {res.status}
+                        </div>
+                      </div>
+                      {canCheckOut && (
+                        <button
+                          onClick={() => handleCheckOut(res.id)}
+                          disabled={loadingId === res.id}
+                          className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-orange text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                        >
+                          <LogOut size={14} />
+                          Check Out
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeFilter === 'occupied' && (
+          <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
+            {occupiedRooms.length === 0 ? (
+              <div className="p-8 text-center text-ios-text-secondary">No occupied rooms.</div>
+            ) : (
+              <div className="divide-y divide-ios-border/40">
+                {occupiedRooms.map(room => {
+                  const res = data.arrivals.find(r => r.roomId === room.id && r.status === 'Checked In')
+                    || data.departures.find(r => r.roomId === room.id && r.status === 'Checked In');
+                  const guest = res ? data.guests.find(g => g.id === res.guestId) : null;
+
+                  return (
+                    <div key={room.id} className="flex items-center p-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-ios-text truncate">{room.name}</div>
+                        {guest && (
+                          <div className="text-sm text-ios-text-secondary truncate">{guest.name}</div>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0 ml-3 px-2.5 py-1 bg-ios-red/10 text-ios-red text-xs font-semibold rounded-full">
+                        Occupied
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeFilter === 'cleaning' && (
+          <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
+            {cleaningRooms.length === 0 ? (
+              <div className="p-8 text-center text-ios-text-secondary">No rooms being cleaned.</div>
+            ) : (
+              <div className="divide-y divide-ios-border/40">
+                {cleaningRooms.map(room => (
+                  <div key={room.id} className="flex items-center p-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-ios-text truncate">{room.name}</div>
+                    </div>
+                    <div className="flex-shrink-0 ml-3 px-2.5 py-1 bg-ios-green/10 text-ios-green text-xs font-semibold rounded-full">
+                      Cleaning
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <Timeline events={data.timeline} rooms={data.rooms} guests={data.guests} />
       </div>
