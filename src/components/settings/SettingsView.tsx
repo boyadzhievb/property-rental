@@ -1,15 +1,15 @@
 import { useState, useRef } from 'react';
-import { Download, Upload, RotateCcw, Palette, Check } from 'lucide-react';
+import { Download, Upload, RotateCcw, Palette, Check, Globe } from 'lucide-react';
 import { usePropertyContext } from '../../context/PropertyContext';
 import { useTheme, type ThemeMode } from '../../context/ThemeContext';
+import { useLocale } from '../../context/LocaleContext';
+import { LOCALE_LABELS, type Locale } from '../../i18n';
 import { useRoomContext } from '../../context/RoomContext';
 import { useGuestContext } from '../../context/GuestContext';
 import { useReservationContext } from '../../context/ReservationContext';
 import { exportBackup, importBackup, type BackupData } from '../../api/client';
 import { SettingsGroup, SettingsItem } from '../ui/SettingsGroup';
 import PageHeader from '../layout/PageHeader';
-
-const THEME_LABELS: Record<ThemeMode, string> = { light: 'Light', dark: 'Dark', system: 'System' };
 
 function validateBackupFormat(data: unknown): { valid: boolean; error?: string; data?: BackupData } {
   if (data === null || typeof data !== 'object') {
@@ -41,14 +41,18 @@ function validateBackupFormat(data: unknown): { valid: boolean; error?: string; 
 export default function SettingsView() {
   const { propertyName, updateName, resetData } = usePropertyContext();
   const { mode, setMode } = useTheme();
+  const { locale, setLocale, t } = useLocale();
   const { refresh: refreshRooms } = useRoomContext();
   const { refresh: refreshGuests } = useGuestContext();
   const { refresh: refreshReservations } = useReservationContext();
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(propertyName);
   const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   const [restoreStatus, setRestoreStatus] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const THEME_LABELS: Record<ThemeMode, string> = { light: t.light, dark: t.dark, system: t.system };
 
   const handleBackup = async () => {
     try {
@@ -112,7 +116,7 @@ export default function SettingsView() {
 
   return (
     <div className="pb-24">
-      <PageHeader title="Settings" />
+      <PageHeader title={t.settings} />
 
       <div className="px-5 max-w-screen-md mx-auto">
         <SettingsGroup>
@@ -146,14 +150,14 @@ export default function SettingsView() {
               ) : (
                 <div className="text-xl font-bold text-ios-text">{propertyName}</div>
               )}
-              <div className="text-sm text-ios-text-secondary">Owner Account</div>
+              <div className="text-sm text-ios-text-secondary">{t.ownerAccount}</div>
             </div>
           </div>
         </SettingsGroup>
 
-        <SettingsGroup title="Preferences">
+        <SettingsGroup title={t.preferences}>
           <div onClick={() => setShowThemePicker(!showThemePicker)}>
-            <SettingsItem icon={Palette} label="Appearance" color="bg-ios-blue" value={THEME_LABELS[mode]} />
+            <SettingsItem icon={Palette} label={t.appearance} color="bg-ios-blue" value={THEME_LABELS[mode]} />
           </div>
           {showThemePicker && (
             <div className="px-4 py-3 flex gap-2">
@@ -172,17 +176,38 @@ export default function SettingsView() {
               ))}
             </div>
           )}
+
+          <div onClick={() => setShowLanguagePicker(!showLanguagePicker)}>
+            <SettingsItem icon={Globe} label={t.language} color="bg-ios-green" value={LOCALE_LABELS[locale]} />
+          </div>
+          {showLanguagePicker && (
+            <div className="px-4 py-3 grid grid-cols-2 gap-2">
+              {(Object.keys(LOCALE_LABELS) as Locale[]).map(loc => (
+                <button
+                  key={loc}
+                  onClick={() => { setLocale(loc); setShowLanguagePicker(false); }}
+                  className={`py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                    locale === loc
+                      ? 'bg-ios-green text-white'
+                      : 'bg-ios-gray-light text-ios-text'
+                  }`}
+                >
+                  {LOCALE_LABELS[loc]}
+                </button>
+              ))}
+            </div>
+          )}
         </SettingsGroup>
 
-        <SettingsGroup title="Data">
+        <SettingsGroup title={t.data}>
           <div onClick={handleBackup}>
-            <SettingsItem icon={Download} label="Export Backup" color="bg-ios-blue" />
+            <SettingsItem icon={Download} label={t.exportBackup} color="bg-ios-blue" />
           </div>
           <div onClick={handleRestore}>
-            <SettingsItem icon={Upload} label="Restore Backup" color="bg-ios-green" />
+            <SettingsItem icon={Upload} label={t.restoreBackup} color="bg-ios-green" />
           </div>
-          <div onClick={() => { if (confirm('This will download a backup and then erase all data. Continue?')) resetData(); }}>
-            <SettingsItem icon={RotateCcw} label="Reset Data" color="bg-ios-red" />
+          <div onClick={() => { if (confirm(t.resetConfirm)) resetData(); }}>
+            <SettingsItem icon={RotateCcw} label={t.resetData} color="bg-ios-red" />
           </div>
         </SettingsGroup>
 

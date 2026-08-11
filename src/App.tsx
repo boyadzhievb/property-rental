@@ -5,6 +5,7 @@ import { GuestProvider, useGuestContext } from './context/GuestContext';
 import { ReservationProvider, useReservationContext } from './context/ReservationContext';
 import { PropertyProvider, usePropertyContext } from './context/PropertyContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { LocaleProvider, useLocale } from './context/LocaleContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import ErrorBanner from './components/ui/ErrorBanner';
 import TodayView from './components/today/TodayView';
@@ -17,14 +18,6 @@ import NewReservationModal from './components/reservations/NewReservationModal';
 import TabBar from './components/layout/TabBar';
 
 type Tab = 'today' | 'calendar' | 'rooms' | 'guests' | 'settings';
-
-const NAV_ITEMS = [
-  { id: 'today', label: 'Today', icon: LayoutGrid },
-  { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'rooms', label: 'Rooms', icon: Home },
-  { id: 'guests', label: 'Guests', icon: Users },
-  { id: 'settings', label: 'Settings', icon: SettingsIcon },
-];
 
 function ErrorMessages() {
   const { error: propertyError, clearError: clearPropertyError } = usePropertyContext();
@@ -52,8 +45,17 @@ function ErrorMessages() {
 
 function AppContent() {
   const { isConfigured, loading, configureApp, seedData, importData } = usePropertyContext();
+  const { t } = useLocale();
   const [activeTab, setActiveTab] = useState<Tab>('today');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const NAV_ITEMS = [
+    { id: 'today', label: t.today, icon: LayoutGrid },
+    { id: 'calendar', label: t.calendar, icon: Calendar },
+    { id: 'rooms', label: t.rooms, icon: Home },
+    { id: 'guests', label: t.guests, icon: Users },
+    { id: 'settings', label: t.settings, icon: SettingsIcon },
+  ];
 
   if (loading) {
     return (
@@ -117,10 +119,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <PropertyProvider>
-        <AppContent />
-      </PropertyProvider>
-    </ThemeProvider>
+    <LocaleProvider>
+      <ThemeProvider>
+        <PropertyProvider>
+          <AppContent />
+        </PropertyProvider>
+      </ThemeProvider>
+    </LocaleProvider>
   );
 }

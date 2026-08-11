@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, LogIn, LogOut, X, XCircle } from 'lucide-rea
 import { useCalendar } from '../../hooks/useCalendar';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
+import { useLocale } from '../../context/LocaleContext';
 import { reservationService } from '../../services/ReservationService';
 import { type Reservation } from '../../domain/Reservation';
 import { type Room } from '../../domain/Room';
@@ -17,6 +18,7 @@ export default function CalendarView() {
   const { data, loading, refresh: refreshCalendar } = useCalendar(weekStart);
   const { refresh: refreshReservations } = useReservationContext();
   const { refresh: refreshRooms } = useRoomContext();
+  const { t } = useLocale();
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const days = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
@@ -62,8 +64,8 @@ export default function CalendarView() {
   if (loading || !data) {
     return (
       <div className="pb-24">
-        <PageHeader title="Calendar" />
-        <div className="px-5 text-center text-ios-text-secondary py-12">Loading...</div>
+        <PageHeader title={t.calendar} />
+        <div className="px-5 text-center text-ios-text-secondary py-12">{t.loading}</div>
       </div>
     );
   }
@@ -78,7 +80,7 @@ export default function CalendarView() {
   return (
     <div className="pb-24">
       <PageHeader
-        title="Calendar"
+        title={t.calendar}
         right={
           <div className="flex items-center gap-3">
             <button
@@ -138,7 +140,7 @@ export default function CalendarView() {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedReservation(null)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
-              <h3 className="text-lg font-bold text-ios-text">Reservation</h3>
+              <h3 className="text-lg font-bold text-ios-text">{t.reservation}</h3>
               <button
                 onClick={() => setSelectedReservation(null)}
                 className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
@@ -149,32 +151,35 @@ export default function CalendarView() {
 
             <div className="p-5 space-y-3">
               <div>
-                <div className="text-sm text-ios-text-secondary">Guest</div>
+                <div className="text-sm text-ios-text-secondary">{t.guest}</div>
                 <div className="font-semibold text-ios-text">{selectedGuest?.name}</div>
               </div>
               <div>
-                <div className="text-sm text-ios-text-secondary">Room</div>
+                <div className="text-sm text-ios-text-secondary">{t.room}</div>
                 <div className="font-semibold text-ios-text">{selectedRoom?.name}</div>
               </div>
               <div className="flex gap-4">
                 <div>
-                  <div className="text-sm text-ios-text-secondary">Arrival</div>
+                  <div className="text-sm text-ios-text-secondary">{t.arrival}</div>
                   <div className="font-semibold text-ios-text">{selectedReservation.arrivalDate}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-ios-text-secondary">Departure</div>
+                  <div className="text-sm text-ios-text-secondary">{t.departure}</div>
                   <div className="font-semibold text-ios-text">{selectedReservation.departureDate}</div>
                 </div>
               </div>
               <div>
-                <div className="text-sm text-ios-text-secondary">Status</div>
+                <div className="text-sm text-ios-text-secondary">{t.status}</div>
                 <div className={`font-semibold ${
                   selectedReservation.status === 'Confirmed' ? 'text-ios-blue' :
                   selectedReservation.status === 'Checked In' ? 'text-ios-green' :
                   selectedReservation.status === 'Checked Out' ? 'text-ios-orange' :
                   'text-ios-red'
                 }`}>
-                  {selectedReservation.status}
+                  {selectedReservation.status === 'Confirmed' ? t.confirmed :
+                   selectedReservation.status === 'Checked In' ? t.checkedIn :
+                   selectedReservation.status === 'Checked Out' ? t.checkedOut :
+                   t.cancelled}
                 </div>
               </div>
             </div>
@@ -187,7 +192,7 @@ export default function CalendarView() {
                   className="w-full flex items-center justify-center gap-2 py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   <LogIn size={18} />
-                  Check In
+                  {t.checkIn}
                 </button>
               )}
 
@@ -198,7 +203,7 @@ export default function CalendarView() {
                   className="w-full flex items-center justify-center gap-2 py-3 bg-ios-orange text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   <LogOut size={18} />
-                  Check Out
+                  {t.checkOut}
                 </button>
               )}
 
@@ -209,13 +214,13 @@ export default function CalendarView() {
                   className="w-full flex items-center justify-center gap-2 py-3 bg-ios-red/10 text-ios-red font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   <XCircle size={18} />
-                  Cancel Reservation
+                  {t.cancelReservation}
                 </button>
               )}
 
               {(selectedReservation.status === 'Checked Out' || selectedReservation.status === 'Cancelled') && (
                 <div className="text-center text-ios-text-secondary text-sm py-2">
-                  No actions available — reservation is {selectedReservation.status.toLowerCase()}.
+                  {t.noActionsAvailable} {selectedReservation.status === 'Checked Out' ? t.checkedOut.toLowerCase() : t.cancelled.toLowerCase()}.
                 </div>
               )}
             </div>
