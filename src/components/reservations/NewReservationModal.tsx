@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ZodError } from 'zod';
 import { useRooms } from '../../hooks/useRooms';
+import { useGuests } from '../../hooks/useGuests';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useGuestContext } from '../../context/GuestContext';
 import { reservationService } from '../../services/ReservationService';
@@ -11,6 +12,8 @@ import GuestInfoStep from './GuestInfoStep';
 import StayDetailsStep from './StayDetailsStep';
 
 interface FormData {
+  guestId: string;
+  isNewGuest: boolean;
   guestName: string;
   phone: string;
   email: string;
@@ -23,26 +26,38 @@ interface FormData {
 
 type FormErrors = Partial<Record<string, string>>;
 
-function validateForm(form: FormData): FormErrors {
+function validateGuestStep(form: FormData): FormErrors {
   const errors: FormErrors = {};
 
-  const guestResult = GuestSchema.safeParse({
-    id: 'temp',
-    name: form.guestName.trim(),
-    phone: form.phone.trim(),
-    email: form.email.trim(),
-    previousStays: 0,
-    notes: '',
-  });
+  if (form.isNewGuest) {
+    const guestResult = GuestSchema.safeParse({
+      id: 'temp',
+      name: form.guestName.trim(),
+      phone: form.phone.trim(),
+      email: form.email.trim(),
+      previousStays: 0,
+      notes: '',
+    });
 
-  if (!guestResult.success) {
-    for (const issue of guestResult.error.issues) {
-      const field = issue.path[0] as string;
-      if (field === 'name') errors.guestName = issue.message;
-      else if (field === 'phone') errors.phone = issue.message;
-      else if (field === 'email') errors.email = issue.message;
+    if (!guestResult.success) {
+      for (const issue of guestResult.error.issues) {
+        const field = issue.path[0] as string;
+        if (field === 'name') errors.guestName = issue.message;
+        else if (field === 'phone') errors.phone = issue.message;
+        else if (field === 'email') errors.email = issue.message;
+      }
+    }
+  } else {
+    if (!form.guestId) {
+      errors.guestId = 'Please select a guest';
     }
   }
+
+  return errors;
+}
+
+function validateStayStep(form: FormData): FormErrors {
+  const errors: FormErrors = {};
 
   const resResult = ReservationSchema.safeParse({
     id: 'temp',
@@ -70,6 +85,7 @@ function validateForm(form: FormData): FormErrors {
 
 export default function NewReservationModal({ onClose }: { onClose: () => void }) {
   const { rooms, refresh: refreshRooms } = useRooms();
+  const { guests } = useGuests();
   const { refresh: refreshReservations } = useReservationContext();
   const { refresh: refreshGuests } = useGuestContext();
   const [step, setStep] = useState(1);
@@ -77,6 +93,8 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
   const [errors, setErrors] = useState<FormErrors>({});
 
   const [form, setForm] = useState<FormData>({
+    guestId: '',
+    isNewGuest: false,
     guestName: '',
     phone: '',
     email: '',
@@ -105,23 +123,8 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
   }, [form.roomId, form.checkIn, form.checkOut, rooms]);
 
   const handleNext = () => {
-    const guestResult = GuestSchema.safeParse({
-      id: 'temp',
-      name: form.guestName.trim(),
-      phone: form.phone.trim(),
-      email: form.email.trim(),
-      previousStays: 0,
-      notes: '',
-    });
-
-    if (!guestResult.success) {
-      const stepErrors: FormErrors = {};
-      for (const issue of guestResult.error.issues) {
-        const field = issue.path[0] as string;
-        if (field === 'name') stepErrors.guestName = issue.message;
-        else if (field === 'phone') stepErrors.phone = issue.message;
-        else if (field === 'email') stepErrors.email = issue.message;
-      }
+    const stepErrors = validateGuestStep(form);
+    if (Object.keys(stepErrors).length > 0) {
       setErrors(stepErrors);
       return;
     }
@@ -129,27 +132,32 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
   };
 
   const handleSave = async () => {
-    const validationErrors = validateForm(form);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+    const stayErrors = validateStayStep(form);
+    if (Object.keys(stayErrors).length > 0) {
+      setErrors(stayErrors);
       return;
     }
 
     setSubmitting(true);
     try {
-      const guest = await guestService.createGuest({
-        id: `g-${Date.now()}`,
-        name: form.guestName.trim(),
-        phone: form.phone.trim(),
-        email: form.email.trim(),
-        previousStays: 0,
-        notes: '',
-      });
+      let guestId = form.guestId;
+
+      if (form.isNewGuest) {
+        const guest = await guestService.createGuest({
+          id: `g-${Date.now()}`,
+          name: form.guestName.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim(),
+          previousStays: 0,
+          notes: '',
+        });
+        guestId = guest.id;
+      }
 
       await reservationService.createReservation({
         id: `r-${Date.now()}`,
         roomId: form.roomId,
-        guestId: guest.id,
+        guestId,
         arrivalDate: form.checkIn,
         departureDate: form.checkOut,
         guestsCount: form.guestsCount,
@@ -192,10 +200,21 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
         <div className="flex-1 overflow-y-auto p-5">
           {step === 1 ? (
             <GuestInfoStep
+              guests={guests}
+              selectedGuestId={form.guestId}
+              isNewGuest={form.isNewGuest}
               guestName={form.guestName}
               phone={form.phone}
               email={form.email}
               errors={errors}
+              onSelectGuest={(id) => {
+                setForm(prev => ({ ...prev, guestId: id }));
+                setErrors(prev => ({ ...prev, guestId: undefined }));
+              }}
+              onToggleNewGuest={() => {
+                setForm(prev => ({ ...prev, isNewGuest: !prev.isNewGuest, guestId: '' }));
+                setErrors({});
+              }}
               onUpdate={updateForm}
             />
           ) : (

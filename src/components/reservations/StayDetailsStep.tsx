@@ -20,6 +20,8 @@ interface StayDetailsStepProps {
 }
 
 export default function StayDetailsStep({ rooms, roomId, checkIn, checkOut, guestsCount, price, errors, onUpdate }: StayDetailsStepProps) {
+  const availableRooms = rooms.filter(room => room.isAvailable());
+
   return (
     <div className="space-y-6">
       <div>
@@ -29,7 +31,10 @@ export default function StayDetailsStep({ rooms, roomId, checkIn, checkOut, gues
           <div>
             <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold px-4 pt-3">Room</div>
             <div className="px-4 pb-3 pt-2 flex flex-wrap gap-2">
-              {rooms.map(room => (
+              {availableRooms.length === 0 && (
+                <span className="text-sm text-ios-text-secondary">No available rooms</span>
+              )}
+              {availableRooms.map(room => (
                 <button
                   key={room.id}
                   onClick={() => onUpdate('roomId', room.id)}
