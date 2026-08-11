@@ -74,6 +74,14 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-ios-text truncate">{guest?.name}</div>
                     <div className="text-sm text-ios-text-secondary truncate">{room?.name}</div>
+                    <div className={`text-xs font-semibold mt-0.5 ${
+                      event.reservation.status === 'Confirmed' ? 'text-ios-blue' :
+                      event.reservation.status === 'Checked In' ? 'text-ios-green' :
+                      event.reservation.status === 'Checked Out' ? 'text-ios-orange' :
+                      'text-ios-red'
+                    }`}>
+                      {event.reservation.status}
+                    </div>
                   </div>
 
                   {canCheckIn && (
