@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Download, Upload, RotateCcw, Palette, Check, Globe } from 'lucide-react';
 import { usePropertyContext } from '../../context/PropertyContext';
+import { APP_VERSION } from '../../version';
 import { useTheme, type ThemeMode } from '../../context/ThemeContext';
 import { useLocale } from '../../context/LocaleContext';
 import { LOCALE_LABELS, type Locale } from '../../i18n';
@@ -227,6 +228,10 @@ export default function SettingsView() {
           onChange={handleFileSelect}
           className="hidden"
         />
+
+        <div className="mt-8 text-center">
+          <span className="text-xs text-ios-text-secondary font-mono">v{APP_VERSION}</span>
+        </div>
       </div>
     </div>
   );
