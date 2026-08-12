@@ -1,46 +1,130 @@
-import { useState } from 'react';
-import { LogIn, LogOut, Home, SprayCan } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { LogIn, LogOut, SprayCan, CreditCard, CheckCircle2 } from 'lucide-react';
 import { useToday } from '../../hooks/useToday';
 import { usePropertyContext } from '../../context/PropertyContext';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
+import { usePaymentContext } from '../../context/PaymentContext';
 import { useLocale } from '../../context/LocaleContext';
 import { reservationService } from '../../services/ReservationService';
+import { roomService } from '../../services/RoomService';
 import { RoomStatus } from '../../domain/Room';
 import PageHeader from '../layout/PageHeader';
 import StatCard from '../ui/StatCard';
 
-type StatFilter = 'arrivals' | 'departures' | 'occupied' | 'cleaning' | null;
+interface ActionItem {
+  id: string;
+  roomName: string;
+  roomId: string;
+  icon: 'arrival' | 'departure' | 'cleaning' | 'payment';
+  label: string;
+  sublabel?: string;
+  actionLabel?: string;
+  actionType?: 'checkIn' | 'checkOut' | 'markClean';
+  reservationId?: string;
+}
 
 export default function TodayView() {
   const { data, loading } = useToday();
   const { propertyName } = usePropertyContext();
   const { refresh: refreshReservations } = useReservationContext();
   const { refresh: refreshRooms } = useRoomContext();
+  const { payments } = usePaymentContext();
   const { t } = useLocale();
-  const [activeFilter, setActiveFilter] = useState<StatFilter>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const today = new Date();
   const localDate = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 
-  const toggleFilter = (filter: StatFilter) => {
-    setActiveFilter(prev => prev === filter ? null : filter);
-  };
+  const actions = useMemo<ActionItem[]>(() => {
+    if (!data) return [];
 
-  const handleCheckIn = async (id: string) => {
-    setLoadingId(id);
-    try {
-      await reservationService.checkIn(id);
-      await Promise.all([refreshReservations(), refreshRooms()]);
-    } finally {
-      setLoadingId(null);
+    const items: ActionItem[] = [];
+
+    for (const res of data.arrivals) {
+      const room = data.rooms.find(r => r.id === res.roomId);
+      const guest = data.guests.find(g => g.id === res.guestId);
+      if (!room || !guest) continue;
+      items.push({
+        id: `arrival-${res.id}`,
+        roomName: room.name,
+        roomId: room.id,
+        icon: 'arrival',
+        label: `${guest.name} arrives`,
+        sublabel: '14:00',
+        actionLabel: t.checkIn,
+        actionType: 'checkIn',
+        reservationId: res.id,
+      });
     }
-  };
 
-  const handleCheckOut = async (id: string) => {
-    setLoadingId(id);
+    for (const res of data.departures) {
+      const room = data.rooms.find(r => r.id === res.roomId);
+      const guest = data.guests.find(g => g.id === res.guestId);
+      if (!room || !guest) continue;
+      items.push({
+        id: `departure-${res.id}`,
+        roomName: room.name,
+        roomId: room.id,
+        icon: 'departure',
+        label: `${guest.name} departs`,
+        sublabel: '11:00',
+        actionLabel: t.checkOut,
+        actionType: 'checkOut',
+        reservationId: res.id,
+      });
+    }
+
+    const cleaningRooms = data.rooms.filter(r => r.status === RoomStatus.CLEANING);
+    for (const room of cleaningRooms) {
+      items.push({
+        id: `cleaning-${room.id}`,
+        roomName: room.name,
+        roomId: room.id,
+        icon: 'cleaning',
+        label: 'Cleaning required',
+        actionLabel: 'Mark clean',
+        actionType: 'markClean',
+      });
+    }
+
+    const activeReservations = data.arrivals.concat(data.departures);
+    const allActive = [...new Map(activeReservations.map(r => [r.id, r])).values()];
+    for (const res of allActive) {
+      const totalPaid = payments
+        .filter(p => p.reservationId === res.id)
+        .reduce((sum, p) => sum + p.amount, 0);
+      const balance = res.price - totalPaid;
+      if (balance > 0) {
+        const room = data.rooms.find(r => r.id === res.roomId);
+        const guest = data.guests.find(g => g.id === res.guestId);
+        if (!room || !guest) continue;
+        items.push({
+          id: `payment-${res.id}`,
+          roomName: room.name,
+          roomId: room.id,
+          icon: 'payment',
+          label: `Payment pending — ${guest.name}`,
+          sublabel: `$${balance} remaining`,
+        });
+      }
+    }
+
+    items.sort((a, b) => a.roomName.localeCompare(b.roomName, undefined, { numeric: true }));
+    return items;
+  }, [data, payments, t]);
+
+  const handleAction = async (action: ActionItem) => {
+    if (!action.actionType) return;
+    const id = action.reservationId || action.roomId;
+    setLoadingId(action.id);
     try {
-      await reservationService.checkOut(id);
+      if (action.actionType === 'checkIn' && action.reservationId) {
+        await reservationService.checkIn(action.reservationId);
+      } else if (action.actionType === 'checkOut' && action.reservationId) {
+        await reservationService.checkOut(action.reservationId);
+      } else if (action.actionType === 'markClean') {
+        await roomService.updateRoomStatus(action.roomId, 'clean');
+      }
       await Promise.all([refreshReservations(), refreshRooms()]);
     } finally {
       setLoadingId(null);
@@ -59,32 +143,22 @@ export default function TodayView() {
   const occupiedRooms = data.rooms.filter(r => r.status === RoomStatus.OCCUPIED);
   const cleaningRooms = data.rooms.filter(r => r.status === RoomStatus.CLEANING);
 
-  const filteredTimeline = activeFilter === 'arrivals'
-    ? data.timeline.filter(e => e.type === 'Arrival')
-    : activeFilter === 'departures'
-    ? data.timeline.filter(e => e.type === 'Departure')
-    : activeFilter === null
-    ? data.timeline
-    : [];
-
-  const scheduleTitle = activeFilter === 'arrivals' ? t.todaysArrivals
-    : activeFilter === 'departures' ? t.todaysDepartures
-    : activeFilter === 'occupied' ? t.occupiedRooms
-    : activeFilter === 'cleaning' ? t.roomsBeingCleaned
-    : t.todaysSchedule;
-
-  const statusLabel = (status: string) => {
-    switch (status) {
-      case 'Confirmed': return t.confirmed;
-      case 'Checked In': return t.checkedIn;
-      case 'Checked Out': return t.checkedOut;
-      case 'Cancelled': return t.cancelled;
-      default: return status;
+  const iconElement = (type: ActionItem['icon']) => {
+    switch (type) {
+      case 'arrival': return <LogIn size={18} className="text-ios-blue" />;
+      case 'departure': return <LogOut size={18} className="text-ios-orange" />;
+      case 'cleaning': return <SprayCan size={18} className="text-ios-green" />;
+      case 'payment': return <CreditCard size={18} className="text-ios-red" />;
     }
   };
 
-  const eventTypeLabel = (eventType: string) => {
-    return eventType === 'Arrival' ? t.arrival : t.departure;
+  const actionButtonStyle = (type: ActionItem['actionType']) => {
+    switch (type) {
+      case 'checkIn': return 'bg-ios-blue';
+      case 'checkOut': return 'bg-ios-orange';
+      case 'markClean': return 'bg-ios-green';
+      default: return 'bg-ios-blue';
+    }
   };
 
   return (
@@ -97,155 +171,64 @@ export default function TodayView() {
             icon={<LogIn size={24} className="text-ios-blue" />}
             value={data.arrivals.length}
             label={t.arrivals}
-            active={activeFilter === 'arrivals'}
-            onClick={() => toggleFilter('arrivals')}
           />
           <StatCard
             icon={<LogOut size={24} className="text-ios-orange" />}
             value={data.departures.length}
             label={t.departures}
-            active={activeFilter === 'departures'}
-            onClick={() => toggleFilter('departures')}
-          />
-          <StatCard
-            icon={<Home size={24} className="text-ios-red" />}
-            value={occupiedRooms.length}
-            label={t.occupied}
-            active={activeFilter === 'occupied'}
-            onClick={() => toggleFilter('occupied')}
           />
           <StatCard
             icon={<SprayCan size={24} className="text-ios-green" />}
             value={cleaningRooms.length}
             label={t.cleaning}
-            active={activeFilter === 'cleaning'}
-            onClick={() => toggleFilter('cleaning')}
+          />
+          <StatCard
+            icon={<CreditCard size={24} className="text-ios-red" />}
+            value={actions.filter(a => a.icon === 'payment').length}
+            label="Pending"
           />
         </div>
 
         <div>
-          <h3 className="text-xl font-bold mb-4">{scheduleTitle}</h3>
-          <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
+          <h3 className="text-xl font-bold mb-4">What needs doing</h3>
 
-            {(activeFilter === null || activeFilter === 'arrivals' || activeFilter === 'departures') && (
-              filteredTimeline.length === 0 ? (
-                <div className="p-8 text-center text-ios-text-secondary">
-                  {activeFilter === 'arrivals' ? t.noArrivalsToday :
-                   activeFilter === 'departures' ? t.noDeparturesToday :
-                   t.noEventsToday}
-                </div>
-              ) : (
-                <div className="divide-y divide-ios-border/40">
-                  {filteredTimeline.map((event, i) => {
-                    const guest = data.guests.find(g => g.id === event.reservation.guestId);
-                    const room = data.rooms.find(r => r.id === event.reservation.roomId);
-                    const isArrival = event.type === 'Arrival';
-                    const isDeparture = event.type === 'Departure';
-                    const canCheckIn = isArrival && event.reservation.status === 'Confirmed';
-                    const canCheckOut = isDeparture && event.reservation.status === 'Checked In';
-
-                    return (
-                      <div key={i} className="flex items-center p-4">
-                        <div className="flex-shrink-0 w-16 text-right mr-4">
-                          <div className="font-medium text-ios-text">{event.time}</div>
-                          <div className={`text-xs font-semibold ${
-                            event.reservation.status === 'Checked In' ? 'text-ios-green' :
-                            event.reservation.status === 'Checked Out' ? 'text-ios-orange' :
-                            isArrival ? 'text-ios-blue' : 'text-ios-orange'
-                          }`}>
-                            {event.reservation.status === 'Confirmed'
-                              ? eventTypeLabel(event.type)
-                              : statusLabel(event.reservation.status)}
-                          </div>
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-ios-text truncate">{guest?.name}</div>
-                          <div className="text-sm text-ios-text-secondary truncate">{room?.name}</div>
-                        </div>
-
-                        {canCheckIn && (
-                          <button
-                            onClick={() => handleCheckIn(event.reservation.id)}
-                            disabled={loadingId === event.reservation.id}
-                            className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-blue text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
-                          >
-                            <LogIn size={14} />
-                            {t.checkIn}
-                          </button>
-                        )}
-
-                        {canCheckOut && (
-                          <button
-                            onClick={() => handleCheckOut(event.reservation.id)}
-                            disabled={loadingId === event.reservation.id}
-                            className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-orange text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
-                          >
-                            <LogOut size={14} />
-                            {t.checkOut}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )
-            )}
-
-            {activeFilter === 'occupied' && (
-              occupiedRooms.length === 0 ? (
-                <div className="p-8 text-center text-ios-text-secondary">{t.noOccupiedRooms}</div>
-              ) : (
-                <div className="divide-y divide-ios-border/40">
-                  {occupiedRooms.map(room => {
-                    const res = data.arrivals.find(r => r.roomId === room.id && r.status === 'Checked In')
-                      || data.departures.find(r => r.roomId === room.id && r.status === 'Checked In');
-                    const guest = res ? data.guests.find(g => g.id === res.guestId) : null;
-
-                    return (
-                      <div key={room.id} className="flex items-center p-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-ios-text truncate">{room.name}</div>
-                          {guest && (
-                            <div className="text-sm text-ios-text-secondary truncate">{guest.name}</div>
-                          )}
-                          <div className="text-xs font-semibold mt-0.5 text-ios-red">{t.occupied}</div>
-                        </div>
-                        {res && (
-                          <button
-                            onClick={() => handleCheckOut(res.id)}
-                            disabled={loadingId === res.id}
-                            className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-orange text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
-                          >
-                            <LogOut size={14} />
-                            {t.checkOut}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )
-            )}
-
-            {activeFilter === 'cleaning' && (
-              cleaningRooms.length === 0 ? (
-                <div className="p-8 text-center text-ios-text-secondary">{t.noRoomsCleaning}</div>
-              ) : (
-                <div className="divide-y divide-ios-border/40">
-                  {cleaningRooms.map(room => (
-                    <div key={room.id} className="flex items-center p-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-ios-text truncate">{room.name}</div>
-                        <div className="text-xs font-semibold mt-0.5 text-ios-green">{t.cleaning}</div>
-                      </div>
+          {actions.length === 0 ? (
+            <div className="bg-ios-card rounded-3xl p-8 shadow-sm border border-black/[0.04] text-center">
+              <CheckCircle2 size={40} className="text-ios-green mx-auto mb-3" />
+              <div className="font-semibold text-ios-text text-lg">All clear!</div>
+              <div className="text-ios-text-secondary text-sm mt-1">Nothing needs your attention today.</div>
+            </div>
+          ) : (
+            <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
+              <div className="divide-y divide-ios-border/40">
+                {actions.map(action => (
+                  <div key={action.id} className="flex items-center p-4 gap-3">
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-ios-bg flex items-center justify-center">
+                      {iconElement(action.icon)}
                     </div>
-                  ))}
-                </div>
-              )
-            )}
 
-          </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-ios-text text-sm">{action.roomName}</div>
+                      <div className="text-sm text-ios-text-secondary truncate">{action.label}</div>
+                      {action.sublabel && (
+                        <div className="text-xs text-ios-text-secondary/70">{action.sublabel}</div>
+                      )}
+                    </div>
+
+                    {action.actionLabel && (
+                      <button
+                        onClick={() => handleAction(action)}
+                        disabled={loadingId === action.id}
+                        className={`flex-shrink-0 px-3 py-1.5 text-white text-xs font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50 ${actionButtonStyle(action.actionType)}`}
+                      >
+                        {loadingId === action.id ? '...' : action.actionLabel}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
