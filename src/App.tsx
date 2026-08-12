@@ -3,6 +3,7 @@ import { Calendar, Home, Users, Settings as SettingsIcon, LayoutGrid, Plus } fro
 import { RoomProvider, useRoomContext } from './context/RoomContext';
 import { GuestProvider, useGuestContext } from './context/GuestContext';
 import { ReservationProvider, useReservationContext } from './context/ReservationContext';
+import { PaymentProvider } from './context/PaymentContext';
 import { PropertyProvider, usePropertyContext } from './context/PropertyContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LocaleProvider, useLocale } from './context/LocaleContext';
@@ -90,6 +91,7 @@ function AppContent() {
     <RoomProvider>
     <GuestProvider>
     <ReservationProvider>
+    <PaymentProvider>
     <div className="min-h-screen bg-ios-bg flex justify-center w-full">
       <div className="w-full h-full min-h-screen max-w-screen-xl relative flex flex-col sm:border-x sm:border-ios-border/20 shadow-sm bg-ios-bg">
         <main className="flex-1 overflow-y-auto no-scrollbar relative w-full">
@@ -111,6 +113,7 @@ function AppContent() {
         {isModalOpen && <NewReservationModal onClose={() => setIsModalOpen(false)} />}
       </div>
     </div>
+    </PaymentProvider>
     </ReservationProvider>
     </GuestProvider>
     </RoomProvider>

@@ -1,18 +1,27 @@
 import { useState, useMemo, useRef } from 'react';
-import { Search, ChevronRight, Phone, X, Calendar, DoorOpen } from 'lucide-react';
+import { Search, ChevronRight, Phone, X, Calendar, DoorOpen, Plus, Banknote } from 'lucide-react';
 import { useGuests } from '../../hooks/useGuests';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
+import { usePaymentContext } from '../../context/PaymentContext';
+import { paymentService } from '../../services/PaymentService';
 import { type Guest } from '../../domain/Guest';
+import { type Reservation } from '../../domain/Reservation';
 import PageHeader from '../layout/PageHeader';
 
 export default function GuestsView() {
   const { guests, loading } = useGuests();
   const { reservations } = useReservationContext();
   const { rooms } = useRoomContext();
+  const { payments, refresh: refreshPayments } = usePaymentContext();
   const [search, setSearch] = useState('');
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
+  const [payingReservation, setPayingReservation] = useState<Reservation | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash');
+  const [paymentNote, setPaymentNote] = useState('');
+  const [saving, setSaving] = useState(false);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const filteredGuests = useMemo(() => {
@@ -43,6 +52,12 @@ export default function GuestsView() {
       .sort((a, b) => b.arrivalDate.localeCompare(a.arrivalDate));
   }, [selectedGuest, reservations]);
 
+  const getPaymentsForReservation = (reservationId: string) =>
+    payments.filter(p => p.reservationId === reservationId);
+
+  const getTotalPaid = (reservationId: string) =>
+    getPaymentsForReservation(reservationId).reduce((sum, p) => sum + p.amount, 0);
+
   const scrollToLetter = (letter: string) => {
     setActiveLetter(letter);
     sectionRefs.current[letter]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -57,6 +72,31 @@ export default function GuestsView() {
       case 'Checked Out': return 'text-ios-orange bg-ios-orange/10';
       case 'Cancelled': return 'text-ios-red bg-ios-red/10';
       default: return 'text-ios-text-secondary bg-ios-gray-light';
+    }
+  };
+
+  const handleAddPayment = async () => {
+    if (!payingReservation || !paymentAmount) return;
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) return;
+
+    setSaving(true);
+    try {
+      await paymentService.createPayment({
+        id: `pay-${Date.now()}`,
+        reservationId: payingReservation.id,
+        amount,
+        date: new Date().toISOString().split('T')[0],
+        method: paymentMethod,
+        note: paymentNote,
+      });
+      await refreshPayments();
+      setPayingReservation(null);
+      setPaymentAmount('');
+      setPaymentMethod('cash');
+      setPaymentNote('');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -140,7 +180,7 @@ export default function GuestsView() {
         )}
       </div>
 
-      {selectedGuest && (
+      {selectedGuest && !payingReservation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedGuest(null)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden border border-black/[0.04]">
@@ -169,25 +209,150 @@ export default function GuestsView() {
                 <div className="text-center text-ios-text-secondary py-8">No reservations found.</div>
               ) : (
                 <div className="space-y-3">
-                  {guestReservations.map(res => (
-                    <div key={res.id} className="bg-ios-bg rounded-2xl p-4 border border-ios-border/40">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <DoorOpen size={14} className="text-ios-text-secondary" />
-                          <span className="font-semibold text-ios-text">{getRoomName(res.roomId)}</span>
+                  {guestReservations.map(res => {
+                    const paid = getTotalPaid(res.id);
+                    const balance = res.price - paid;
+                    return (
+                      <div key={res.id} className="bg-ios-bg rounded-2xl p-4 border border-ios-border/40">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <DoorOpen size={14} className="text-ios-text-secondary" />
+                            <span className="font-semibold text-ios-text">{getRoomName(res.roomId)}</span>
+                          </div>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColor(res.status)}`}>
+                            {res.status}
+                          </span>
                         </div>
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColor(res.status)}`}>
-                          {res.status}
-                        </span>
+                        <div className="flex items-center gap-2 text-sm text-ios-text-secondary mb-2">
+                          <Calendar size={12} />
+                          <span>{res.arrivalDate} → {res.departureDate}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm border-t border-ios-border/40 pt-2 mt-2">
+                          <div className="space-y-0.5">
+                            <div className="text-ios-text-secondary">
+                              Total: <span className="font-semibold text-ios-text">${res.price}</span>
+                            </div>
+                            <div className="text-ios-text-secondary">
+                              Paid: <span className="font-semibold text-ios-green">${paid}</span>
+                            </div>
+                            {balance > 0 && (
+                              <div className="text-ios-text-secondary">
+                                Balance: <span className="font-semibold text-ios-red">${balance}</span>
+                              </div>
+                            )}
+                            {balance <= 0 && (
+                              <div className="text-xs font-semibold text-ios-green">Fully paid</div>
+                            )}
+                          </div>
+                          {balance > 0 && res.status !== 'Cancelled' && (
+                            <button
+                              onClick={() => setPayingReservation(res)}
+                              className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-xl active:scale-95 transition-transform"
+                            >
+                              <Plus size={12} />
+                              Payment
+                            </button>
+                          )}
+                        </div>
+                        {getPaymentsForReservation(res.id).length > 0 && (
+                          <div className="mt-3 pt-2 border-t border-ios-border/40 space-y-1.5">
+                            {getPaymentsForReservation(res.id).map(p => (
+                              <div key={p.id} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-1.5 text-ios-text-secondary">
+                                  <Banknote size={11} />
+                                  <span>{p.date}</span>
+                                  <span className="capitalize bg-ios-gray-light px-1.5 py-0.5 rounded">{p.method}</span>
+                                </div>
+                                <span className="font-semibold text-ios-text">${p.amount}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-ios-text-secondary">
-                        <Calendar size={12} />
-                        <span>{res.arrivalDate} → {res.departureDate}</span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {payingReservation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPayingReservation(null)} />
+          <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
+            <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
+              <h3 className="text-lg font-bold text-ios-text">Add Payment</h3>
+              <button
+                onClick={() => setPayingReservation(null)}
+                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div className="text-sm text-ios-text-secondary">
+                {getRoomName(payingReservation.roomId)} — {payingReservation.arrivalDate} → {payingReservation.departureDate}
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-ios-text-secondary">Balance remaining</span>
+                <span className="font-semibold text-ios-red">
+                  ${payingReservation.price - getTotalPaid(payingReservation.id)}
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-ios-text mb-1">Amount</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={paymentAmount}
+                  onChange={e => setPaymentAmount(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-ios-text mb-1">Method</label>
+                <div className="flex gap-2">
+                  {(['cash', 'card', 'transfer'] as const).map(m => (
+                    <button
+                      key={m}
+                      onClick={() => setPaymentMethod(m)}
+                      className={`flex-1 py-2 text-sm font-semibold rounded-xl capitalize transition-colors ${
+                        paymentMethod === m
+                          ? 'bg-ios-blue text-white'
+                          : 'bg-ios-bg text-ios-text-secondary border border-ios-border/40'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-ios-text mb-1">Note (optional)</label>
+                <input
+                  type="text"
+                  value={paymentNote}
+                  onChange={e => setPaymentNote(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                  placeholder="e.g. Advance deposit"
+                />
+              </div>
+
+              <button
+                onClick={handleAddPayment}
+                disabled={saving || !paymentAmount || parseFloat(paymentAmount) <= 0}
+                className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Record Payment'}
+              </button>
             </div>
           </div>
         </div>

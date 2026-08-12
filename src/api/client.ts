@@ -27,6 +27,15 @@ export interface Reservation {
   notes?: string;
 }
 
+export interface Payment {
+  id: string;
+  reservationId: string;
+  amount: number;
+  date: string;
+  method: 'cash' | 'card' | 'transfer';
+  note: string;
+}
+
 export interface PropertySettings {
   id: string;
   name: string;
@@ -34,7 +43,7 @@ export interface PropertySettings {
 }
 
 const DB_NAME = 'property-rental';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 const fmt = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -86,6 +95,10 @@ function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains('settings')) {
         db.createObjectStore('settings', { keyPath: 'id' });
       }
+      if (!db.objectStoreNames.contains('payments')) {
+        const store = db.createObjectStore('payments', { keyPath: 'id' });
+        store.createIndex('reservationId', 'reservationId', { unique: false });
+      }
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -113,7 +126,7 @@ async function ensureSettings(db: IDBDatabase) {
 export async function seedDemoData() {
   const { rooms, guests, reservations } = getSeedData();
   const db = await getDB();
-  const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readwrite');
+  const tx = db.transaction(['rooms', 'guests', 'reservations', 'payments', 'settings'], 'readwrite');
   for (const room of rooms) tx.objectStore('rooms').put(room);
   for (const guest of guests) tx.objectStore('guests').put(guest);
   for (const res of reservations) tx.objectStore('reservations').put(res);
@@ -129,41 +142,47 @@ export interface BackupData {
   rooms?: Room[];
   guests?: Guest[];
   reservations?: Reservation[];
+  payments?: Payment[];
 }
 
 export async function exportBackup(): Promise<BackupData> {
   const db = await getDB();
-  const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readonly');
+  const tx = db.transaction(['rooms', 'guests', 'reservations', 'payments', 'settings'], 'readonly');
 
-  const [rooms, guests, reservations, settings] = await Promise.all([
+  const [rooms, guests, reservations, payments, settings] = await Promise.all([
     new Promise<Room[]>((resolve) => { const r = tx.objectStore('rooms').getAll(); r.onsuccess = () => resolve(r.result); }),
     new Promise<Guest[]>((resolve) => { const r = tx.objectStore('guests').getAll(); r.onsuccess = () => resolve(r.result); }),
     new Promise<Reservation[]>((resolve) => { const r = tx.objectStore('reservations').getAll(); r.onsuccess = () => resolve(r.result); }),
+    new Promise<Payment[]>((resolve) => { const r = tx.objectStore('payments').getAll(); r.onsuccess = () => resolve(r.result); }),
     new Promise<PropertySettings>((resolve) => { const r = tx.objectStore('settings').get('property'); r.onsuccess = () => resolve(r.result); }),
   ]);
 
-  return { settings, rooms, guests, reservations };
+  return { settings, rooms, guests, reservations, payments };
 }
 
 export async function importBackup(data: BackupData) {
   const { RoomSchema } = await import('../schemas/RoomSchema');
   const { GuestSchema } = await import('../schemas/GuestSchema');
   const { ReservationSchema } = await import('../schemas/ReservationSchema');
+  const { PaymentSchema } = await import('../schemas/PaymentSchema');
 
   const validRooms = (data.rooms ?? []).filter(r => RoomSchema.safeParse(r).success);
   const validGuests = (data.guests ?? []).filter(g => GuestSchema.safeParse(g).success);
   const validReservations = (data.reservations ?? []).filter(r => ReservationSchema.safeParse(r).success);
+  const validPayments = (data.payments ?? []).filter(p => PaymentSchema.safeParse(p).success);
 
   const db = await getDB();
-  const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readwrite');
+  const tx = db.transaction(['rooms', 'guests', 'reservations', 'payments', 'settings'], 'readwrite');
 
   tx.objectStore('rooms').clear();
   tx.objectStore('guests').clear();
   tx.objectStore('reservations').clear();
+  tx.objectStore('payments').clear();
 
   for (const room of validRooms) tx.objectStore('rooms').put(room);
   for (const guest of validGuests) tx.objectStore('guests').put(guest);
   for (const res of validReservations) tx.objectStore('reservations').put(res);
+  for (const payment of validPayments) tx.objectStore('payments').put(payment);
   if (data.settings) tx.objectStore('settings').put({ ...data.settings, id: 'property', isConfigured: true });
   else tx.objectStore('settings').put({ id: 'property', name: 'My Property', isConfigured: true });
 
@@ -175,10 +194,11 @@ export async function importBackup(data: BackupData) {
 
 export async function resetData() {
   const db = await getDB();
-  const tx = db.transaction(['rooms', 'guests', 'reservations', 'settings'], 'readwrite');
+  const tx = db.transaction(['rooms', 'guests', 'reservations', 'payments', 'settings'], 'readwrite');
   tx.objectStore('rooms').clear();
   tx.objectStore('guests').clear();
   tx.objectStore('reservations').clear();
+  tx.objectStore('payments').clear();
   tx.objectStore('settings').put({ id: 'property', name: 'My Property', isConfigured: false });
   await new Promise<void>((resolve, reject) => {
     tx.oncomplete = () => resolve();
@@ -288,6 +308,14 @@ export const api = {
     update: (id: string, data: Partial<Reservation>) =>
       getById<Reservation>('reservations', id).then(existing => put('reservations', { ...existing, ...data })),
     delete: (id: string) => deleteById('reservations', id),
+  },
+  payments: {
+    getAll: () => getAll<Payment>('payments'),
+    getByReservationId: (reservationId: string) =>
+      getAll<Payment>('payments').then(all => all.filter(p => p.reservationId === reservationId)),
+    getById: (id: string) => getById<Payment>('payments', id),
+    create: (payment: Payment) => put('payments', payment),
+    delete: (id: string) => deleteById('payments', id),
   },
   settings: {
     getProperty: (): Promise<PropertySettings> =>
