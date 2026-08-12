@@ -14,4 +14,4 @@ logs/
 server/data.db
 server/data.db-wal
 server/data.db-shm
-TODO
+TODO*
