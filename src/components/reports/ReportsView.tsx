@@ -1,12 +1,11 @@
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, subMonths, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, addWeeks } from 'date-fns';
 import { ChevronLeft, ChevronRight, TrendingUp, AlertCircle, Banknote, BedDouble } from 'lucide-react';
 import { useReservationContext } from '../../context/ReservationContext';
 import { usePaymentContext } from '../../context/PaymentContext';
 import { useRoomContext } from '../../context/RoomContext';
 import { useGuestContext } from '../../context/GuestContext';
 import { useLocale } from '../../context/LocaleContext';
-import { RoomStatus } from '../../domain/Room';
 import PageHeader from '../layout/PageHeader';
 
 type Period = 'week' | 'month';
@@ -18,12 +17,13 @@ export default function ReportsView() {
   const { guests } = useGuestContext();
   const { t } = useLocale();
   const [period, setPeriod] = useState<Period>('month');
-  const [monthOffset, setMonthOffset] = useState(0);
+  const [offset, setOffset] = useState(0);
 
   const currentDate = useMemo(() => {
     const now = new Date();
-    return monthOffset === 0 ? now : subMonths(now, -monthOffset);
-  }, [monthOffset]);
+    if (offset === 0) return now;
+    return period === 'month' ? addMonths(now, offset) : addWeeks(now, offset);
+  }, [offset, period]);
 
   const dateRange = useMemo(() => {
     if (period === 'month') {
@@ -71,9 +71,19 @@ export default function ReportsView() {
 
   const occupancyRate = useMemo(() => {
     if (rooms.length === 0) return 0;
-    const occupied = rooms.filter(r => r.status === RoomStatus.OCCUPIED).length;
-    return Math.round((occupied / rooms.length) * 100);
-  }, [rooms]);
+    const start = new Date(dateRange.start);
+    const end = new Date(dateRange.end);
+    const totalDays = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000) + 1);
+    const totalRoomNights = rooms.length * totalDays;
+    let occupiedNights = 0;
+    for (const res of periodReservations) {
+      const resStart = new Date(res.arrivalDate) < start ? start : new Date(res.arrivalDate);
+      const resEnd = new Date(res.departureDate) > end ? end : new Date(res.departureDate);
+      const nights = Math.max(0, Math.round((resEnd.getTime() - resStart.getTime()) / 86400000));
+      occupiedNights += nights;
+    }
+    return Math.round((occupiedNights / totalRoomNights) * 100);
+  }, [rooms, dateRange, periodReservations]);
 
   const outstandingBalances = useMemo(() => {
     const active = reservations.filter(r => r.status !== 'Cancelled');
@@ -118,7 +128,7 @@ export default function ReportsView() {
         <div className="flex items-center justify-between">
           <div className="flex bg-ios-gray-light rounded-xl p-1">
             <button
-              onClick={() => setPeriod('week')}
+              onClick={() => { setPeriod('week'); setOffset(0); }}
               className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
                 period === 'week' ? 'bg-ios-card text-ios-text shadow-sm' : 'text-ios-text-secondary'
               }`}
@@ -126,7 +136,7 @@ export default function ReportsView() {
               Week
             </button>
             <button
-              onClick={() => setPeriod('month')}
+              onClick={() => { setPeriod('month'); setOffset(0); }}
               className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
                 period === 'month' ? 'bg-ios-card text-ios-text shadow-sm' : 'text-ios-text-secondary'
               }`}
@@ -136,14 +146,14 @@ export default function ReportsView() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setMonthOffset(o => o - 1)}
+              onClick={() => setOffset(o => o - 1)}
               className="p-1.5 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70"
             >
               <ChevronLeft size={18} />
             </button>
             <span className="text-sm font-semibold text-ios-text min-w-[140px] text-center">{periodLabel}</span>
             <button
-              onClick={() => setMonthOffset(o => o + 1)}
+              onClick={() => setOffset(o => o + 1)}
               className="p-1.5 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70"
             >
               <ChevronRight size={18} />

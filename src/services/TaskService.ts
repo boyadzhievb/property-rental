@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 import { Task, type TaskData, type TaskCategory } from '../domain/Task';
 import { TaskSchema } from '../schemas/TaskSchema';
 import { taskRepository } from '../repositories/TaskRepository';
+import { roomRepository } from '../repositories/RoomRepository';
 
 export class TaskService {
   async getAllTasks(): Promise<Task[]> {
@@ -26,6 +27,13 @@ export class TaskService {
       task.reopen();
     } else {
       task.complete();
+      if (task.category === 'cleaning' && task.linkedRoomId) {
+        const room = await roomRepository.getById(task.linkedRoomId);
+        if (room) {
+          room.vacate();
+          await roomRepository.save(room);
+        }
+      }
     }
     return taskRepository.save(task);
   }

@@ -79,8 +79,17 @@ export class ReservationService {
     const reservation = await reservationRepository.getById(id);
     if (!reservation) return null;
 
+    const wasCheckedIn = reservation.status === 'Checked In';
     reservation.cancel();
     await reservationRepository.save(reservation);
+
+    if (wasCheckedIn) {
+      const room = await roomRepository.getById(reservation.roomId);
+      if (room) {
+        room.markCleaning();
+        await roomRepository.save(room);
+      }
+    }
 
     return reservation;
   }

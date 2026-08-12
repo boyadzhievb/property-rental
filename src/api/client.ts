@@ -303,6 +303,17 @@ function deleteById(storeName: string, id: string): Promise<void> {
   });
 }
 
+function getByIndex<T>(storeName: string, indexName: string, key: IDBValidKey): Promise<T[]> {
+  return getDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readonly');
+      const req = tx.objectStore(storeName).index(indexName).getAll(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  });
+}
+
 export const api = {
   rooms: {
     getAll: () => getAll<Room>('rooms'),
@@ -335,7 +346,7 @@ export const api = {
   payments: {
     getAll: () => getAll<Payment>('payments'),
     getByReservationId: (reservationId: string) =>
-      getAll<Payment>('payments').then(all => all.filter(p => p.reservationId === reservationId)),
+      getByIndex<Payment>('payments', 'reservationId', reservationId),
     getById: (id: string) => getById<Payment>('payments', id),
     create: (payment: Payment) => put('payments', payment),
     delete: (id: string) => deleteById('payments', id),
@@ -343,7 +354,7 @@ export const api = {
   tasks: {
     getAll: () => getAll<Task>('tasks'),
     getByDate: (date: string) =>
-      getAll<Task>('tasks').then(all => all.filter(t => t.date === date)),
+      getByIndex<Task>('tasks', 'date', date),
     getById: (id: string) => getById<Task>('tasks', id),
     put: (task: Task) => put('tasks', task),
     delete: (id: string) => deleteById('tasks', id),

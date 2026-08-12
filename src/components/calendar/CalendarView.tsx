@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { format, addDays, subDays, startOfWeek, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight, LogIn, LogOut, X, XCircle, Banknote, Plus } from 'lucide-react';
 import { useCalendar } from '../../hooks/useCalendar';
@@ -28,7 +28,7 @@ export default function CalendarView() {
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash');
   const [paymentNote, setPaymentNote] = useState('');
-  const days = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
+  const days = useMemo(() => Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i)), [weekStart]);
 
   const refreshAll = () => Promise.all([refreshCalendar(), refreshReservations(), refreshRooms(), refreshPayments()]);
 
@@ -68,11 +68,14 @@ export default function CalendarView() {
     }
   };
 
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
   const handleAddPayment = async () => {
     if (!selectedReservation || !paymentAmount) return;
     const amount = parseFloat(paymentAmount);
     if (isNaN(amount) || amount <= 0) return;
     setActionLoading(true);
+    setPaymentError(null);
     try {
       await paymentService.createPayment({
         id: `pay-${Date.now()}`,
@@ -87,6 +90,8 @@ export default function CalendarView() {
       setPaymentAmount('');
       setPaymentMethod('cash');
       setPaymentNote('');
+    } catch (e) {
+      setPaymentError(e instanceof Error ? e.message : 'Payment failed');
     } finally {
       setActionLoading(false);
     }
@@ -173,7 +178,7 @@ export default function CalendarView() {
       </div>
 
       {selectedReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" onKeyDown={e => { if (e.key === 'Escape') { setSelectedReservation(null); setShowPaymentForm(false); } }}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setSelectedReservation(null); setShowPaymentForm(false); }} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm max-h-[85vh] flex flex-col overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
@@ -304,6 +309,9 @@ export default function CalendarView() {
                         className="w-full px-3 py-2 bg-ios-card border border-ios-border/40 rounded-xl text-sm text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
                         placeholder="Note (optional)"
                       />
+                      {paymentError && (
+                        <div className="text-xs text-ios-red bg-ios-red/10 rounded-lg px-3 py-1.5">{paymentError}</div>
+                      )}
                       <button
                         onClick={handleAddPayment}
                         disabled={actionLoading || !paymentAmount || parseFloat(paymentAmount) <= 0}

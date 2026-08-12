@@ -91,11 +91,13 @@ flowchart TD
     B -->|No| D[Enter amount, method, optional note]
     D --> E{Amount > 0?}
     E -->|No| F[Reject: invalid amount]
-    E -->|Yes| G[Create Payment record linked to reservation]
-    G --> H[Balance = reservation.price - sum of payments]
-    H --> I{Balance <= 0?}
-    I -->|Yes| J[Reservation is fully paid]
-    I -->|No| K[Balance still outstanding]
+    E -->|Yes| G{Amount > remaining balance?}
+    G -->|Yes| H[Reject: exceeds remaining balance]
+    G -->|No| I[Create Payment record linked to reservation]
+    I --> J[Balance = reservation.price - sum of payments]
+    J --> K{Balance <= 0?}
+    K -->|Yes| L[Reservation is fully paid]
+    K -->|No| M[Balance still outstanding]
 ```
 
 - Payments are a separate entity linked to a reservation via `reservationId`.

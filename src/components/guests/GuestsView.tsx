@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Search, ChevronRight, Phone, X, Calendar, DoorOpen, Plus, Banknote } from 'lucide-react';
 import { useGuests } from '../../hooks/useGuests';
 import { useReservationContext } from '../../context/ReservationContext';
@@ -45,6 +45,12 @@ export default function GuestsView() {
 
   const letters = useMemo(() => Object.keys(groupedGuests).sort(), [groupedGuests]);
 
+  useEffect(() => {
+    if (activeLetter && !letters.includes(activeLetter)) {
+      setActiveLetter(null);
+    }
+  }, [letters, activeLetter]);
+
   const guestReservations = useMemo(() => {
     if (!selectedGuest) return [];
     return reservations
@@ -75,12 +81,15 @@ export default function GuestsView() {
     }
   };
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleAddPayment = async () => {
     if (!payingReservation || !paymentAmount) return;
     const amount = parseFloat(paymentAmount);
     if (isNaN(amount) || amount <= 0) return;
 
     setSaving(true);
+    setError(null);
     try {
       await paymentService.createPayment({
         id: `pay-${Date.now()}`,
@@ -95,6 +104,8 @@ export default function GuestsView() {
       setPaymentAmount('');
       setPaymentMethod('cash');
       setPaymentNote('');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Payment failed');
     } finally {
       setSaving(false);
     }
@@ -139,7 +150,10 @@ export default function GuestsView() {
                   {groupedGuests[letter].map(guest => (
                     <div
                       key={guest.id}
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setSelectedGuest(guest)}
+                      onKeyDown={e => e.key === 'Enter' && setSelectedGuest(guest)}
                       className="flex items-center p-4 active:bg-ios-gray-light/30 transition-colors cursor-pointer"
                     >
                       <div className="flex-1 min-w-0">
@@ -181,7 +195,7 @@ export default function GuestsView() {
       </div>
 
       {selectedGuest && !payingReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" onKeyDown={e => e.key === 'Escape' && setSelectedGuest(null)}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedGuest(null)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
@@ -279,7 +293,7 @@ export default function GuestsView() {
       )}
 
       {payingReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" onKeyDown={e => e.key === 'Escape' && setPayingReservation(null)}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPayingReservation(null)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
@@ -345,6 +359,10 @@ export default function GuestsView() {
                   placeholder="e.g. Advance deposit"
                 />
               </div>
+
+              {error && (
+                <div className="text-sm text-ios-red bg-ios-red/10 rounded-xl px-4 py-2">{error}</div>
+              )}
 
               <button
                 onClick={handleAddPayment}

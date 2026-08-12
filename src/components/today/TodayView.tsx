@@ -8,7 +8,6 @@ import { usePaymentContext } from '../../context/PaymentContext';
 import { useTaskContext } from '../../context/TaskContext';
 import { useLocale } from '../../context/LocaleContext';
 import { reservationService } from '../../services/ReservationService';
-import { roomService } from '../../services/RoomService';
 import { taskService } from '../../services/TaskService';
 import { RoomStatus } from '../../domain/Room';
 import { type Task, type TaskCategory } from '../../domain/Task';
@@ -73,13 +72,7 @@ export default function TodayView() {
     setLoadingId(task.id);
     try {
       await taskService.toggleTask(task.id);
-
-      if (!task.completed && task.category === 'cleaning' && task.linkedRoomId) {
-        await roomService.updateRoomStatus(task.linkedRoomId, 'clean');
-        await refreshRooms();
-      }
-
-      await refreshTasks();
+      await Promise.all([refreshTasks(), refreshRooms()]);
     } finally {
       setLoadingId(null);
     }
@@ -406,7 +399,7 @@ export default function TodayView() {
 
       {/* Add Task Modal */}
       {showAddTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" onKeyDown={e => e.key === 'Escape' && setShowAddTask(false)}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddTask(false)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
