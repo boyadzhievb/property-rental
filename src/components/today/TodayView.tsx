@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LogIn, LogOut, SprayCan, CreditCard, CheckCircle2, Plus, X, Phone, MessageSquare, Sparkles } from 'lucide-react';
+import { LogIn, LogOut, SprayCan, CreditCard, CheckCircle2, Plus, X, Phone, MessageSquare, Sparkles, Home } from 'lucide-react';
 import { useToday } from '../../hooks/useToday';
 import { usePropertyContext } from '../../context/PropertyContext';
 import { useReservationContext } from '../../context/ReservationContext';
@@ -128,6 +128,7 @@ export default function TodayView() {
     );
   }
 
+  const occupiedRooms = data.rooms.filter(r => r.status === RoomStatus.OCCUPIED);
   const cleaningRooms = data.rooms.filter(r => r.status === RoomStatus.CLEANING);
   const pendingTasks = tasks.filter(t => !t.completed);
   const completedTasks = tasks.filter(t => t.completed);
@@ -148,7 +149,7 @@ export default function TodayView() {
 
       <div className="px-5 space-y-6">
         {/* Quick stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 sm:gap-5">
           <StatCard
             icon={<LogIn size={24} className="text-ios-blue" />}
             value={data.arrivals.length}
@@ -158,6 +159,11 @@ export default function TodayView() {
             icon={<LogOut size={24} className="text-ios-orange" />}
             value={data.departures.length}
             label={t.departures}
+          />
+          <StatCard
+            icon={<Home size={24} className="text-ios-red" />}
+            value={occupiedRooms.length}
+            label={t.occupied}
           />
           <StatCard
             icon={<SprayCan size={24} className="text-ios-green" />}
