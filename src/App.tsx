@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Home, Users, Settings as SettingsIcon, LayoutGrid, Plus } from 'lucide-react';
+import { Calendar, Home, Users, Settings as SettingsIcon, LayoutGrid, Plus, BarChart3 } from 'lucide-react';
 import { RoomProvider, useRoomContext } from './context/RoomContext';
 import { GuestProvider, useGuestContext } from './context/GuestContext';
 import { ReservationProvider, useReservationContext } from './context/ReservationContext';
@@ -14,12 +14,13 @@ import TodayView from './components/today/TodayView';
 import CalendarView from './components/calendar/CalendarView';
 import RoomsView from './components/rooms/RoomsView';
 import GuestsView from './components/guests/GuestsView';
+import ReportsView from './components/reports/ReportsView';
 import SettingsView from './components/settings/SettingsView';
 import SetupView from './components/SetupView';
 import NewReservationModal from './components/reservations/NewReservationModal';
 import TabBar from './components/layout/TabBar';
 
-type Tab = 'today' | 'calendar' | 'rooms' | 'guests' | 'settings';
+type Tab = 'today' | 'calendar' | 'rooms' | 'guests' | 'reports' | 'settings';
 
 function ErrorMessages() {
   const { error: propertyError, clearError: clearPropertyError } = usePropertyContext();
@@ -56,6 +57,7 @@ function AppContent() {
     { id: 'calendar', label: t.calendar, icon: Calendar },
     { id: 'rooms', label: t.rooms, icon: Home },
     { id: 'guests', label: t.guests, icon: Users },
+    { id: 'reports', label: t.reports, icon: BarChart3 },
     { id: 'settings', label: t.settings, icon: SettingsIcon },
   ];
 
@@ -83,6 +85,7 @@ function AppContent() {
       case 'calendar': return <CalendarView />;
       case 'rooms': return <RoomsView />;
       case 'guests': return <GuestsView />;
+      case 'reports': return <ReportsView />;
       case 'settings': return <SettingsView />;
       default: return <TodayView />;
     }

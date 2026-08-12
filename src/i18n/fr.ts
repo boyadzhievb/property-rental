@@ -53,6 +53,7 @@ const fr: TranslationKeys = {
   dark: 'Sombre',
   system: 'Système',
 
+  reports: 'Rapports',
   loading: 'Chargement...',
 };
 

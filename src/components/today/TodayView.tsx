@@ -23,10 +23,13 @@ export default function TodayView() {
   const { payments } = usePaymentContext();
   const { tasks, refresh: refreshTasks } = useTaskContext();
   const { t } = useLocale();
+  type StatFilter = 'arrivals' | 'departures' | 'occupied' | 'cleaning' | 'tasks' | null;
+  const [activeFilter, setActiveFilter] = useState<StatFilter>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('custom');
+  const toggleFilter = (f: StatFilter) => setActiveFilter(prev => prev === f ? null : f);
   const today = new Date();
   const localDate = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -154,33 +157,43 @@ export default function TodayView() {
             icon={<LogIn size={24} className="text-ios-blue" />}
             value={data.arrivals.length}
             label={t.arrivals}
+            active={activeFilter === 'arrivals'}
+            onClick={() => toggleFilter('arrivals')}
           />
           <StatCard
             icon={<LogOut size={24} className="text-ios-orange" />}
             value={data.departures.length}
             label={t.departures}
+            active={activeFilter === 'departures'}
+            onClick={() => toggleFilter('departures')}
           />
           <StatCard
             icon={<Home size={24} className="text-ios-red" />}
             value={occupiedRooms.length}
             label={t.occupied}
+            active={activeFilter === 'occupied'}
+            onClick={() => toggleFilter('occupied')}
           />
           <StatCard
             icon={<SprayCan size={24} className="text-ios-green" />}
             value={cleaningRooms.length}
             label={t.cleaning}
+            active={activeFilter === 'cleaning'}
+            onClick={() => toggleFilter('cleaning')}
           />
           <StatCard
             icon={<CheckCircle2 size={24} className="text-ios-blue" />}
             value={pendingTasks.length}
             label="Tasks"
+            active={activeFilter === 'tasks'}
+            onClick={() => toggleFilter('tasks')}
           />
         </div>
 
-        {/* Quick actions: check-ins & check-outs */}
-        {(data.arrivals.length > 0 || data.departures.length > 0) && (
+        {/* Arrivals */}
+        {(activeFilter === null || activeFilter === 'arrivals') && data.arrivals.length > 0 && (
           <div>
-            <h3 className="text-xl font-bold mb-4">Arrivals & Departures</h3>
+            <h3 className="text-xl font-bold mb-4">{t.arrivals}</h3>
             <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
               <div className="divide-y divide-ios-border/40">
                 {data.arrivals.map(res => {
@@ -210,6 +223,17 @@ export default function TodayView() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Departures */}
+        {(activeFilter === null || activeFilter === 'departures') && data.departures.length > 0 && (
+          <div>
+            <h3 className="text-xl font-bold mb-4">{t.departures}</h3>
+            <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
+              <div className="divide-y divide-ios-border/40">
                 {data.departures.map(res => {
                   const guest = data.guests.find(g => g.id === res.guestId);
                   const room = data.rooms.find(r => r.id === res.roomId);
@@ -242,8 +266,78 @@ export default function TodayView() {
           </div>
         )}
 
+        {/* Occupied rooms */}
+        {(activeFilter === 'occupied') && (
+          <div>
+            <h3 className="text-xl font-bold mb-4">{t.occupied}</h3>
+            {occupiedRooms.length === 0 ? (
+              <div className="bg-ios-card rounded-3xl p-8 shadow-sm border border-black/[0.04] text-center">
+                <div className="text-ios-text-secondary text-sm">No occupied rooms.</div>
+              </div>
+            ) : (
+              <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
+                <div className="divide-y divide-ios-border/40">
+                  {occupiedRooms.map(room => {
+                    const res = data.arrivals.find(r => r.roomId === room.id && r.status === 'Checked In')
+                      || data.departures.find(r => r.roomId === room.id && r.status === 'Checked In');
+                    const guest = res ? data.guests.find(g => g.id === res.guestId) : null;
+                    return (
+                      <div key={room.id} className="flex items-center p-4 gap-3">
+                        <div className="flex-shrink-0 w-9 h-9 rounded-full bg-ios-red/10 flex items-center justify-center">
+                          <Home size={18} className="text-ios-red" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-ios-text text-sm truncate">{room.name}</div>
+                          {guest && <div className="text-xs text-ios-text-secondary">{guest.name}</div>}
+                        </div>
+                        {res && (
+                          <button
+                            onClick={() => handleCheckOut(res.id)}
+                            disabled={loadingId === res.id}
+                            className="flex-shrink-0 px-3 py-1.5 bg-ios-orange text-white text-xs font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                          >
+                            {t.checkOut}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Cleaning rooms */}
+        {(activeFilter === 'cleaning') && (
+          <div>
+            <h3 className="text-xl font-bold mb-4">{t.cleaning}</h3>
+            {cleaningRooms.length === 0 ? (
+              <div className="bg-ios-card rounded-3xl p-8 shadow-sm border border-black/[0.04] text-center">
+                <div className="text-ios-text-secondary text-sm">No rooms need cleaning.</div>
+              </div>
+            ) : (
+              <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
+                <div className="divide-y divide-ios-border/40">
+                  {cleaningRooms.map(room => (
+                    <div key={room.id} className="flex items-center p-4 gap-3">
+                      <div className="flex-shrink-0 w-9 h-9 rounded-full bg-ios-green/10 flex items-center justify-center">
+                        <SprayCan size={18} className="text-ios-green" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-ios-text text-sm truncate">{room.name}</div>
+                        <div className="text-xs text-ios-text-secondary">Cleaning required</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Today's Tasks */}
-        <div>
+        {(activeFilter === null || activeFilter === 'tasks') && <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold">Today's Tasks</h3>
             <button
@@ -307,7 +401,7 @@ export default function TodayView() {
               </div>
             </div>
           )}
-        </div>
+        </div>}
       </div>
 
       {/* Add Task Modal */}

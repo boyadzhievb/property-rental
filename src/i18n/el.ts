@@ -53,6 +53,7 @@ const el: TranslationKeys = {
   dark: 'Σκοτεινό',
   system: 'Σύστημα',
 
+  reports: 'Αναφορές',
   loading: 'Φόρτωση...',
 };
 

@@ -57,6 +57,9 @@ const en = {
   dark: 'Dark',
   system: 'System',
 
+  // Reports
+  reports: 'Reports',
+
   // Common
   loading: 'Loading...',
 };

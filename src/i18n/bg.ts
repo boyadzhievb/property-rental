@@ -53,6 +53,7 @@ const bg: TranslationKeys = {
   dark: 'Тъмна',
   system: 'Системна',
 
+  reports: 'Справки',
   loading: 'Зареждане...',
 };
 
