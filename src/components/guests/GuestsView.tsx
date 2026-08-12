@@ -1,12 +1,18 @@
 import { useState, useMemo, useRef } from 'react';
-import { Search, ChevronRight, Phone } from 'lucide-react';
+import { Search, ChevronRight, Phone, X, Calendar, DoorOpen } from 'lucide-react';
 import { useGuests } from '../../hooks/useGuests';
+import { useReservationContext } from '../../context/ReservationContext';
+import { useRoomContext } from '../../context/RoomContext';
+import { type Guest } from '../../domain/Guest';
 import PageHeader from '../layout/PageHeader';
 
 export default function GuestsView() {
   const { guests, loading } = useGuests();
+  const { reservations } = useReservationContext();
+  const { rooms } = useRoomContext();
   const [search, setSearch] = useState('');
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
+  const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const filteredGuests = useMemo(() => {
@@ -30,9 +36,28 @@ export default function GuestsView() {
 
   const letters = useMemo(() => Object.keys(groupedGuests).sort(), [groupedGuests]);
 
+  const guestReservations = useMemo(() => {
+    if (!selectedGuest) return [];
+    return reservations
+      .filter(r => r.guestId === selectedGuest.id)
+      .sort((a, b) => b.arrivalDate.localeCompare(a.arrivalDate));
+  }, [selectedGuest, reservations]);
+
   const scrollToLetter = (letter: string) => {
     setActiveLetter(letter);
     sectionRefs.current[letter]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const getRoomName = (roomId: string) => rooms.find(r => r.id === roomId)?.name ?? 'Unknown';
+
+  const statusColor = (status: string) => {
+    switch (status) {
+      case 'Confirmed': return 'text-ios-blue bg-ios-blue/10';
+      case 'Checked In': return 'text-ios-green bg-ios-green/10';
+      case 'Checked Out': return 'text-ios-orange bg-ios-orange/10';
+      case 'Cancelled': return 'text-ios-red bg-ios-red/10';
+      default: return 'text-ios-text-secondary bg-ios-gray-light';
+    }
   };
 
   if (loading) {
@@ -72,7 +97,11 @@ export default function GuestsView() {
               <div className="bg-ios-card rounded-2xl overflow-hidden shadow-sm border border-black/[0.04] mb-3">
                 <div className="divide-y divide-ios-border/40">
                   {groupedGuests[letter].map(guest => (
-                    <div key={guest.id} className="flex items-center p-4 active:bg-ios-gray-light/30 transition-colors cursor-pointer">
+                    <div
+                      key={guest.id}
+                      onClick={() => setSelectedGuest(guest)}
+                      className="flex items-center p-4 active:bg-ios-gray-light/30 transition-colors cursor-pointer"
+                    >
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-ios-text text-lg">{guest.name}</div>
                         <div className="flex items-center gap-1 text-sm text-ios-text-secondary">
@@ -110,6 +139,59 @@ export default function GuestsView() {
           </div>
         )}
       </div>
+
+      {selectedGuest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedGuest(null)} />
+          <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden border border-black/[0.04]">
+            <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
+              <div>
+                <h3 className="text-lg font-bold text-ios-text">{selectedGuest.name}</h3>
+                <div className="flex items-center gap-1 text-sm text-ios-text-secondary">
+                  <Phone size={12} />
+                  <span>{selectedGuest.phone}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedGuest(null)}
+                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5">
+              <div className="text-sm font-semibold text-ios-text-secondary uppercase mb-3">
+                Reservations ({guestReservations.length})
+              </div>
+
+              {guestReservations.length === 0 ? (
+                <div className="text-center text-ios-text-secondary py-8">No reservations found.</div>
+              ) : (
+                <div className="space-y-3">
+                  {guestReservations.map(res => (
+                    <div key={res.id} className="bg-ios-bg rounded-2xl p-4 border border-ios-border/40">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <DoorOpen size={14} className="text-ios-text-secondary" />
+                          <span className="font-semibold text-ios-text">{getRoomName(res.roomId)}</span>
+                        </div>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColor(res.status)}`}>
+                          {res.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-ios-text-secondary">
+                        <Calendar size={12} />
+                        <span>{res.arrivalDate} → {res.departureDate}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
