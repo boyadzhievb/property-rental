@@ -25,6 +25,9 @@ const de: TranslationKeys = {
   checkIn: 'Einchecken',
   checkOut: 'Auschecken',
   cancelReservation: 'Reservierung stornieren',
+  confirmCheckIn: 'Möchten Sie diesen Gast wirklich einchecken?',
+  confirmCheckOut: 'Möchten Sie diesen Gast wirklich auschecken?',
+  confirmCancel: 'Möchten Sie diese Reservierung wirklich stornieren?',
 
   confirmed: 'Bestätigt',
   checkedIn: 'Eingecheckt',

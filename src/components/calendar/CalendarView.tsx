@@ -34,6 +34,7 @@ export default function CalendarView() {
 
   const handleCheckIn = async () => {
     if (!selectedReservation) return;
+    if (!confirm(t.confirmCheckIn)) return;
     setActionLoading(true);
     try {
       await reservationService.checkIn(selectedReservation.id);
@@ -46,6 +47,7 @@ export default function CalendarView() {
 
   const handleCheckOut = async () => {
     if (!selectedReservation) return;
+    if (!confirm(t.confirmCheckOut)) return;
     setActionLoading(true);
     try {
       await reservationService.checkOut(selectedReservation.id);
@@ -58,6 +60,7 @@ export default function CalendarView() {
 
   const handleCancel = async () => {
     if (!selectedReservation) return;
+    if (!confirm(t.confirmCancel)) return;
     setActionLoading(true);
     try {
       await reservationService.cancel(selectedReservation.id);

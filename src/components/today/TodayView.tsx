@@ -79,6 +79,7 @@ export default function TodayView() {
   };
 
   const handleCheckIn = async (reservationId: string) => {
+    if (!confirm(t.confirmCheckIn)) return;
     setLoadingId(reservationId);
     try {
       await reservationService.checkIn(reservationId);
@@ -89,6 +90,7 @@ export default function TodayView() {
   };
 
   const handleCheckOut = async (reservationId: string) => {
+    if (!confirm(t.confirmCheckOut)) return;
     setLoadingId(reservationId);
     try {
       await reservationService.checkOut(reservationId);

@@ -25,6 +25,9 @@ const fr: TranslationKeys = {
   checkIn: 'Enregistrer',
   checkOut: 'Libérer',
   cancelReservation: 'Annuler la réservation',
+  confirmCheckIn: 'Êtes-vous sûr de vouloir enregistrer ce client ?',
+  confirmCheckOut: 'Êtes-vous sûr de vouloir libérer ce client ?',
+  confirmCancel: 'Êtes-vous sûr de vouloir annuler cette réservation ?',
 
   confirmed: 'Confirmée',
   checkedIn: 'Enregistré',

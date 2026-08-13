@@ -25,6 +25,9 @@ const bg: TranslationKeys = {
   checkIn: 'Настаняване',
   checkOut: 'Освобождаване',
   cancelReservation: 'Отказ на резервация',
+  confirmCheckIn: 'Сигурни ли сте, че искате да настаните този гост?',
+  confirmCheckOut: 'Сигурни ли сте, че искате да освободите този гост?',
+  confirmCancel: 'Сигурни ли сте, че искате да откажете тази резервация?',
 
   confirmed: 'Потвърдена',
   checkedIn: 'Настанен',

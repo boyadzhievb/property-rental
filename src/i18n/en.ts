@@ -26,6 +26,9 @@ const en = {
   checkIn: 'Check In',
   checkOut: 'Check Out',
   cancelReservation: 'Cancel Reservation',
+  confirmCheckIn: 'Are you sure you want to check in this guest?',
+  confirmCheckOut: 'Are you sure you want to check out this guest?',
+  confirmCancel: 'Are you sure you want to cancel this reservation?',
 
   // Statuses
   confirmed: 'Confirmed',
