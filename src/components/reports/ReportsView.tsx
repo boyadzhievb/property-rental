@@ -133,7 +133,7 @@ export default function ReportsView() {
                 period === 'week' ? 'bg-ios-card text-ios-text shadow-sm' : 'text-ios-text-secondary'
               }`}
             >
-              Week
+              {t.week}
             </button>
             <button
               onClick={() => { setPeriod('month'); setOffset(0); }}
@@ -141,7 +141,7 @@ export default function ReportsView() {
                 period === 'month' ? 'bg-ios-card text-ios-text shadow-sm' : 'text-ios-text-secondary'
               }`}
             >
-              Month
+              {t.month}
             </button>
           </div>
           <div className="flex items-center gap-2">
@@ -166,29 +166,29 @@ export default function ReportsView() {
           <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
             <div className="mb-2"><TrendingUp size={24} className="text-ios-green" /></div>
             <div className="text-2xl font-bold text-ios-text">${totalCollected}</div>
-            <div className="text-ios-text-secondary text-sm font-medium">Collected</div>
+            <div className="text-ios-text-secondary text-sm font-medium">{t.collected}</div>
           </div>
           <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
             <div className="mb-2"><Banknote size={24} className="text-ios-blue" /></div>
             <div className="text-2xl font-bold text-ios-text">${totalRevenue}</div>
-            <div className="text-ios-text-secondary text-sm font-medium">Booked revenue</div>
+            <div className="text-ios-text-secondary text-sm font-medium">{t.bookedRevenue}</div>
           </div>
           <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
             <div className="mb-2"><AlertCircle size={24} className="text-ios-red" /></div>
             <div className="text-2xl font-bold text-ios-text">${totalOutstanding}</div>
-            <div className="text-ios-text-secondary text-sm font-medium">Outstanding</div>
+            <div className="text-ios-text-secondary text-sm font-medium">{t.outstanding}</div>
           </div>
           <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
             <div className="mb-2"><BedDouble size={24} className="text-ios-orange" /></div>
             <div className="text-2xl font-bold text-ios-text">{occupancyRate}%</div>
-            <div className="text-ios-text-secondary text-sm font-medium">Occupancy</div>
+            <div className="text-ios-text-secondary text-sm font-medium">{t.occupancy}</div>
           </div>
         </div>
 
         {/* Payment by method */}
         {totalCollected > 0 && (
           <div>
-            <h3 className="text-lg font-bold mb-3">By method</h3>
+            <h3 className="text-lg font-bold mb-3">{t.byMethod}</h3>
             <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
               <div className="space-y-3">
                 {Object.entries(paymentsByMethod).filter(([, v]) => v > 0).map(([method, amount]) => (
@@ -220,7 +220,7 @@ export default function ReportsView() {
         {/* Outstanding balances */}
         {outstandingBalances.length > 0 && (
           <div>
-            <h3 className="text-lg font-bold mb-3">Outstanding balances</h3>
+            <h3 className="text-lg font-bold mb-3">{t.outstandingBalances}</h3>
             <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
               <div className="divide-y divide-ios-border/40">
                 {outstandingBalances.map(item => (
@@ -244,10 +244,10 @@ export default function ReportsView() {
 
         {/* Recent payments */}
         <div>
-          <h3 className="text-lg font-bold mb-3">Recent payments</h3>
+          <h3 className="text-lg font-bold mb-3">{t.recentPayments}</h3>
           {recentPayments.length === 0 ? (
             <div className="bg-ios-card rounded-3xl p-8 shadow-sm border border-black/[0.04] text-center">
-              <div className="text-ios-text-secondary text-sm">No payments recorded yet.</div>
+              <div className="text-ios-text-secondary text-sm">{t.noPaymentsYet}</div>
             </div>
           ) : (
             <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">

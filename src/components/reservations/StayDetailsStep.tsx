@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react';
 import { type Room } from '../../domain/Room';
 import { type Reservation } from '../../domain/Reservation';
+import { useLocale } from '../../context/LocaleContext';
 
 interface FormErrors {
   roomId?: string;
@@ -22,6 +23,7 @@ interface StayDetailsStepProps {
 }
 
 export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, checkOut, guestsCount, price, errors, onUpdate }: StayDetailsStepProps) {
+  const { t } = useLocale();
   const occupiedDates = reservations
     .filter(r => r.roomId === roomId && r.isActive())
     .sort((a, b) => a.arrivalDate.localeCompare(b.arrivalDate));
@@ -29,11 +31,11 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
   return (
     <div className="space-y-6">
       <div>
-        <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-4 mb-2">Stay Details</div>
+        <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-4 mb-2">{t.stayDetails}</div>
         <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04] divide-y divide-ios-border/40">
 
           <div>
-            <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold px-4 pt-3">Room</div>
+            <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold px-4 pt-3">{t.room}</div>
             <div className="px-4 pb-3 pt-2 flex flex-wrap gap-2">
               {rooms.map(room => (
                 <button
@@ -55,7 +57,7 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
 
           {roomId && occupiedDates.length > 0 && (
             <div className="px-4 py-3">
-              <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold mb-2">Occupied Dates</div>
+              <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold mb-2">{t.occupiedDates}</div>
               <div className="space-y-1">
                 {occupiedDates.map(r => (
                   <div key={r.id} className="text-sm text-ios-red font-medium">
@@ -68,7 +70,7 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
 
           <div className="flex flex-col p-4">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-ios-text font-medium">Check-in</span>
+              <span className="text-ios-text font-medium">{t.checkInDate}</span>
               <input
                 type="date"
                 value={checkIn}
@@ -78,7 +80,7 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
             </div>
             {errors.checkIn && <div className="text-xs text-ios-red mb-2">{errors.checkIn}</div>}
             <div className="flex justify-between items-center">
-              <span className="text-ios-text font-medium">Check-out</span>
+              <span className="text-ios-text font-medium">{t.checkOutDate}</span>
               <input
                 type="date"
                 value={checkOut}
@@ -90,7 +92,7 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
           </div>
 
           <div className="flex justify-between items-center p-4">
-            <span className="text-ios-text font-medium">Guests</span>
+            <span className="text-ios-text font-medium">{t.guestsCount}</span>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => onUpdate('guestsCount', Math.max(1, guestsCount - 1))}
@@ -107,7 +109,7 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
       </div>
 
       <div>
-        <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-4 mb-2">Total Price</div>
+        <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-4 mb-2">{t.totalPrice}</div>
         <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
           <input
             type="number"

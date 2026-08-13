@@ -6,6 +6,7 @@ import { type Guest } from '../../domain/Guest';
 import { reservationService } from '../../services/ReservationService';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
+import { useLocale } from '../../context/LocaleContext';
 
 interface TimelineEvent {
   type: string;
@@ -22,9 +23,11 @@ interface TimelineProps {
 export default function Timeline({ events, rooms, guests }: TimelineProps) {
   const { refresh: refreshReservations } = useReservationContext();
   const { refresh: refreshRooms } = useRoomContext();
+  const { t } = useLocale();
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const handleCheckIn = async (id: string) => {
+    if (!confirm(t.confirmCheckIn)) return;
     setLoadingId(id);
     try {
       await reservationService.checkIn(id);
@@ -35,6 +38,7 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
   };
 
   const handleCheckOut = async (id: string) => {
+    if (!confirm(t.confirmCheckOut)) return;
     setLoadingId(id);
     try {
       await reservationService.checkOut(id);
@@ -46,11 +50,11 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
 
   return (
     <div>
-      <h3 className="text-xl font-bold mb-4">Today's Schedule</h3>
+      <h3 className="text-xl font-bold mb-4">{t.todaysSchedule}</h3>
       <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
         {events.length === 0 ? (
           <div className="p-8 text-center text-ios-text-secondary">
-            No events scheduled for today.
+            {t.noEventsToday}
           </div>
         ) : (
           <div className="divide-y divide-ios-border/40">
@@ -80,7 +84,10 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
                       event.reservation.status === 'Checked Out' ? 'text-ios-orange' :
                       'text-ios-red'
                     }`}>
-                      {event.reservation.status}
+                      {event.reservation.status === 'Confirmed' ? t.confirmed :
+                       event.reservation.status === 'Checked In' ? t.checkedIn :
+                       event.reservation.status === 'Checked Out' ? t.checkedOut :
+                       t.cancelled}
                     </div>
                   </div>
 
@@ -91,7 +98,7 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
                       className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-blue text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
                     >
                       <LogIn size={14} />
-                      Check In
+                      {t.checkIn}
                     </button>
                   )}
 
@@ -102,7 +109,7 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
                       className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-orange text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
                     >
                       <LogOut size={14} />
-                      Check Out
+                      {t.checkOut}
                     </button>
                   )}
                 </div>

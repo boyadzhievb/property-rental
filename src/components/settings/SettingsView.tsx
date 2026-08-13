@@ -69,7 +69,7 @@ export default function SettingsView() {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      setRestoreStatus('Failed to export backup');
+      setRestoreStatus(t.failedToExport);
     }
   };
 
@@ -82,7 +82,7 @@ export default function SettingsView() {
     if (!file) return;
 
     if (!file.name.endsWith('.json')) {
-      setRestoreStatus('Error: file must be a .json file');
+      setRestoreStatus(t.fileMustBeJson);
       e.target.value = '';
       return;
     }
@@ -93,7 +93,7 @@ export default function SettingsView() {
       try {
         parsed = JSON.parse(text);
       } catch {
-        setRestoreStatus('Error: file is not valid JSON');
+        setRestoreStatus(t.fileNotValidJson);
         e.target.value = '';
         return;
       }
@@ -107,9 +107,9 @@ export default function SettingsView() {
 
       await importBackup(result.data!);
       await Promise.all([refreshRooms(), refreshGuests(), refreshReservations()]);
-      setRestoreStatus('Backup restored successfully');
+      setRestoreStatus(t.backupRestored);
     } catch {
-      setRestoreStatus('Error: failed to restore backup');
+      setRestoreStatus(t.failedToRestore);
     }
 
     e.target.value = '';

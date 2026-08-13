@@ -4,6 +4,7 @@ import { useGuests } from '../../hooks/useGuests';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
 import { usePaymentContext } from '../../context/PaymentContext';
+import { useLocale } from '../../context/LocaleContext';
 import { paymentService } from '../../services/PaymentService';
 import { type Guest } from '../../domain/Guest';
 import { type Reservation } from '../../domain/Reservation';
@@ -14,6 +15,7 @@ export default function GuestsView() {
   const { reservations } = useReservationContext();
   const { rooms } = useRoomContext();
   const { payments, refresh: refreshPayments } = usePaymentContext();
+  const { t } = useLocale();
   const [search, setSearch] = useState('');
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
@@ -81,6 +83,16 @@ export default function GuestsView() {
     }
   };
 
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case 'Confirmed': return t.confirmed;
+      case 'Checked In': return t.checkedIn;
+      case 'Checked Out': return t.checkedOut;
+      case 'Cancelled': return t.cancelled;
+      default: return status;
+    }
+  };
+
   const [error, setError] = useState<string | null>(null);
 
   const handleAddPayment = async () => {
@@ -105,7 +117,7 @@ export default function GuestsView() {
       setPaymentMethod('cash');
       setPaymentNote('');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Payment failed');
+      setError(e instanceof Error ? e.message : t.paymentFailed);
     } finally {
       setSaving(false);
     }
@@ -114,8 +126,8 @@ export default function GuestsView() {
   if (loading) {
     return (
       <div className="pb-24">
-        <PageHeader title="Guests" />
-        <div className="px-5 text-center text-ios-text-secondary py-12">Loading...</div>
+        <PageHeader title={t.guests} />
+        <div className="px-5 text-center text-ios-text-secondary py-12">{t.loading}</div>
       </div>
     );
   }
@@ -123,7 +135,7 @@ export default function GuestsView() {
   return (
     <div className="pb-24 relative">
       <header className="px-5 pt-12 pb-4 bg-ios-bg sticky top-0 z-10">
-        <h1 className="text-3xl font-bold text-ios-text mb-4">Guests</h1>
+        <h1 className="text-3xl font-bold text-ios-text mb-4">{t.guests}</h1>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-ios-text-secondary" />
@@ -133,7 +145,7 @@ export default function GuestsView() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="block w-full pl-10 pr-3 py-2 border-none rounded-xl leading-5 bg-ios-gray-light text-ios-text placeholder-ios-text-secondary focus:outline-none focus:ring-2 focus:ring-ios-blue focus:bg-ios-card transition-colors"
-            placeholder="Search guests..."
+            placeholder={t.searchGuests}
           />
         </div>
       </header>
@@ -171,7 +183,7 @@ export default function GuestsView() {
             </div>
           ))}
           {letters.length === 0 && (
-            <div className="text-center text-ios-text-secondary py-12">No guests found.</div>
+            <div className="text-center text-ios-text-secondary py-12">{t.noGuestsFound}</div>
           )}
         </div>
 
@@ -216,11 +228,11 @@ export default function GuestsView() {
 
             <div className="flex-1 overflow-y-auto p-5">
               <div className="text-sm font-semibold text-ios-text-secondary uppercase mb-3">
-                Reservations ({guestReservations.length})
+                {t.reservations} ({guestReservations.length})
               </div>
 
               {guestReservations.length === 0 ? (
-                <div className="text-center text-ios-text-secondary py-8">No reservations found.</div>
+                <div className="text-center text-ios-text-secondary py-8">{t.noReservationsFound}</div>
               ) : (
                 <div className="space-y-3">
                   {guestReservations.map(res => {
@@ -234,7 +246,7 @@ export default function GuestsView() {
                             <span className="font-semibold text-ios-text">{getRoomName(res.roomId)}</span>
                           </div>
                           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusColor(res.status)}`}>
-                            {res.status}
+                            {statusLabel(res.status)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-ios-text-secondary mb-2">
@@ -244,18 +256,18 @@ export default function GuestsView() {
                         <div className="flex items-center justify-between text-sm border-t border-ios-border/40 pt-2 mt-2">
                           <div className="space-y-0.5">
                             <div className="text-ios-text-secondary">
-                              Total: <span className="font-semibold text-ios-text">${res.price}</span>
+                              {t.total}: <span className="font-semibold text-ios-text">${res.price}</span>
                             </div>
                             <div className="text-ios-text-secondary">
-                              Paid: <span className="font-semibold text-ios-green">${paid}</span>
+                              {t.paid}: <span className="font-semibold text-ios-green">${paid}</span>
                             </div>
                             {balance > 0 && (
                               <div className="text-ios-text-secondary">
-                                Balance: <span className="font-semibold text-ios-red">${balance}</span>
+                                {t.balance}: <span className="font-semibold text-ios-red">${balance}</span>
                               </div>
                             )}
                             {balance <= 0 && (
-                              <div className="text-xs font-semibold text-ios-green">Fully paid</div>
+                              <div className="text-xs font-semibold text-ios-green">{t.fullyPaid}</div>
                             )}
                           </div>
                           {balance > 0 && res.status !== 'Cancelled' && (
@@ -264,7 +276,7 @@ export default function GuestsView() {
                               className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-xl active:scale-95 transition-transform"
                             >
                               <Plus size={12} />
-                              Payment
+                              {t.payment}
                             </button>
                           )}
                         </div>
@@ -297,7 +309,7 @@ export default function GuestsView() {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPayingReservation(null)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
-              <h3 className="text-lg font-bold text-ios-text">Add Payment</h3>
+              <h3 className="text-lg font-bold text-ios-text">{t.addPayment}</h3>
               <button
                 onClick={() => setPayingReservation(null)}
                 className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
@@ -311,14 +323,14 @@ export default function GuestsView() {
                 {getRoomName(payingReservation.roomId)} — {payingReservation.arrivalDate} → {payingReservation.departureDate}
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-ios-text-secondary">Balance remaining</span>
+                <span className="text-ios-text-secondary">{t.balanceRemaining}</span>
                 <span className="font-semibold text-ios-red">
                   ${payingReservation.price - getTotalPaid(payingReservation.id)}
                 </span>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-1">Amount</label>
+                <label className="block text-sm font-medium text-ios-text mb-1">{t.amount}</label>
                 <input
                   type="number"
                   min="0"
@@ -331,7 +343,7 @@ export default function GuestsView() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-1">Method</label>
+                <label className="block text-sm font-medium text-ios-text mb-1">{t.method}</label>
                 <div className="flex gap-2">
                   {(['cash', 'card', 'transfer'] as const).map(m => (
                     <button
@@ -350,13 +362,13 @@ export default function GuestsView() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-1">Note (optional)</label>
+                <label className="block text-sm font-medium text-ios-text mb-1">{t.noteOptional}</label>
                 <input
                   type="text"
                   value={paymentNote}
                   onChange={e => setPaymentNote(e.target.value)}
                   className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
-                  placeholder="e.g. Advance deposit"
+                  placeholder={t.notePlaceholder}
                 />
               </div>
 
@@ -369,7 +381,7 @@ export default function GuestsView() {
                 disabled={saving || !paymentAmount || parseFloat(paymentAmount) <= 0}
                 className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Record Payment'}
+                {saving ? t.saving : t.recordPayment}
               </button>
             </div>
           </div>

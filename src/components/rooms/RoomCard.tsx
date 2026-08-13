@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Users, Pencil, Check, X, SprayCan, Wrench, CheckCircle } from 'lucide-react';
 import { type Room, RoomStatus, type RoomStatusAction } from '../../domain/Room';
 import { roomService } from '../../services/RoomService';
+import { useLocale } from '../../context/LocaleContext';
 
 interface RoomCardProps {
   room: Room;
@@ -18,6 +19,7 @@ const getStatusColor = (status: RoomStatus) => {
 };
 
 export default function RoomCard({ room, onUpdated }: RoomCardProps) {
+  const { t } = useLocale();
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
@@ -47,6 +49,15 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
     await onUpdated();
   };
 
+  const statusLabel = (status: RoomStatus) => {
+    switch (status) {
+      case RoomStatus.AVAILABLE: return t.markAsAvailable;
+      case RoomStatus.OCCUPIED: return t.occupied;
+      case RoomStatus.CLEANING: return t.cleaning;
+      case RoomStatus.MAINTENANCE: return t.markForMaintenance;
+    }
+  };
+
   return (
     <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
       {editing ? (
@@ -60,7 +71,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
           />
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="text-xs text-ios-text-secondary ml-1 mb-1 block">Price / night</label>
+              <label className="text-xs text-ios-text-secondary ml-1 mb-1 block">{t.pricePerNight}</label>
               <input
                 type="number"
                 value={editPrice}
@@ -69,7 +80,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
               />
             </div>
             <div className="flex-1">
-              <label className="text-xs text-ios-text-secondary ml-1 mb-1 block">Max guests</label>
+              <label className="text-xs text-ios-text-secondary ml-1 mb-1 block">{t.maxGuests}</label>
               <input
                 type="number"
                 min="1"
@@ -84,13 +95,13 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
               onClick={cancelEdit}
               className="flex-1 py-2.5 rounded-xl bg-ios-gray-light text-ios-text font-semibold active:opacity-70 flex items-center justify-center gap-1"
             >
-              <X size={16} /> Cancel
+              <X size={16} /> {t.cancel}
             </button>
             <button
               onClick={saveEdit}
               className="flex-1 py-2.5 rounded-xl bg-ios-blue text-white font-semibold active:opacity-70 flex items-center justify-center gap-1"
             >
-              <Check size={16} /> Save
+              <Check size={16} /> {t.save}
             </button>
           </div>
         </div>
@@ -100,7 +111,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
             <div>
               <h3 className="text-xl font-bold text-ios-text mb-2">{room.name}</h3>
               <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(room.status)}`}>
-                {room.status}
+                {statusLabel(room.status)}
               </div>
             </div>
             <button
@@ -114,11 +125,11 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
           <div className="mt-4 pt-4 border-t border-ios-border/30 flex justify-between items-center">
             <div className="flex items-center gap-1.5 text-sm text-ios-text-secondary">
               <Users size={16} />
-              <span>{room.maxGuests} guests max</span>
+              <span>{room.maxGuests} {t.guestsMax}</span>
             </div>
             <div className="text-right">
               <span className="font-semibold text-ios-text">${room.pricePerNight}</span>
-              <span className="text-xs text-ios-text-secondary"> / night</span>
+              <span className="text-xs text-ios-text-secondary"> {t.perNight}</span>
             </div>
           </div>
 
@@ -127,7 +138,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
               onClick={() => handleStatusAction('clean')}
               className="mt-4 w-full py-2.5 rounded-xl bg-ios-green/10 text-ios-green font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity"
             >
-              <SprayCan size={16} /> Mark as Cleaned
+              <SprayCan size={16} /> {t.markAsCleaned}
             </button>
           )}
 
@@ -136,7 +147,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
               onClick={() => handleStatusAction('maintenance')}
               className="mt-4 w-full py-2.5 rounded-xl bg-ios-red/10 text-ios-red font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity"
             >
-              <Wrench size={16} /> Mark for Maintenance
+              <Wrench size={16} /> {t.markForMaintenance}
             </button>
           )}
 
@@ -145,7 +156,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
               onClick={() => handleStatusAction('available')}
               className="mt-4 w-full py-2.5 rounded-xl bg-ios-green/10 text-ios-green font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity"
             >
-              <CheckCircle size={16} /> Mark as Available
+              <CheckCircle size={16} /> {t.markAsAvailable}
             </button>
           )}
         </>

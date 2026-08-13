@@ -94,7 +94,7 @@ export default function CalendarView() {
       setPaymentMethod('cash');
       setPaymentNote('');
     } catch (e) {
-      setPaymentError(e instanceof Error ? e.message : 'Payment failed');
+      setPaymentError(e instanceof Error ? e.message : t.paymentFailed);
     } finally {
       setActionLoading(false);
     }
@@ -232,32 +232,32 @@ export default function CalendarView() {
                 {/* Payment summary */}
                 <div className="border-t border-ios-border/40 pt-3 mt-3">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-semibold text-ios-text-secondary uppercase">Payment</div>
+                    <div className="text-sm font-semibold text-ios-text-secondary uppercase">{t.payment}</div>
                     {selectedReservation.status !== 'Cancelled' && selectedReservation.price - getReservationPaid(selectedReservation.id) > 0 && (
                       <button
                         onClick={() => setShowPaymentForm(!showPaymentForm)}
                         className="flex items-center gap-1 text-xs font-semibold text-ios-blue"
                       >
                         <Plus size={12} />
-                        Add
+                        {t.add}
                       </button>
                     )}
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-ios-text-secondary">Total</span>
+                    <span className="text-ios-text-secondary">{t.total}</span>
                     <span className="font-semibold text-ios-text">${selectedReservation.price}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-ios-text-secondary">Paid</span>
+                    <span className="text-ios-text-secondary">{t.paid}</span>
                     <span className="font-semibold text-ios-green">${getReservationPaid(selectedReservation.id)}</span>
                   </div>
                   {selectedReservation.price - getReservationPaid(selectedReservation.id) > 0 ? (
                     <div className="flex justify-between text-sm">
-                      <span className="text-ios-text-secondary">Balance</span>
+                      <span className="text-ios-text-secondary">{t.balance}</span>
                       <span className="font-semibold text-ios-red">${selectedReservation.price - getReservationPaid(selectedReservation.id)}</span>
                     </div>
                   ) : (
-                    <div className="text-xs font-semibold text-ios-green mt-1">Fully paid</div>
+                    <div className="text-xs font-semibold text-ios-green mt-1">{t.fullyPaid}</div>
                   )}
 
                   {getReservationPayments(selectedReservation.id).length > 0 && (
@@ -286,7 +286,7 @@ export default function CalendarView() {
                           value={paymentAmount}
                           onChange={e => setPaymentAmount(e.target.value)}
                           className="w-full px-3 py-2 bg-ios-card border border-ios-border/40 rounded-xl text-sm text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
-                          placeholder="Amount"
+                          placeholder={t.amount}
                           autoFocus
                         />
                       </div>
@@ -310,7 +310,7 @@ export default function CalendarView() {
                         value={paymentNote}
                         onChange={e => setPaymentNote(e.target.value)}
                         className="w-full px-3 py-2 bg-ios-card border border-ios-border/40 rounded-xl text-sm text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
-                        placeholder="Note (optional)"
+                        placeholder={t.noteOptional}
                       />
                       {paymentError && (
                         <div className="text-xs text-ios-red bg-ios-red/10 rounded-lg px-3 py-1.5">{paymentError}</div>
@@ -320,7 +320,7 @@ export default function CalendarView() {
                         disabled={actionLoading || !paymentAmount || parseFloat(paymentAmount) <= 0}
                         className="w-full py-2 bg-ios-blue text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-all disabled:opacity-50"
                       >
-                        {actionLoading ? 'Saving...' : 'Record Payment'}
+                        {actionLoading ? t.saving : t.recordPayment}
                       </button>
                     </div>
                   )}

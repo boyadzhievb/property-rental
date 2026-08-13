@@ -4,6 +4,7 @@ import { useRooms } from '../../hooks/useRooms';
 import { useGuests } from '../../hooks/useGuests';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useGuestContext } from '../../context/GuestContext';
+import { useLocale } from '../../context/LocaleContext';
 import { reservationService } from '../../services/ReservationService';
 import { guestService } from '../../services/GuestService';
 import { GuestSchema } from '../../schemas/GuestSchema';
@@ -26,7 +27,7 @@ interface FormData {
 
 type FormErrors = Partial<Record<string, string>>;
 
-function validateGuestStep(form: FormData): FormErrors {
+function validateGuestStep(form: FormData, pleaseSelectGuestMsg: string): FormErrors {
   const errors: FormErrors = {};
 
   if (form.isNewGuest) {
@@ -49,7 +50,7 @@ function validateGuestStep(form: FormData): FormErrors {
     }
   } else {
     if (!form.guestId) {
-      errors.guestId = 'Please select a guest';
+      errors.guestId = pleaseSelectGuestMsg;
     }
   }
 
@@ -88,6 +89,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
   const { guests } = useGuests();
   const { reservations, refresh: refreshReservations } = useReservationContext();
   const { refresh: refreshGuests } = useGuestContext();
+  const { t } = useLocale();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -123,7 +125,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
   }, [form.roomId, form.checkIn, form.checkOut, rooms]);
 
   const handleNext = () => {
-    const stepErrors = validateGuestStep(form);
+    const stepErrors = validateGuestStep(form, t.pleaseSelectGuest);
     if (Object.keys(stepErrors).length > 0) {
       setErrors(stepErrors);
       return;
@@ -142,7 +144,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
     try {
       const room = rooms.find(r => r.id === form.roomId);
       if (room && form.guestsCount > room.maxGuests) {
-        setErrors({ guestsCount: `Guest count (${form.guestsCount}) exceeds room capacity (${room.maxGuests})` });
+        setErrors({ guestsCount: t.exceedsCapacity });
         return;
       }
 
@@ -150,7 +152,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
         r => r.roomId === form.roomId && r.isActive() && r.overlaps(form.checkIn, form.checkOut)
       );
       if (conflict) {
-        setErrors({ checkIn: `Room is already booked from ${conflict.arrivalDate} to ${conflict.departureDate}` });
+        setErrors({ checkIn: t.roomAlreadyBooked });
         return;
       }
 
@@ -200,14 +202,14 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
     <div className="fixed inset-0 z-50 flex flex-col bg-ios-bg animate-in slide-in-from-bottom-full duration-300 sm:p-5 sm:bg-black/40 sm:justify-center sm:items-center">
       <div className="flex-1 w-full bg-ios-bg sm:max-w-md sm:flex-none sm:rounded-3xl sm:h-auto sm:max-h-[90vh] sm:overflow-hidden flex flex-col shadow-2xl">
         <header className="flex items-center justify-between p-4 bg-ios-bg border-b border-ios-border/30">
-          <button onClick={onClose} className="text-ios-blue text-lg px-2 active:opacity-70 transition-opacity">Cancel</button>
-          <h2 className="font-semibold text-ios-text">New Reservation</h2>
+          <button onClick={onClose} className="text-ios-blue text-lg px-2 active:opacity-70 transition-opacity">{t.cancel}</button>
+          <h2 className="font-semibold text-ios-text">{t.newReservation}</h2>
           <button
             onClick={step === 1 ? handleNext : handleSave}
             className="text-ios-blue font-semibold text-lg px-2 active:opacity-70 transition-opacity disabled:opacity-40"
             disabled={submitting}
           >
-            {step === 1 ? 'Next' : 'Save'}
+            {step === 1 ? t.next : t.save}
           </button>
         </header>
 

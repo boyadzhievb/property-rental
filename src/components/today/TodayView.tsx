@@ -179,7 +179,7 @@ export default function TodayView() {
           <StatCard
             icon={<CheckCircle2 size={24} className="text-ios-blue" />}
             value={pendingTasks.length}
-            label="Tasks"
+            label={t.tasks}
             active={activeFilter === 'tasks'}
             onClick={() => toggleFilter('tasks')}
           />
@@ -213,7 +213,7 @@ export default function TodayView() {
                         </button>
                       )}
                       {res.status === 'Checked In' && (
-                        <span className="text-xs font-semibold text-ios-green">Done</span>
+                        <span className="text-xs font-semibold text-ios-green">{t.done}</span>
                       )}
                     </div>
                   );
@@ -251,7 +251,7 @@ export default function TodayView() {
                         </button>
                       )}
                       {res.status === 'Checked Out' && (
-                        <span className="text-xs font-semibold text-ios-green">Done</span>
+                        <span className="text-xs font-semibold text-ios-green">{t.done}</span>
                       )}
                     </div>
                   );
@@ -267,7 +267,7 @@ export default function TodayView() {
             <h3 className="text-xl font-bold mb-4">{t.occupied}</h3>
             {occupiedRooms.length === 0 ? (
               <div className="bg-ios-card rounded-3xl p-8 shadow-sm border border-black/[0.04] text-center">
-                <div className="text-ios-text-secondary text-sm">No occupied rooms.</div>
+                <div className="text-ios-text-secondary text-sm">{t.noOccupiedRooms}</div>
               </div>
             ) : (
               <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
@@ -309,7 +309,7 @@ export default function TodayView() {
             <h3 className="text-xl font-bold mb-4">{t.cleaning}</h3>
             {cleaningRooms.length === 0 ? (
               <div className="bg-ios-card rounded-3xl p-8 shadow-sm border border-black/[0.04] text-center">
-                <div className="text-ios-text-secondary text-sm">No rooms need cleaning.</div>
+                <div className="text-ios-text-secondary text-sm">{t.noRoomsCleaning}</div>
               </div>
             ) : (
               <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
@@ -321,7 +321,7 @@ export default function TodayView() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-ios-text text-sm truncate">{room.name}</div>
-                        <div className="text-xs text-ios-text-secondary">Cleaning required</div>
+                        <div className="text-xs text-ios-text-secondary">{t.cleaningRequired}</div>
                       </div>
                     </div>
                   ))}
@@ -334,21 +334,21 @@ export default function TodayView() {
         {/* Today's Tasks */}
         {(activeFilter === null || activeFilter === 'tasks') && <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold">Today's Tasks</h3>
+            <h3 className="text-xl font-bold">{t.todaysTasks}</h3>
             <button
               onClick={() => setShowAddTask(true)}
               className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-full active:scale-95 transition-all"
             >
               <Plus size={14} />
-              Add
+              {t.add}
             </button>
           </div>
 
           {pendingTasks.length === 0 && completedTasks.length === 0 ? (
             <div className="bg-ios-card rounded-3xl p-8 shadow-sm border border-black/[0.04] text-center">
               <CheckCircle2 size={40} className="text-ios-green mx-auto mb-3" />
-              <div className="font-semibold text-ios-text text-lg">All clear!</div>
-              <div className="text-ios-text-secondary text-sm mt-1">No tasks for today.</div>
+              <div className="font-semibold text-ios-text text-lg">{t.allClear}</div>
+              <div className="text-ios-text-secondary text-sm mt-1">{t.noTasksToday}</div>
             </div>
           ) : (
             <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
@@ -372,7 +372,7 @@ export default function TodayView() {
 
                 {completedTasks.length > 0 && pendingTasks.length > 0 && (
                   <div className="px-4 py-2 bg-ios-bg/50">
-                    <span className="text-xs font-semibold text-ios-text-secondary uppercase">Completed</span>
+                    <span className="text-xs font-semibold text-ios-text-secondary uppercase">{t.completed}</span>
                   </div>
                 )}
 
@@ -405,7 +405,7 @@ export default function TodayView() {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddTask(false)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
-              <h3 className="text-lg font-bold text-ios-text">New Task</h3>
+              <h3 className="text-lg font-bold text-ios-text">{t.newTask}</h3>
               <button
                 onClick={() => setShowAddTask(false)}
                 className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
@@ -416,27 +416,27 @@ export default function TodayView() {
 
             <div className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-1">What needs doing?</label>
+                <label className="block text-sm font-medium text-ios-text mb-1">{t.whatNeedsDoing}</label>
                 <input
                   type="text"
                   value={newTaskTitle}
                   onChange={e => setNewTaskTitle(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddTask()}
                   className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
-                  placeholder="e.g. Call Maria about arrival time"
+                  placeholder={t.taskPlaceholder}
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-2">Category</label>
+                <label className="block text-sm font-medium text-ios-text mb-2">{t.category}</label>
                 <div className="grid grid-cols-2 gap-2">
                   {([
-                    { key: 'cleaning', label: 'Cleaning', icon: <SprayCan size={14} /> },
-                    { key: 'preparation', label: 'Preparation', icon: <Sparkles size={14} /> },
-                    { key: 'payment', label: 'Payment', icon: <CreditCard size={14} /> },
-                    { key: 'communication', label: 'Communication', icon: <Phone size={14} /> },
-                    { key: 'custom', label: 'Other', icon: <MessageSquare size={14} /> },
+                    { key: 'cleaning', label: t.taskCleaning, icon: <SprayCan size={14} /> },
+                    { key: 'preparation', label: t.taskPreparation, icon: <Sparkles size={14} /> },
+                    { key: 'payment', label: t.taskPayment, icon: <CreditCard size={14} /> },
+                    { key: 'communication', label: t.taskCommunication, icon: <Phone size={14} /> },
+                    { key: 'custom', label: t.taskOther, icon: <MessageSquare size={14} /> },
                   ] as { key: TaskCategory; label: string; icon: React.ReactNode }[]).map(cat => (
                     <button
                       key={cat.key}
@@ -459,7 +459,7 @@ export default function TodayView() {
                 disabled={!newTaskTitle.trim()}
                 className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
               >
-                Add Task
+                {t.addTask}
               </button>
             </div>
           </div>

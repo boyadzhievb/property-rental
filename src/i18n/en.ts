@@ -20,7 +20,24 @@ const en = {
   noDeparturesToday: 'No departures today.',
   noEventsToday: 'No events scheduled for today.',
   noOccupiedRooms: 'No occupied rooms.',
-  noRoomsCleaning: 'No rooms being cleaned.',
+  noRoomsCleaning: 'No rooms need cleaning.',
+  cleaningRequired: 'Cleaning required',
+  tasks: 'Tasks',
+  todaysTasks: "Today's Tasks",
+  allClear: 'All clear!',
+  noTasksToday: 'No tasks for today.',
+  completed: 'Completed',
+  done: 'Done',
+  newTask: 'New Task',
+  whatNeedsDoing: 'What needs doing?',
+  taskPlaceholder: 'e.g. Call Maria about arrival time',
+  category: 'Category',
+  taskCleaning: 'Cleaning',
+  taskPreparation: 'Preparation',
+  taskPayment: 'Payment',
+  taskCommunication: 'Communication',
+  taskOther: 'Other',
+  addTask: 'Add Task',
 
   // Actions
   checkIn: 'Check In',
@@ -36,7 +53,7 @@ const en = {
   checkedOut: 'Checked Out',
   cancelled: 'Cancelled',
 
-  // Calendar
+  // Calendar & Reservation detail
   noReservationsThisWeek: 'No reservations this week.',
   reservation: 'Reservation',
   guest: 'Guest',
@@ -45,6 +62,74 @@ const en = {
   departure: 'Departure',
   status: 'Status',
   noActionsAvailable: 'No actions available — reservation is',
+
+  // Payments
+  payment: 'Payment',
+  total: 'Total',
+  paid: 'Paid',
+  balance: 'Balance',
+  fullyPaid: 'Fully paid',
+  amount: 'Amount',
+  method: 'Method',
+  noteOptional: 'Note (optional)',
+  notePlaceholder: 'e.g. Advance deposit',
+  saving: 'Saving...',
+  recordPayment: 'Record Payment',
+  addPayment: 'Add Payment',
+  balanceRemaining: 'Balance remaining',
+  paymentFailed: 'Payment failed',
+
+  // Guests
+  searchGuests: 'Search guests...',
+  noGuestsFound: 'No guests found.',
+  reservations: 'Reservations',
+  noReservationsFound: 'No reservations found.',
+
+  // Reports
+  reports: 'Reports',
+  week: 'Week',
+  month: 'Month',
+  collected: 'Collected',
+  bookedRevenue: 'Booked revenue',
+  outstanding: 'Outstanding',
+  occupancy: 'Occupancy',
+  byMethod: 'By method',
+  outstandingBalances: 'Outstanding balances',
+  recentPayments: 'Recent payments',
+  noPaymentsYet: 'No payments recorded yet.',
+
+  // Reservations
+  newReservation: 'New Reservation',
+  cancel: 'Cancel',
+  next: 'Next',
+  save: 'Save',
+  pleaseSelectGuest: 'Please select a guest',
+  exceedsCapacity: 'Guest count exceeds room capacity',
+  roomAlreadyBooked: 'Room is already booked for these dates',
+  newGuest: 'New Guest',
+  selectExisting: 'Select Existing',
+  guestName: 'Guest Name',
+  phoneNumber: 'Phone Number',
+  emailOptional: 'Email (Optional)',
+  selectGuest: 'Select Guest',
+  stayDetails: 'Stay Details',
+  occupiedDates: 'Occupied Dates',
+  checkInDate: 'Check-in',
+  checkOutDate: 'Check-out',
+  guestsCount: 'Guests',
+  totalPrice: 'Total Price',
+
+  // Rooms
+  add: 'Add',
+  roomName: 'Room name',
+  pricePerNight: 'Price / night',
+  maxGuests: 'Max guests',
+  addRoom: 'Add Room',
+  guestsMax: 'guests max',
+  perNight: '/ night',
+  markAsCleaned: 'Mark as Cleaned',
+  markForMaintenance: 'Mark for Maintenance',
+  markAsAvailable: 'Mark as Available',
 
   // Settings
   preferences: 'Preferences',
@@ -59,9 +144,27 @@ const en = {
   light: 'Light',
   dark: 'Dark',
   system: 'System',
+  failedToExport: 'Failed to export backup',
+  fileMustBeJson: 'Error: file must be a .json file',
+  fileNotValidJson: 'Error: file is not valid JSON',
+  backupRestored: 'Backup restored successfully',
+  failedToRestore: 'Error: failed to restore backup',
 
-  // Reports
-  reports: 'Reports',
+  // Setup
+  welcome: 'Welcome',
+  setupDescription: "Let's set up your property.",
+  propertyName: 'Property Name',
+  numberOfRooms: 'Number of Rooms',
+  configureApp: 'Configure App',
+  or: 'OR',
+  importBackup: 'Import Backup',
+  invalidBackupFormat: 'Invalid backup file format.',
+  couldNotReadFile: 'Could not read file. Make sure it is a valid JSON backup.',
+  seedDemoData: 'Seed with Demo Data',
+
+  // Error
+  somethingWentWrong: 'Something went wrong',
+  tryAgain: 'Try again',
 
   // Common
   loading: 'Loading...',

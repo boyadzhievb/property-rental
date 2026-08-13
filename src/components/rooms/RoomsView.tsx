@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useRooms } from '../../hooks/useRooms';
+import { useLocale } from '../../context/LocaleContext';
 import PageHeader from '../layout/PageHeader';
 import RoomCard from './RoomCard';
 import AddRoomForm from './AddRoomForm';
 
 export default function RoomsView() {
   const { rooms, loading, refresh } = useRooms();
+  const { t } = useLocale();
   const [showForm, setShowForm] = useState(false);
 
   if (loading) {
     return (
       <div className="pb-24">
-        <PageHeader title="Rooms" />
-        <div className="px-5 text-center text-ios-text-secondary py-12">Loading...</div>
+        <PageHeader title={t.rooms} />
+        <div className="px-5 text-center text-ios-text-secondary py-12">{t.loading}</div>
       </div>
     );
   }
@@ -21,14 +23,14 @@ export default function RoomsView() {
   return (
     <div className="pb-24">
       <PageHeader
-        title="Rooms"
+        title={t.rooms}
         right={
           <button
             onClick={() => setShowForm(true)}
             className="text-ios-blue font-semibold flex items-center gap-1 active:opacity-70 transition-opacity"
           >
             <Plus size={20} />
-            <span>Add</span>
+            <span>{t.add}</span>
           </button>
         }
       />

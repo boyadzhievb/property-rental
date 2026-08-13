@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, Search, UserPlus } from 'lucide-react';
 import { type Guest } from '../../domain/Guest';
+import { useLocale } from '../../context/LocaleContext';
 
 interface FormErrors {
   guestId?: string;
@@ -23,6 +24,7 @@ interface GuestInfoStepProps {
 }
 
 export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, guestName, phone, email, errors, onSelectGuest, onToggleNewGuest, onUpdate }: GuestInfoStepProps) {
+  const { t } = useLocale();
   const [search, setSearch] = useState('');
 
   const filtered = guests.filter(g =>
@@ -36,14 +38,14 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
       <div className="space-y-6">
         <div>
           <div className="flex items-center justify-between ml-4 mr-4 mb-2">
-            <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold">New Guest</div>
-            <button onClick={onToggleNewGuest} className="text-xs text-ios-blue font-medium">Select Existing</button>
+            <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold">{t.newGuest}</div>
+            <button onClick={onToggleNewGuest} className="text-xs text-ios-blue font-medium">{t.selectExisting}</button>
           </div>
           <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
             <div>
               <input
                 type="text"
-                placeholder="Guest Name"
+                placeholder={t.guestName}
                 value={guestName}
                 onChange={(e) => onUpdate('guestName', e.target.value)}
                 className="w-full p-4 border-b border-ios-border/40 focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
@@ -54,7 +56,7 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
             <div>
               <input
                 type="tel"
-                placeholder="Phone Number"
+                placeholder={t.phoneNumber}
                 value={phone}
                 onChange={(e) => onUpdate('phone', e.target.value)}
                 className="w-full p-4 border-b border-ios-border/40 focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
@@ -64,7 +66,7 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
             <div>
               <input
                 type="email"
-                placeholder="Email (Optional)"
+                placeholder={t.emailOptional}
                 value={email}
                 onChange={(e) => onUpdate('email', e.target.value)}
                 className="w-full p-4 focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
@@ -81,9 +83,9 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
     <div className="space-y-6">
       <div>
         <div className="flex items-center justify-between ml-4 mr-4 mb-2">
-          <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold">Select Guest</div>
+          <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold">{t.selectGuest}</div>
           <button onClick={onToggleNewGuest} className="text-xs text-ios-blue font-medium flex items-center gap-1">
-            <UserPlus size={12} /> New Guest
+            <UserPlus size={12} /> {t.newGuest}
           </button>
         </div>
         <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
@@ -91,7 +93,7 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
             <Search size={16} className="text-ios-text-secondary mr-2 shrink-0" />
             <input
               type="text"
-              placeholder="Search guests..."
+              placeholder={t.searchGuests}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
@@ -100,7 +102,7 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
           </div>
           <div className="max-h-80 overflow-y-auto divide-y divide-ios-border/40">
             {filtered.length === 0 && (
-              <div className="p-4 text-sm text-ios-text-secondary text-center">No guests found</div>
+              <div className="p-4 text-sm text-ios-text-secondary text-center">{t.noGuestsFound}</div>
             )}
             {filtered.map(guest => (
               <button
