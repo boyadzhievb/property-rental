@@ -17,16 +17,36 @@ server/data.db-shm
 TODO*
 FLOWS*
 HLD*
+GOOGLE_PLAY_UPLOAD.md
 
-# Capacitor native projects
-android/app/src/main/assets/public/
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+
+# Signing keys
+*.jks
+*.keystore
+
+# Capacitor native projects — Android
 android/.gradle/
+android/.idea/
 android/app/build/
 android/build/
+android/capacitor-cordova-android-plugins/build/
+android/local-repo/
 android/local.properties
+android/app/src/main/assets/public/
 android/*.iml
 android/app/*.iml
+
+# Capacitor native projects — iOS
 ios/App/App/public/
 ios/App/Pods/
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
 ios/DerivedData/
 *.xcworkspace/xcuserdata/
