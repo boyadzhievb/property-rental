@@ -17,3 +17,16 @@ server/data.db-shm
 TODO*
 FLOWS*
 HLD*
+
+# Capacitor native projects
+android/app/src/main/assets/public/
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/*.iml
+android/app/*.iml
+ios/App/App/public/
+ios/App/Pods/
+ios/DerivedData/
+*.xcworkspace/xcuserdata/
