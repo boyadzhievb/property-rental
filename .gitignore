@@ -30,6 +30,7 @@ Thumbs.db
 # Signing keys
 *.jks
 *.keystore
+android/keystore.properties
 
 # Capacitor native projects — Android
 android/.gradle/
