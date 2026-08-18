@@ -120,4 +120,20 @@ The app auto-deploys to GitHub Pages on push to `master` via the included GitHub
 
 ## Mobile
 
-See `TODO-mobile.md` for the plan to wrap this app with Capacitor for Google Play Store and iOS App Store distribution.
+The app is wrapped with Capacitor 8 for native distribution:
+
+```bash
+# Build and sync to native projects
+npm run build
+npx cap sync
+
+# Open in Android Studio / Xcode
+npx cap open android
+npx cap open ios
+```
+
+App ID: `com.boyadboz.propertyrental`
+
+## Privacy Policy
+
+A standalone privacy policy page is served at `/privacy-policy.html` on GitHub Pages. It is accessible from the app's Settings tab. The policy reflects that this app is fully offline with no data collection or third-party services.
