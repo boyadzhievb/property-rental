@@ -162,6 +162,9 @@ const en = {
   couldNotReadFile: 'Could not read file. Make sure it is a valid JSON backup.',
   seedDemoData: 'Seed with Demo Data',
 
+  // Privacy Policy
+  privacyPolicy: 'Privacy Policy',
+
   // Error
   somethingWentWrong: 'Something went wrong',
   tryAgain: 'Try again',

@@ -152,6 +152,9 @@ const el: TranslationKeys = {
   couldNotReadFile: 'Δεν ήταν δυνατή η ανάγνωση του αρχείου. Βεβαιωθείτε ότι είναι έγκυρο JSON.',
   seedDemoData: 'Φόρτωση δεδομένων επίδειξης',
 
+  // Privacy Policy
+  privacyPolicy: 'Πολιτική Απορρήτου',
+
   somethingWentWrong: 'Κάτι πήγε στραβά',
   tryAgain: 'Δοκιμάστε ξανά',
 

@@ -152,6 +152,9 @@ const bg: TranslationKeys = {
   couldNotReadFile: 'Файлът не може да бъде прочетен. Уверете се, че е валиден JSON.',
   seedDemoData: 'Зареди демо данни',
 
+  // Privacy Policy
+  privacyPolicy: 'Политика за поверителност',
+
   somethingWentWrong: 'Нещо се обърка',
   tryAgain: 'Опитай отново',
 

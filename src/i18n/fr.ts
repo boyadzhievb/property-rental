@@ -152,6 +152,9 @@ const fr: TranslationKeys = {
   couldNotReadFile: 'Impossible de lire le fichier. Assurez-vous que c\'est un JSON valide.',
   seedDemoData: 'Charger les données de démonstration',
 
+  // Privacy Policy
+  privacyPolicy: 'Politique de confidentialité',
+
   somethingWentWrong: "Quelque chose s'est mal passé",
   tryAgain: 'Réessayer',
 

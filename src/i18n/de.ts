@@ -152,6 +152,9 @@ const de: TranslationKeys = {
   couldNotReadFile: 'Datei konnte nicht gelesen werden. Stellen Sie sicher, dass es ein gültiges JSON-Backup ist.',
   seedDemoData: 'Mit Demodaten füllen',
 
+  // Privacy Policy
+  privacyPolicy: 'Datenschutzrichtlinie',
+
   somethingWentWrong: 'Etwas ist schiefgelaufen',
   tryAgain: 'Erneut versuchen',
 

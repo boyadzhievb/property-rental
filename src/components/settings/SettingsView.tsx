@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Download, Upload, RotateCcw, Palette, Check, Globe } from 'lucide-react';
+import { Download, Upload, RotateCcw, Palette, Check, Globe, Shield } from 'lucide-react';
 import { usePropertyContext } from '../../context/PropertyContext';
 import { APP_VERSION } from '../../version';
 import { useTheme, type ThemeMode } from '../../context/ThemeContext';
@@ -209,6 +209,12 @@ export default function SettingsView() {
           </div>
           <div onClick={() => { if (confirm(t.resetConfirm)) resetData(); }}>
             <SettingsItem icon={RotateCcw} label={t.resetData} color="bg-ios-red" />
+          </div>
+        </SettingsGroup>
+
+        <SettingsGroup>
+          <div onClick={() => window.open(`${import.meta.env.BASE_URL}privacy-policy.html`, '_blank')}>
+            <SettingsItem icon={Shield} label={t.privacyPolicy} color="bg-ios-purple" />
           </div>
         </SettingsGroup>
 
