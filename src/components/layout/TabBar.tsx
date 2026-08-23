@@ -14,7 +14,7 @@ interface TabBarProps {
 
 export default function TabBar({ items, activeTab, onTabChange }: TabBarProps) {
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-30">
+    <div className="fixed bottom-0 left-0 right-0 z-30">
       <nav className="h-20 bg-ios-bg/80 backdrop-blur-xl border-t border-ios-border/30 px-2 pb-6 pt-2 flex justify-around sm:justify-center sm:gap-16 items-center w-full max-w-screen-xl mx-auto">
         {items.map(item => {
           const isActive = activeTab === item.id;
