@@ -9,11 +9,11 @@ test.describe('Seed Data', () => {
     await expect(page.getByText(/today/i).first()).toBeVisible();
 
     // Stats should be visible
-    await expect(page.getByText('Arrivals')).toBeVisible();
-    await expect(page.getByText('Departures')).toBeVisible();
-    await expect(page.getByText('Occupied')).toBeVisible();
-    await expect(page.getByText('Cleaning')).toBeVisible();
-    await expect(page.getByText('Tasks')).toBeVisible();
+    await expect(page.getByText('Arrivals').first()).toBeVisible();
+    await expect(page.getByText('Departures').first()).toBeVisible();
+    await expect(page.getByText('Occupied').first()).toBeVisible();
+    await expect(page.getByText('Cleaning').first()).toBeVisible();
+    await expect(page.getByText('Tasks').first()).toBeVisible();
   });
 
   test('seeded data shows rooms', async ({ page }) => {
@@ -60,9 +60,9 @@ test.describe('Seed Data', () => {
     await page.getByRole('button', { name: /reports/i }).click();
 
     // Should show report cards
-    await expect(page.getByText('Collected')).toBeVisible();
-    await expect(page.getByText('Booked revenue')).toBeVisible();
-    await expect(page.getByText('Outstanding')).toBeVisible();
-    await expect(page.getByText('Occupancy')).toBeVisible();
+    await expect(page.getByText('Collected').first()).toBeVisible();
+    await expect(page.getByText('Booked revenue').first()).toBeVisible();
+    await expect(page.getByText('Outstanding', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Occupancy').first()).toBeVisible();
   });
 });

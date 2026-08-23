@@ -21,7 +21,7 @@ test.describe('Reservation Creation - New Guest', () => {
   });
 
   test('creates a reservation with a new guest', async ({ page }) => {
-    await page.locator('button.rounded-full').click();
+    await page.locator('button.w-14.h-14').click();
     await expect(page.getByText('New Reservation')).toBeVisible();
 
     // Step 1: Create a new guest
@@ -64,7 +64,7 @@ test.describe('Reservation Creation - New Guest', () => {
   });
 
   test('validates guest name is required', async ({ page }) => {
-    await page.locator('button.rounded-full').click();
+    await page.locator('button.w-14.h-14').click();
     await page.getByText('New Guest').click();
 
     // Try to proceed without filling name
@@ -75,7 +75,7 @@ test.describe('Reservation Creation - New Guest', () => {
   });
 
   test('validates room selection is required', async ({ page }) => {
-    await page.locator('button.rounded-full').click();
+    await page.locator('button.w-14.h-14').click();
     await page.getByText('New Guest').click();
     await page.getByPlaceholder('Guest Name').fill('Test User');
     await page.getByPlaceholder('Phone Number').fill('+1111111111');
@@ -95,7 +95,7 @@ test.describe('Reservation Creation - Existing Guest', () => {
   test('creates reservation selecting from seeded guests', async ({ page }) => {
     await seedApp(page);
 
-    await page.locator('button.rounded-full').click();
+    await page.locator('button.w-14.h-14').click();
     await expect(page.getByText('New Reservation')).toBeVisible();
 
     // Should show guest list with search
@@ -113,7 +113,7 @@ test.describe('Reservation Creation - Existing Guest', () => {
   test('can search guests by name', async ({ page }) => {
     await seedApp(page);
 
-    await page.locator('button.rounded-full').click();
+    await page.locator('button.w-14.h-14').click();
     const searchInput = page.getByPlaceholder('Search guests...');
     await searchInput.fill('zzzznonexistent');
 
@@ -126,7 +126,7 @@ test.describe('Reservation - Date Conflict', () => {
     await setupApp(page);
 
     // Create first reservation
-    await page.locator('button.rounded-full').click();
+    await page.locator('button.w-14.h-14').click();
     await page.getByText('New Guest').click();
     await page.getByPlaceholder('Guest Name').fill('First Guest');
     await page.getByPlaceholder('Phone Number').fill('+1111111111');
@@ -146,7 +146,7 @@ test.describe('Reservation - Date Conflict', () => {
     await expect(page.getByText('New Reservation')).not.toBeVisible();
 
     // Try to create overlapping reservation for same room
-    await page.locator('button.rounded-full').click();
+    await page.locator('button.w-14.h-14').click();
     await page.getByText('New Guest').click();
     await page.getByPlaceholder('Guest Name').fill('Second Guest');
     await page.getByPlaceholder('Phone Number').fill('+2222222222');

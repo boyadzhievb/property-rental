@@ -42,7 +42,7 @@ test.describe('Navigation', () => {
   });
 
   test('FAB button opens new reservation modal', async ({ page }) => {
-    const fab = page.locator('button.rounded-full');
+    const fab = page.locator('button.w-14.h-14');
     await fab.click();
     await expect(page.getByText('New Reservation')).toBeVisible();
   });
