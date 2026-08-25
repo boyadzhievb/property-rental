@@ -1,7 +1,7 @@
 {
   "name": "property-rental",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "engines": {
     "node": ">=22"
@@ -32,6 +32,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.0.0",
     "@testing-library/jest-dom": "^7.0.1",

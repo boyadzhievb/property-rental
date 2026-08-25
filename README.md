@@ -134,6 +134,21 @@ npx cap open ios
 
 App ID: `com.boyadboz.propertyrental`
 
+### App Icons
+
+App icons are generated from `assets/icon-only.png` using:
+
+```bash
+npx capacitor-assets generate
+```
+
+This produces platform-specific icons in:
+- **Android** — `android/app/src/main/res/mipmap-*/ic_launcher.png` and `ic_launcher_round.png`
+- **iOS** — `ios/App/App/Assets.xcassets/AppIcon.appiconset/`
+- **PWA** — `icons/icon-*.webp` (referenced in `public/manifest.json`)
+
+To update the app icon, replace `assets/icon-only.png` and re-run the generate command.
+
 ## Privacy Policy
 
 A standalone privacy policy page is served at `/privacy-policy.html` on GitHub Pages. It is accessible from the app's Settings tab. The policy reflects that this app is fully offline with no data collection or third-party services.
