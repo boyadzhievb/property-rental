@@ -142,6 +142,7 @@ const fr: TranslationKeys = {
   failedToRestore: 'Erreur : échec de la restauration',
 
   welcome: 'Bienvenue',
+  setupTagline: 'Un moyen simple et privé de gérer votre propriété.',
   setupDescription: 'Configurons votre propriété.',
   propertyName: 'Nom de la propriété',
   numberOfRooms: 'Nombre de chambres',

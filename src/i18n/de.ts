@@ -142,6 +142,7 @@ const de: TranslationKeys = {
   failedToRestore: 'Fehler: Backup konnte nicht wiederhergestellt werden',
 
   welcome: 'Willkommen',
+  setupTagline: 'Eine einfache und private Verwaltung für Ihre Unterkunft.',
   setupDescription: 'Richten wir Ihre Unterkunft ein.',
   propertyName: 'Name der Unterkunft',
   numberOfRooms: 'Anzahl der Zimmer',

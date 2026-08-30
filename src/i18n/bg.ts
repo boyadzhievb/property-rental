@@ -142,6 +142,7 @@ const bg: TranslationKeys = {
   failedToRestore: 'Грешка: неуспешно възстановяване',
 
   welcome: 'Добре дошли',
+  setupTagline: 'Лесен и поверителен начин да управлявате имота си.',
   setupDescription: 'Нека настроим вашия имот.',
   propertyName: 'Име на имот',
   numberOfRooms: 'Брой стаи',

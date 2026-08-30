@@ -152,6 +152,7 @@ const en = {
 
   // Setup
   welcome: 'Welcome',
+  setupTagline: 'A simple, private way to manage your property.',
   setupDescription: "Let's set up your property.",
   propertyName: 'Property Name',
   numberOfRooms: 'Number of Rooms',

@@ -142,6 +142,7 @@ const el: TranslationKeys = {
   failedToRestore: 'Σφάλμα: αποτυχία αποκατάστασης',
 
   welcome: 'Καλώς ήρθατε',
+  setupTagline: 'Ένας απλός και ιδιωτικός τρόπος διαχείρισης του καταλύματός σας.',
   setupDescription: 'Ας ρυθμίσουμε το κατάλυμά σας.',
   propertyName: 'Όνομα καταλύματος',
   numberOfRooms: 'Αριθμός δωματίων',

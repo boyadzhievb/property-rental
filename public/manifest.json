@@ -1,7 +1,7 @@
 {
   "name": "Property Rental",
   "short_name": "Rental",
-  "description": "Manage property reservations with a mobile-first app.",
+  "description": "Your property. Your reservations. Simple. Private. Offline.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

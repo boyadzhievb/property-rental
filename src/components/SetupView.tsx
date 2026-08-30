@@ -43,7 +43,8 @@ export default function SetupView({ onConfigure, onSeedData, onImport }: SetupVi
         <Home size={40} />
       </div>
       <h1 className="text-3xl font-bold text-ios-text mb-2">{t.welcome}</h1>
-      <p className="text-ios-text-secondary mb-10">{t.setupDescription}</p>
+      <p className="text-ios-text-secondary mb-1">{t.setupTagline}</p>
+      <p className="text-ios-text-secondary/60 text-sm mb-10">{t.setupDescription}</p>
 
       <div className="w-full bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04] mb-6 space-y-4 text-left">
         <div>
