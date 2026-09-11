@@ -170,6 +170,21 @@ const en = {
   somethingWentWrong: 'Something went wrong',
   tryAgain: 'Try again',
 
+  // Accessibility
+  close: 'Close',
+  edit: 'Edit',
+  previousWeek: 'Previous week',
+  nextWeek: 'Next week',
+
+  // PWA
+  installApp: 'Install App',
+  installDescription: 'Add to your home screen for quick access',
+  install: 'Install',
+  youAreOffline: "You're offline — all data is saved locally",
+  backOnline: 'Back online',
+  newVersionAvailable: 'A new version is available',
+  refresh: 'Refresh',
+
   // Common
   loading: 'Loading...',
 };

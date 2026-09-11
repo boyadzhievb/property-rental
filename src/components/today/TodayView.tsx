@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { LogIn, LogOut, SprayCan, CreditCard, CheckCircle2, Plus, X, Phone, MessageSquare, Sparkles, Home } from 'lucide-react';
 import { useToday } from '../../hooks/useToday';
 import { usePropertyContext } from '../../context/PropertyContext';
@@ -32,6 +32,9 @@ export default function TodayView() {
   const today = new Date();
   const localDate = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 
+  const guestMap = useMemo(() => data ? new Map(data.guests.map(g => [g.id, g])) : new Map(), [data?.guests]);
+  const roomMap = useMemo(() => data ? new Map(data.rooms.map(r => [r.id, r])) : new Map(), [data?.rooms]);
+
   const generateAutoTasks = useCallback(async () => {
     if (!data) return;
 
@@ -40,8 +43,8 @@ export default function TodayView() {
       .map(r => ({ id: r.id, name: r.name }));
 
     const preparationRoomIds = data.arrivals.map(res => {
-      const room = data.rooms.find(r => r.id === res.roomId);
-      const guest = data.guests.find(g => g.id === res.guestId);
+      const room = roomMap.get(res.roomId);
+      const guest = guestMap.get(res.guestId);
       return { id: res.roomId, name: room?.name ?? '', guestName: guest?.name ?? '' };
     });
 
@@ -55,14 +58,14 @@ export default function TodayView() {
         .filter(p => p.reservationId === res.id)
         .reduce((sum, p) => sum + p.amount, 0);
       if (res.price - totalPaid > 0) {
-        const guest = data.guests.find(g => g.id === res.guestId);
+        const guest = guestMap.get(res.guestId);
         pendingPayments.push({ reservationId: res.id, guestName: guest?.name ?? '' });
       }
     }
 
     await taskService.ensureAutoTasks({ cleaningRoomIds, preparationRoomIds, pendingPayments });
     await refreshTasks();
-  }, [data, payments, refreshTasks]);
+  }, [data, payments, refreshTasks, guestMap, roomMap]);
 
   useEffect(() => {
     if (data) generateAutoTasks();
@@ -192,8 +195,8 @@ export default function TodayView() {
             <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
               <div className="divide-y divide-ios-border/40">
                 {data.arrivals.map(res => {
-                  const guest = data.guests.find(g => g.id === res.guestId);
-                  const room = data.rooms.find(r => r.id === res.roomId);
+                  const guest = guestMap.get(res.guestId);
+                  const room = roomMap.get(res.roomId);
                   return (
                     <div key={`arr-${res.id}`} className="flex items-center p-4 gap-3">
                       <div className="flex-shrink-0 w-9 h-9 rounded-full bg-ios-blue/10 flex items-center justify-center">
@@ -230,8 +233,8 @@ export default function TodayView() {
             <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
               <div className="divide-y divide-ios-border/40">
                 {data.departures.map(res => {
-                  const guest = data.guests.find(g => g.id === res.guestId);
-                  const room = data.rooms.find(r => r.id === res.roomId);
+                  const guest = guestMap.get(res.guestId);
+                  const room = roomMap.get(res.roomId);
                   return (
                     <div key={`dep-${res.id}`} className="flex items-center p-4 gap-3">
                       <div className="flex-shrink-0 w-9 h-9 rounded-full bg-ios-orange/10 flex items-center justify-center">
@@ -275,7 +278,7 @@ export default function TodayView() {
                   {occupiedRooms.map(room => {
                     const res = data.arrivals.find(r => r.roomId === room.id && r.status === 'Checked In')
                       || data.departures.find(r => r.roomId === room.id && r.status === 'Checked In');
-                    const guest = res ? data.guests.find(g => g.id === res.guestId) : null;
+                    const guest = res ? guestMap.get(res.guestId) : null;
                     return (
                       <div key={room.id} className="flex items-center p-4 gap-3">
                         <div className="flex-shrink-0 w-9 h-9 rounded-full bg-ios-red/10 flex items-center justify-center">
@@ -401,14 +404,15 @@ export default function TodayView() {
 
       {/* Add Task Modal */}
       {showAddTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" onKeyDown={e => e.key === 'Escape' && setShowAddTask(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="add-task-title" onKeyDown={e => e.key === 'Escape' && setShowAddTask(false)}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddTask(false)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
-              <h3 className="text-lg font-bold text-ios-text">{t.newTask}</h3>
+              <h3 id="add-task-title" className="text-lg font-bold text-ios-text">{t.newTask}</h3>
               <button
                 onClick={() => setShowAddTask(false)}
-                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
+                aria-label={t.close || 'Close'}
+                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded-lg focus-visible:outline-none"
               >
                 <X size={20} />
               </button>

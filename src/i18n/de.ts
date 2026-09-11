@@ -159,6 +159,18 @@ const de: TranslationKeys = {
   somethingWentWrong: 'Etwas ist schiefgelaufen',
   tryAgain: 'Erneut versuchen',
 
+  close: 'Schließen',
+  edit: 'Bearbeiten',
+  previousWeek: 'Vorherige Woche',
+  nextWeek: 'Nächste Woche',
+  installApp: 'App installieren',
+  installDescription: 'Zum Startbildschirm hinzufügen für schnellen Zugriff',
+  install: 'Installieren',
+  youAreOffline: 'Sie sind offline — alle Daten werden lokal gespeichert',
+  backOnline: 'Wieder online',
+  newVersionAvailable: 'Eine neue Version ist verfügbar',
+  refresh: 'Aktualisieren',
+
   loading: 'Laden...',
 };
 

@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import { type Locale, type TranslationKeys, getTranslations } from '../i18n';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { type Locale, type TranslationKeys, getTranslations, loadTranslations } from '../i18n';
 
 interface LocaleContextValue {
   locale: Locale;
@@ -21,13 +21,21 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
+  const [t, setT] = useState<TranslationKeys>(() => getTranslations(getInitialLocale()));
 
-  const setLocale = useCallback((newLocale: Locale) => {
-    setLocaleState(newLocale);
-    localStorage.setItem(STORAGE_KEY, newLocale);
+  useEffect(() => {
+    if (locale !== 'en') {
+      loadTranslations(locale).then(setT);
+    }
   }, []);
 
-  const t = getTranslations(locale);
+  const setLocale = useCallback((newLocale: Locale) => {
+    loadTranslations(newLocale).then((translations) => {
+      setLocaleState(newLocale);
+      setT(translations);
+      localStorage.setItem(STORAGE_KEY, newLocale);
+    });
+  }, []);
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale, t }}>

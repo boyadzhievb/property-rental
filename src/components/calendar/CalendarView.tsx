@@ -130,7 +130,8 @@ export default function CalendarView() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setWeekStart(subDays(weekStart, 7))}
-              className="p-2 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70 transition-opacity"
+              aria-label={t.previousWeek || 'Previous week'}
+              className="p-2 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70 transition-opacity focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
             >
               <ChevronLeft size={20} />
             </button>
@@ -139,7 +140,8 @@ export default function CalendarView() {
             </span>
             <button
               onClick={() => setWeekStart(addDays(weekStart, 7))}
-              className="p-2 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70 transition-opacity"
+              aria-label={t.nextWeek || 'Next week'}
+              className="p-2 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70 transition-opacity focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
             >
               <ChevronRight size={20} />
             </button>
@@ -181,14 +183,15 @@ export default function CalendarView() {
       </div>
 
       {selectedReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" onKeyDown={e => { if (e.key === 'Escape') { setSelectedReservation(null); setShowPaymentForm(false); } }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="reservation-detail-title" onKeyDown={e => { if (e.key === 'Escape') { setSelectedReservation(null); setShowPaymentForm(false); } }}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setSelectedReservation(null); setShowPaymentForm(false); }} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm max-h-[85vh] flex flex-col overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
-              <h3 className="text-lg font-bold text-ios-text">{t.reservation}</h3>
+              <h3 id="reservation-detail-title" className="text-lg font-bold text-ios-text">{t.reservation}</h3>
               <button
                 onClick={() => { setSelectedReservation(null); setShowPaymentForm(false); }}
-                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
+                aria-label={t.close || 'Close'}
+                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded-lg focus-visible:outline-none"
               >
                 <X size={20} />
               </button>

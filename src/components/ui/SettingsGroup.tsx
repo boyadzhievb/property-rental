@@ -28,7 +28,12 @@ interface ItemProps {
 
 export function SettingsItem({ icon: Icon, label, color = 'bg-ios-blue', value }: ItemProps) {
   return (
-    <div className="flex items-center p-4 active:bg-ios-gray-light/30 transition-colors cursor-pointer">
+    <div
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); (e.currentTarget as HTMLElement).click(); } }}
+      className="flex items-center p-4 active:bg-ios-gray-light/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-inset focus-visible:outline-none"
+    >
       <div className={`w-8 h-8 rounded-lg ${color} text-white flex items-center justify-center mr-4`}>
         <Icon size={18} />
       </div>

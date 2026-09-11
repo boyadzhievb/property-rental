@@ -159,6 +159,18 @@ const bg: TranslationKeys = {
   somethingWentWrong: 'Нещо се обърка',
   tryAgain: 'Опитай отново',
 
+  close: 'Затвори',
+  edit: 'Редактирай',
+  previousWeek: 'Предишна седмица',
+  nextWeek: 'Следваща седмица',
+  installApp: 'Инсталирай приложението',
+  installDescription: 'Добави към началния екран за бърз достъп',
+  install: 'Инсталирай',
+  youAreOffline: 'Офлайн сте — всички данни са запазени локално',
+  backOnline: 'Отново онлайн',
+  newVersionAvailable: 'Налична е нова версия',
+  refresh: 'Обнови',
+
   loading: 'Зареждане...',
 };
 

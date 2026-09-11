@@ -199,11 +199,11 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-ios-bg animate-in slide-in-from-bottom-full duration-300 sm:p-5 sm:bg-black/40 sm:justify-center sm:items-center">
+    <div className="fixed inset-0 z-50 flex flex-col bg-ios-bg animate-in slide-in-from-bottom-full duration-300 sm:p-5 sm:bg-black/40 sm:justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="new-reservation-title" onKeyDown={e => { if (e.key === 'Escape') onClose(); }}>
       <div className="flex-1 w-full bg-ios-bg sm:max-w-md sm:flex-none sm:rounded-3xl sm:h-auto sm:max-h-[90vh] sm:overflow-hidden flex flex-col shadow-2xl">
         <header className="flex items-center justify-between p-4 bg-ios-bg border-b border-ios-border/30">
           <button onClick={onClose} className="text-ios-blue text-lg px-2 active:opacity-70 transition-opacity">{t.cancel}</button>
-          <h2 className="font-semibold text-ios-text">{t.newReservation}</h2>
+          <h2 id="new-reservation-title" className="font-semibold text-ios-text">{t.newReservation}</h2>
           <button
             onClick={step === 1 ? handleNext : handleSave}
             className="text-ios-blue font-semibold text-lg px-2 active:opacity-70 transition-opacity disabled:opacity-40"

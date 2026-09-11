@@ -11,11 +11,11 @@
   --color-ios-green: #34C759;
   --color-ios-orange: #FF9500;
   --color-ios-red: #FF3B30;
-  --color-ios-gray: #8E8E93;
+  --color-ios-gray: #6D6D72;
   --color-ios-gray-light: #E5E5EA;
   --color-ios-border: #C6C6C8;
   --color-ios-text: #000000;
-  --color-ios-text-secondary: rgba(60, 60, 67, 0.6);
+  --color-ios-text-secondary: rgba(60, 60, 67, 0.78);
 }
 
 .dark {

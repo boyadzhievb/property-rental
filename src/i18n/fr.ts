@@ -159,6 +159,18 @@ const fr: TranslationKeys = {
   somethingWentWrong: "Quelque chose s'est mal passé",
   tryAgain: 'Réessayer',
 
+  close: 'Fermer',
+  edit: 'Modifier',
+  previousWeek: 'Semaine précédente',
+  nextWeek: 'Semaine suivante',
+  installApp: "Installer l'application",
+  installDescription: "Ajoutez à votre écran d'accueil pour un accès rapide",
+  install: 'Installer',
+  youAreOffline: 'Vous êtes hors ligne — toutes les données sont enregistrées localement',
+  backOnline: 'De retour en ligne',
+  newVersionAvailable: 'Une nouvelle version est disponible',
+  refresh: 'Actualiser',
+
   loading: 'Chargement...',
 };
 

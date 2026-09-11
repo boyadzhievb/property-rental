@@ -19,6 +19,10 @@ export default function ReportsView() {
   const [period, setPeriod] = useState<Period>('month');
   const [offset, setOffset] = useState(0);
 
+  const guestMap = useMemo(() => new Map(guests.map(g => [g.id, g])), [guests]);
+  const roomMap = useMemo(() => new Map(rooms.map(r => [r.id, r])), [rooms]);
+  const reservationMap = useMemo(() => new Map(reservations.map(r => [r.id, r])), [reservations]);
+
   const currentDate = useMemo(() => {
     const now = new Date();
     if (offset === 0) return now;
@@ -92,8 +96,8 @@ export default function ReportsView() {
       const paid = payments.filter(p => p.reservationId === res.id).reduce((s, p) => s + p.amount, 0);
       const balance = res.price - paid;
       if (balance > 0) {
-        const guest = guests.find(g => g.id === res.guestId);
-        const room = rooms.find(r => r.id === res.roomId);
+        const guest = guestMap.get(res.guestId);
+        const room = roomMap.get(res.roomId);
         results.push({
           reservationId: res.id,
           guestName: guest?.name ?? 'Unknown',
@@ -107,7 +111,7 @@ export default function ReportsView() {
     }
     results.sort((a, b) => b.balance - a.balance);
     return results;
-  }, [reservations, payments, guests, rooms]);
+  }, [reservations, payments, guestMap, roomMap]);
 
   const totalOutstanding = useMemo(() =>
     outstandingBalances.reduce((sum, b) => sum + b.balance, 0),
@@ -253,8 +257,8 @@ export default function ReportsView() {
             <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
               <div className="divide-y divide-ios-border/40">
                 {recentPayments.map(p => {
-                  const res = reservations.find(r => r.id === p.reservationId);
-                  const guest = res ? guests.find(g => g.id === res.guestId) : null;
+                  const res = reservationMap.get(p.reservationId);
+                  const guest = res ? guestMap.get(res.guestId) : null;
                   return (
                     <div key={p.id} className="flex items-center p-4 gap-3">
                       <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${

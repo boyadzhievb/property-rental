@@ -46,10 +46,9 @@ test.describe('Seed Data', () => {
 
     await page.getByRole('button', { name: /calendar/i }).click();
 
-    // Calendar should show room names in the left column
+    // Wait for lazy-loaded calendar to render, then check room names
     const roomLabels = page.locator('[class*="w-20"]').filter({ hasText: /room|suite|studio|ocean|garden|villa/i });
-    const count = await roomLabels.count();
-    expect(count).toBeGreaterThan(0);
+    await expect(roomLabels.first()).toBeVisible();
   });
 
   test('reports tab shows financial summary', async ({ page }) => {

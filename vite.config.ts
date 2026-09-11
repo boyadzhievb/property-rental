@@ -20,6 +20,23 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+            return 'vendor';
+          }
+          if (id.includes('node_modules/date-fns')) {
+            return 'date-fns';
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'icons';
+          }
+        },
+      },
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: parseInt(process.env.PORT || '8443'),

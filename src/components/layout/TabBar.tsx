@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type LucideIcon } from 'lucide-react';
 
 interface NavItem {
@@ -12,7 +13,7 @@ interface TabBarProps {
   onTabChange: (id: string) => void;
 }
 
-export default function TabBar({ items, activeTab, onTabChange }: TabBarProps) {
+export default memo(function TabBar({ items, activeTab, onTabChange }: TabBarProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30">
       <nav className="h-20 bg-ios-bg/80 backdrop-blur-xl border-t border-ios-border/30 px-2 pb-6 pt-2 flex justify-around sm:justify-center sm:gap-16 items-center w-full max-w-screen-xl mx-auto">
@@ -23,6 +24,7 @@ export default function TabBar({ items, activeTab, onTabChange }: TabBarProps) {
             <button
               key={item.id}
               onClick={() => onTabChange(item.id)}
+              aria-current={isActive ? 'page' : undefined}
               className={`flex flex-col items-center justify-center w-16 gap-1 transition-colors ${
                 isActive ? 'text-ios-blue' : 'text-ios-gray hover:text-ios-text-secondary'
               }`}
@@ -35,4 +37,4 @@ export default function TabBar({ items, activeTab, onTabChange }: TabBarProps) {
       </nav>
     </div>
   );
-}
+})

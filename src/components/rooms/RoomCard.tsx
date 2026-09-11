@@ -116,7 +116,8 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
             </div>
             <button
               onClick={startEdit}
-              className="p-2 text-ios-text-secondary active:opacity-70 transition-opacity"
+              aria-label={`${t.edit} ${room.name}`}
+              className="p-2 text-ios-text-secondary active:opacity-70 transition-opacity focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded-lg focus-visible:outline-none"
             >
               <Pencil size={18} />
             </button>

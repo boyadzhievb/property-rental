@@ -159,6 +159,18 @@ const el: TranslationKeys = {
   somethingWentWrong: 'Κάτι πήγε στραβά',
   tryAgain: 'Δοκιμάστε ξανά',
 
+  close: 'Κλείσιμο',
+  edit: 'Επεξεργασία',
+  previousWeek: 'Προηγούμενη εβδομάδα',
+  nextWeek: 'Επόμενη εβδομάδα',
+  installApp: 'Εγκατάσταση εφαρμογής',
+  installDescription: 'Προσθήκη στην αρχική οθόνη για γρήγορη πρόσβαση',
+  install: 'Εγκατάσταση',
+  youAreOffline: 'Είστε εκτός σύνδεσης — όλα τα δεδομένα αποθηκεύονται τοπικά',
+  backOnline: 'Ξανά σε σύνδεση',
+  newVersionAvailable: 'Μια νέα έκδοση είναι διαθέσιμη',
+  refresh: 'Ανανέωση',
+
   loading: 'Φόρτωση...',
 };
 

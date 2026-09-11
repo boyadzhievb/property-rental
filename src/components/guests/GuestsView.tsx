@@ -71,7 +71,8 @@ export default function GuestsView() {
     sectionRefs.current[letter]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const getRoomName = (roomId: string) => rooms.find(r => r.id === roomId)?.name ?? 'Unknown';
+  const roomMap = useMemo(() => new Map(rooms.map(r => [r.id, r])), [rooms]);
+  const getRoomName = (roomId: string) => roomMap.get(roomId)?.name ?? 'Unknown';
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -207,12 +208,12 @@ export default function GuestsView() {
       </div>
 
       {selectedGuest && !payingReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" onKeyDown={e => e.key === 'Escape' && setSelectedGuest(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="guest-detail-title" onKeyDown={e => e.key === 'Escape' && setSelectedGuest(null)}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedGuest(null)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
               <div>
-                <h3 className="text-lg font-bold text-ios-text">{selectedGuest.name}</h3>
+                <h3 id="guest-detail-title" className="text-lg font-bold text-ios-text">{selectedGuest.name}</h3>
                 <div className="flex items-center gap-1 text-sm text-ios-text-secondary">
                   <Phone size={12} />
                   <span>{selectedGuest.phone}</span>
@@ -220,7 +221,8 @@ export default function GuestsView() {
               </div>
               <button
                 onClick={() => setSelectedGuest(null)}
-                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
+                aria-label={t.close || 'Close'}
+                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded-lg focus-visible:outline-none"
               >
                 <X size={20} />
               </button>
@@ -305,14 +307,15 @@ export default function GuestsView() {
       )}
 
       {payingReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" onKeyDown={e => e.key === 'Escape' && setPayingReservation(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title" onKeyDown={e => e.key === 'Escape' && setPayingReservation(null)}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPayingReservation(null)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
-              <h3 className="text-lg font-bold text-ios-text">{t.addPayment}</h3>
+              <h3 id="payment-modal-title" className="text-lg font-bold text-ios-text">{t.addPayment}</h3>
               <button
                 onClick={() => setPayingReservation(null)}
-                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
+                aria-label={t.close || 'Close'}
+                className="p-1 text-ios-text-secondary hover:text-ios-text transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded-lg focus-visible:outline-none"
               >
                 <X size={20} />
               </button>
