@@ -1,6 +1,6 @@
-import { Check } from 'lucide-react';
+import { Check, Repeat } from 'lucide-react';
 import { type Room } from '../../domain/Room';
-import { type Reservation } from '../../domain/Reservation';
+import { type Reservation, type RecurrencePattern } from '../../domain/Reservation';
 import { useLocale } from '../../context/LocaleContext';
 
 interface FormErrors {
@@ -8,6 +8,7 @@ interface FormErrors {
   checkIn?: string;
   checkOut?: string;
   price?: string;
+  recurrenceEndDate?: string;
 }
 
 interface StayDetailsStepProps {
@@ -18,11 +19,14 @@ interface StayDetailsStepProps {
   checkOut: string;
   guestsCount: number;
   price: string;
+  recurrencePattern: RecurrencePattern | '';
+  recurrenceEndDate: string;
+  occurrenceCount: number;
   errors: FormErrors;
   onUpdate: (field: string, value: string | number) => void;
 }
 
-export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, checkOut, guestsCount, price, errors, onUpdate }: StayDetailsStepProps) {
+export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, checkOut, guestsCount, price, recurrencePattern, recurrenceEndDate, occurrenceCount, errors, onUpdate }: StayDetailsStepProps) {
   const { t } = useLocale();
   const occupiedDates = reservations
     .filter(r => r.roomId === roomId && r.isActive())
@@ -119,6 +123,61 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
             className="w-full p-4 focus:outline-none text-xl font-bold text-ios-text"
           />
           {errors.price && <div className="px-4 pb-3 text-xs text-ios-red">{errors.price}</div>}
+        </div>
+      </div>
+
+      <div>
+        <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-4 mb-2 flex items-center gap-1">
+          <Repeat size={12} />
+          {t.recurrence}
+        </div>
+        <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04] divide-y divide-ios-border/40">
+          <div className="px-4 py-3 flex flex-wrap gap-2">
+            {(['', 'weekly', 'biweekly', 'monthly'] as const).map(pattern => {
+              const labels: Record<string, string> = {
+                '': t.recurrenceNone,
+                weekly: t.recurrenceWeekly,
+                biweekly: t.recurrenceBiweekly,
+                monthly: t.recurrenceMonthly,
+              };
+              return (
+                <button
+                  key={pattern}
+                  onClick={() => onUpdate('recurrencePattern', pattern)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    recurrencePattern === pattern
+                      ? 'bg-ios-blue text-white'
+                      : 'bg-ios-gray-light text-ios-text'
+                  }`}
+                >
+                  {labels[pattern]}
+                  {recurrencePattern === pattern && <Check size={14} className="inline ml-1" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {recurrencePattern && (
+            <>
+              <div className="flex justify-between items-center p-4">
+                <span className="text-ios-text font-medium">{t.recurrenceEndDate}</span>
+                <input
+                  type="date"
+                  value={recurrenceEndDate}
+                  onChange={(e) => onUpdate('recurrenceEndDate', e.target.value)}
+                  className="text-ios-blue text-right focus:outline-none bg-transparent"
+                />
+              </div>
+              {errors.recurrenceEndDate && (
+                <div className="px-4 pb-3 text-xs text-ios-red">{errors.recurrenceEndDate}</div>
+              )}
+              {occurrenceCount > 0 && (
+                <div className="px-4 py-3 text-sm text-ios-text-secondary">
+                  <span className="font-semibold text-ios-blue">{occurrenceCount}</span> {t.recurrenceOccurrences}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -171,6 +171,18 @@ const bg: TranslationKeys = {
   newVersionAvailable: 'Налична е нова версия',
   refresh: 'Обнови',
 
+  recurrence: 'Повторение',
+  recurrenceNone: 'Без',
+  recurrenceWeekly: 'Всяка седмица',
+  recurrenceBiweekly: 'На всеки 2 седмици',
+  recurrenceMonthly: 'Всеки месец',
+  recurrenceEndDate: 'Повтаряй до',
+  recurrenceOccurrences: 'резервации ще бъдат създадени',
+  recurrenceConflict: 'Повтарящата се резервация има конфликт на дати',
+  cancelSeries: 'Откажи всички от серията',
+  confirmCancelSeries: 'Откажи всички бъдещи резервации от тази серия?',
+  seriesLabel: 'Серия',
+
   loading: 'Зареждане...',
 };
 

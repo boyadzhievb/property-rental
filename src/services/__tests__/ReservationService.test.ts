@@ -202,4 +202,86 @@ describe('ReservationService', () => {
       expect(result).toBeNull()
     })
   })
+
+  describe('createReservation with recurrence', () => {
+    it('creates multiple reservations for a weekly series', async () => {
+      seedRoom()
+      const result = await service.createReservation({
+        id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
+        arrivalDate: '2026-10-01', departureDate: '2026-10-03',
+        guestsCount: 1, status: 'Confirmed', price: 200,
+        recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
+      })
+      expect(result.id).toBe('res-1')
+      expect(resStore.size).toBe(3)
+    })
+
+    it('all series reservations share the same seriesId', async () => {
+      seedRoom()
+      await service.createReservation({
+        id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
+        arrivalDate: '2026-10-01', departureDate: '2026-10-03',
+        guestsCount: 1, status: 'Confirmed', price: 200,
+        recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
+      })
+      const seriesIds = [...resStore.values()].map(r => r.seriesId)
+      expect(new Set(seriesIds).size).toBe(1)
+      expect(seriesIds[0]).toBeTruthy()
+    })
+
+    it('rejects recurring series if any occurrence conflicts', async () => {
+      seedRoom()
+      seedReservation({ id: 'existing', arrivalDate: '2026-10-08', departureDate: '2026-10-10' })
+      await expect(service.createReservation({
+        id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
+        arrivalDate: '2026-10-01', departureDate: '2026-10-03',
+        guestsCount: 1, status: 'Confirmed', price: 200,
+        recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
+      })).rejects.toThrow('conflicts')
+    })
+
+    it('rejects recurring series if guest count exceeds capacity', async () => {
+      seedRoom({ maxGuests: 2 })
+      await expect(service.createReservation({
+        id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
+        arrivalDate: '2026-10-01', departureDate: '2026-10-03',
+        guestsCount: 5, status: 'Confirmed', price: 200,
+        recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
+      })).rejects.toThrow('exceeds room capacity')
+    })
+  })
+
+  describe('cancelSeries', () => {
+    it('cancels all active reservations in a series', async () => {
+      seedRoom()
+      await service.createReservation({
+        id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
+        arrivalDate: '2026-10-01', departureDate: '2026-10-03',
+        guestsCount: 1, status: 'Confirmed', price: 200,
+        recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
+      })
+
+      const seriesId = resStore.values().next().value.seriesId
+      const cancelled = await service.cancelSeries(seriesId)
+      expect(cancelled.length).toBe(3)
+      for (const reservation of cancelled) {
+        expect(reservation.status).toBe('Cancelled')
+      }
+    })
+
+    it('skips already terminal reservations', async () => {
+      seedRoom()
+      await service.createReservation({
+        id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
+        arrivalDate: '2026-10-01', departureDate: '2026-10-03',
+        guestsCount: 1, status: 'Confirmed', price: 200,
+        recurrence: { pattern: 'weekly', endDate: '2026-10-15' },
+      })
+
+      const seriesId = resStore.values().next().value.seriesId
+      await service.cancel('res-1')
+      const cancelled = await service.cancelSeries(seriesId)
+      expect(cancelled.length).toBe(1)
+    })
+  })
 })

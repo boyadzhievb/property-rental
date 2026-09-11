@@ -185,6 +185,19 @@ const en = {
   newVersionAvailable: 'A new version is available',
   refresh: 'Refresh',
 
+  // Recurrence
+  recurrence: 'Repeat',
+  recurrenceNone: 'None',
+  recurrenceWeekly: 'Weekly',
+  recurrenceBiweekly: 'Every 2 weeks',
+  recurrenceMonthly: 'Monthly',
+  recurrenceEndDate: 'Repeat until',
+  recurrenceOccurrences: 'bookings will be created',
+  recurrenceConflict: 'Recurring reservation has a date conflict',
+  cancelSeries: 'Cancel All in Series',
+  confirmCancelSeries: 'Cancel all future reservations in this series?',
+  seriesLabel: 'Series',
+
   // Common
   loading: 'Loading...',
 };

@@ -171,6 +171,18 @@ const de: TranslationKeys = {
   newVersionAvailable: 'Eine neue Version ist verfügbar',
   refresh: 'Aktualisieren',
 
+  recurrence: 'Wiederholung',
+  recurrenceNone: 'Keine',
+  recurrenceWeekly: 'Wöchentlich',
+  recurrenceBiweekly: 'Alle 2 Wochen',
+  recurrenceMonthly: 'Monatlich',
+  recurrenceEndDate: 'Wiederholen bis',
+  recurrenceOccurrences: 'Buchungen werden erstellt',
+  recurrenceConflict: 'Wiederkehrende Reservierung hat einen Datumskonflikt',
+  cancelSeries: 'Alle in Serie stornieren',
+  confirmCancelSeries: 'Alle zukünftigen Reservierungen dieser Serie stornieren?',
+  seriesLabel: 'Serie',
+
   loading: 'Laden...',
 };
 

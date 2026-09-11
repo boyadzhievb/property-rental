@@ -25,6 +25,8 @@ export interface Reservation {
   status: 'Confirmed' | 'Checked In' | 'Checked Out' | 'Cancelled';
   price: number;
   notes?: string;
+  recurrence?: { pattern: 'weekly' | 'biweekly' | 'monthly'; endDate: string };
+  seriesId?: string;
 }
 
 export interface Payment {

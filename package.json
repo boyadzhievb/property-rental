@@ -1,7 +1,7 @@
 {
   "name": "property-rental",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "engines": {
     "node": ">=22"
@@ -24,7 +24,7 @@
     "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
-    "@capacitor/ios": "^8.5.0",
+    "@capacitor/ios": "^8.5.2",
     "date-fns": "^4.4.0",
     "lucide-react": "^1.28.0",
     "react": "^19.0.0",

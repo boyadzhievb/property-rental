@@ -116,6 +116,120 @@ describe('Reservation', () => {
       status: 'Confirmed',
       price: 480,
       notes: 'Late arrival',
+      recurrence: undefined,
+      seriesId: undefined,
+    })
+  })
+
+  it('toData includes recurrence and seriesId when set', () => {
+    const r = makeReservation({
+      recurrence: { pattern: 'weekly', endDate: '2025-07-01' },
+      seriesId: 'series-123',
+    })
+    expect(r.toData().recurrence).toEqual({ pattern: 'weekly', endDate: '2025-07-01' })
+    expect(r.toData().seriesId).toBe('series-123')
+  })
+
+  describe('generateOccurrences', () => {
+    const baseData = {
+      id: 'r1',
+      roomId: 'room1',
+      guestId: 'guest1',
+      arrivalDate: '2025-06-01',
+      departureDate: '2025-06-03',
+      guestsCount: 2,
+      status: 'Confirmed' as const,
+      price: 200,
+    }
+
+    it('generates weekly occurrences', () => {
+      const occurrences = Reservation.generateOccurrences(baseData, {
+        pattern: 'weekly',
+        endDate: '2025-06-22',
+      })
+      expect(occurrences).toHaveLength(3)
+      expect(occurrences[0].arrivalDate).toBe('2025-06-01')
+      expect(occurrences[1].arrivalDate).toBe('2025-06-08')
+      expect(occurrences[2].arrivalDate).toBe('2025-06-15')
+    })
+
+    it('generates biweekly occurrences', () => {
+      const occurrences = Reservation.generateOccurrences(baseData, {
+        pattern: 'biweekly',
+        endDate: '2025-07-01',
+      })
+      expect(occurrences).toHaveLength(3)
+      expect(occurrences[0].arrivalDate).toBe('2025-06-01')
+      expect(occurrences[1].arrivalDate).toBe('2025-06-15')
+      expect(occurrences[2].arrivalDate).toBe('2025-06-29')
+    })
+
+    it('generates monthly occurrences', () => {
+      const occurrences = Reservation.generateOccurrences(baseData, {
+        pattern: 'monthly',
+        endDate: '2025-08-10',
+      })
+      expect(occurrences).toHaveLength(3)
+      expect(occurrences[0].arrivalDate).toBe('2025-06-01')
+      expect(occurrences[1].arrivalDate).toBe('2025-07-01')
+      expect(occurrences[2].arrivalDate).toBe('2025-08-01')
+    })
+
+    it('all occurrences share the same seriesId', () => {
+      const occurrences = Reservation.generateOccurrences(baseData, {
+        pattern: 'weekly',
+        endDate: '2025-06-22',
+      })
+      const seriesId = occurrences[0].seriesId
+      expect(seriesId).toBeTruthy()
+      for (const occurrence of occurrences) {
+        expect(occurrence.seriesId).toBe(seriesId)
+      }
+    })
+
+    it('only the first occurrence has recurrence rule', () => {
+      const occurrences = Reservation.generateOccurrences(baseData, {
+        pattern: 'weekly',
+        endDate: '2025-06-22',
+      })
+      expect(occurrences[0].recurrence).toEqual({ pattern: 'weekly', endDate: '2025-06-22' })
+      expect(occurrences[1].recurrence).toBeUndefined()
+      expect(occurrences[2].recurrence).toBeUndefined()
+    })
+
+    it('preserves stay duration across occurrences', () => {
+      const occurrences = Reservation.generateOccurrences(baseData, {
+        pattern: 'weekly',
+        endDate: '2025-06-22',
+      })
+      for (const occurrence of occurrences) {
+        const reservation = new Reservation(occurrence)
+        expect(reservation.duration()).toBe(2)
+      }
+    })
+
+    it('returns empty array if end date is before first departure', () => {
+      const occurrences = Reservation.generateOccurrences(baseData, {
+        pattern: 'weekly',
+        endDate: '2025-05-30',
+      })
+      expect(occurrences).toHaveLength(0)
+    })
+
+    it('stops if departure would exceed end date', () => {
+      const occurrences = Reservation.generateOccurrences(baseData, {
+        pattern: 'weekly',
+        endDate: '2025-06-09',
+      })
+      expect(occurrences).toHaveLength(1)
+    })
+
+    it('includes occurrence when departure equals end date', () => {
+      const occurrences = Reservation.generateOccurrences(baseData, {
+        pattern: 'weekly',
+        endDate: '2025-06-10',
+      })
+      expect(occurrences).toHaveLength(2)
     })
   })
 })

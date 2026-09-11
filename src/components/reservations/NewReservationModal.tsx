@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ZodError } from 'zod';
 import { useRooms } from '../../hooks/useRooms';
 import { useGuests } from '../../hooks/useGuests';
@@ -7,6 +7,7 @@ import { useGuestContext } from '../../context/GuestContext';
 import { useLocale } from '../../context/LocaleContext';
 import { reservationService } from '../../services/ReservationService';
 import { guestService } from '../../services/GuestService';
+import { Reservation, type RecurrencePattern } from '../../domain/Reservation';
 import { GuestSchema } from '../../schemas/GuestSchema';
 import { ReservationSchema } from '../../schemas/ReservationSchema';
 import GuestInfoStep from './GuestInfoStep';
@@ -23,6 +24,8 @@ interface FormData {
   checkOut: string;
   guestsCount: number;
   price: string;
+  recurrencePattern: RecurrencePattern | '';
+  recurrenceEndDate: string;
 }
 
 type FormErrors = Partial<Record<string, string>>;
@@ -81,6 +84,13 @@ function validateStayStep(form: FormData): FormErrors {
     }
   }
 
+  if (form.recurrencePattern && !form.recurrenceEndDate) {
+    errors.recurrenceEndDate = 'End date is required for recurring reservations';
+  }
+  if (form.recurrencePattern && form.recurrenceEndDate && form.recurrenceEndDate <= form.checkOut) {
+    errors.recurrenceEndDate = 'End date must be after the first check-out';
+  }
+
   return errors;
 }
 
@@ -105,12 +115,43 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
     checkOut: '',
     guestsCount: 2,
     price: '',
+    recurrencePattern: '',
+    recurrenceEndDate: '',
   });
 
   const updateForm = (field: string, value: string | number) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm(prev => {
+      const updated = { ...prev, [field]: value };
+      if (field === 'recurrencePattern' && value === '') {
+        updated.recurrenceEndDate = '';
+      }
+      return updated;
+    });
     setErrors(prev => ({ ...prev, [field]: undefined }));
   };
+
+  const occurrenceCount = useMemo(() => {
+    if (!form.recurrencePattern || !form.recurrenceEndDate || !form.checkIn || !form.checkOut) return 0;
+    if (form.checkIn >= form.checkOut) return 0;
+    try {
+      const occurrences = Reservation.generateOccurrences(
+        {
+          id: 'temp',
+          roomId: form.roomId || 'temp',
+          guestId: 'temp',
+          arrivalDate: form.checkIn,
+          departureDate: form.checkOut,
+          guestsCount: form.guestsCount,
+          status: 'Confirmed',
+          price: parseFloat(form.price) || 0,
+        },
+        { pattern: form.recurrencePattern, endDate: form.recurrenceEndDate },
+      );
+      return occurrences.length;
+    } catch {
+      return 0;
+    }
+  }, [form.recurrencePattern, form.recurrenceEndDate, form.checkIn, form.checkOut, form.roomId, form.guestsCount, form.price]);
 
   useEffect(() => {
     if (!form.roomId || !form.checkIn || !form.checkOut) return;
@@ -170,7 +211,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
         guestId = guest.id;
       }
 
-      await reservationService.createReservation({
+      const reservationData: import('../../domain/Reservation').ReservationData = {
         id: `r-${Date.now()}`,
         roomId: form.roomId,
         guestId,
@@ -179,7 +220,16 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
         guestsCount: form.guestsCount,
         status: 'Confirmed',
         price: parseFloat(form.price),
-      });
+      };
+
+      if (form.recurrencePattern && form.recurrenceEndDate) {
+        reservationData.recurrence = {
+          pattern: form.recurrencePattern,
+          endDate: form.recurrenceEndDate,
+        };
+      }
+
+      await reservationService.createReservation(reservationData);
 
       await Promise.all([refreshReservations(), refreshGuests(), refreshRooms()]);
       onClose();
@@ -242,6 +292,9 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
               checkOut={form.checkOut}
               guestsCount={form.guestsCount}
               price={form.price}
+              recurrencePattern={form.recurrencePattern}
+              recurrenceEndDate={form.recurrenceEndDate}
+              occurrenceCount={occurrenceCount}
               errors={errors}
               onUpdate={updateForm}
             />

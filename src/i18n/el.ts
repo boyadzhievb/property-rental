@@ -171,6 +171,18 @@ const el: TranslationKeys = {
   newVersionAvailable: 'Μια νέα έκδοση είναι διαθέσιμη',
   refresh: 'Ανανέωση',
 
+  recurrence: 'Επανάληψη',
+  recurrenceNone: 'Καμία',
+  recurrenceWeekly: 'Εβδομαδιαία',
+  recurrenceBiweekly: 'Κάθε 2 εβδομάδες',
+  recurrenceMonthly: 'Μηνιαία',
+  recurrenceEndDate: 'Επανάληψη μέχρι',
+  recurrenceOccurrences: 'κρατήσεις θα δημιουργηθούν',
+  recurrenceConflict: 'Η επαναλαμβανόμενη κράτηση έχει σύγκρουση ημερομηνιών',
+  cancelSeries: 'Ακύρωση όλων στη σειρά',
+  confirmCancelSeries: 'Ακύρωση όλων των μελλοντικών κρατήσεων αυτής της σειράς;',
+  seriesLabel: 'Σειρά',
+
   loading: 'Φόρτωση...',
 };
 
