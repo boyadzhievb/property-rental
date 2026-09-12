@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Download, Upload, RotateCcw, Palette, Check, Globe, Shield, Bell } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { usePropertyContext } from '../../context/PropertyContext';
 import { APP_VERSION } from '../../version';
 import { useTheme, type ThemeMode } from '../../context/ThemeContext';
@@ -80,13 +81,23 @@ export default function SettingsView() {
       const json = JSON.stringify(data, null, 2);
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `property-backup-${timestamp}.json`;
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
+
+      if (isNative) {
+        await Filesystem.writeFile({
+          path: filename,
+          data: json,
+          directory: Directory.Documents,
+        });
+        setRestoreStatus(`${t.backupSavedToDevice} ${filename}`);
+      } else {
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      }
     } catch {
       setRestoreStatus(t.failedToExport);
     }

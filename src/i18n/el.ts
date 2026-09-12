@@ -136,6 +136,7 @@ const el: TranslationKeys = {
   dark: 'Σκοτεινό',
   system: 'Σύστημα',
   failedToExport: 'Αποτυχία εξαγωγής αντιγράφου',
+  backupSavedToDevice: 'Αντίγραφο αποθηκεύτηκε στα Έγγραφα:',
   fileMustBeJson: 'Σφάλμα: το αρχείο πρέπει να είναι .json',
   fileNotValidJson: 'Σφάλμα: το αρχείο δεν είναι έγκυρο JSON',
   backupRestored: 'Το αντίγραφο αποκαταστάθηκε επιτυχώς',

@@ -2,7 +2,7 @@
 
 ## 1. Native Enhancements
 - ~~Push/local notifications for arrivals, payment reminders, task deadlines~~ ✓
-- Filesystem export for backups to device storage
+- ~~Filesystem export for backups to device storage~~ ✓
 - Camera integration for room condition photos
 - Share plugin for reports
 
