@@ -429,7 +429,7 @@ export default function TodayView() {
       {/* Add Task Modal */}
       {showAddTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="add-task-title" onKeyDown={e => e.key === 'Escape' && setShowAddTask(false)}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowAddTask(false)} />
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowAddTask(false)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
               <h3 id="add-task-title" className="text-lg font-bold text-ios-text">{t.newTask}</h3>

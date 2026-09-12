@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Task } from '../domain/Task';
 import { taskService } from '../services/TaskService';
 
@@ -35,7 +35,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   useEffect(() => { refresh(); }, [refresh]);
 
   return (
-    <TaskContext.Provider value={{ tasks, loading, error, clearError, refresh }}>
+    <TaskContext.Provider value={useMemo(() => ({ tasks, loading, error, clearError, refresh }), [tasks, loading, error, clearError, refresh])}>
       {children}
     </TaskContext.Provider>
   );

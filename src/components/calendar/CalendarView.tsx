@@ -100,11 +100,21 @@ export default function CalendarView() {
     }
   };
 
+  const paymentsByReservation = useMemo(() => {
+    const grouped = new Map<string, typeof payments>();
+    for (const payment of payments) {
+      const existing = grouped.get(payment.reservationId);
+      if (existing) existing.push(payment);
+      else grouped.set(payment.reservationId, [payment]);
+    }
+    return grouped;
+  }, [payments]);
+
   const getReservationPaid = (resId: string) =>
-    payments.filter(p => p.reservationId === resId).reduce((sum, p) => sum + p.amount, 0);
+    (paymentsByReservation.get(resId) ?? []).reduce((sum, p) => sum + p.amount, 0);
 
   const getReservationPayments = (resId: string) =>
-    payments.filter(p => p.reservationId === resId);
+    paymentsByReservation.get(resId) ?? [];
 
   if (loading || !data) {
     return (
@@ -184,7 +194,7 @@ export default function CalendarView() {
 
       {selectedReservation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="reservation-detail-title" onKeyDown={e => { if (e.key === 'Escape') { setSelectedReservation(null); setShowPaymentForm(false); } }}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setSelectedReservation(null); setShowPaymentForm(false); }} />
+          <div className="absolute inset-0 bg-black/40" onClick={() => { setSelectedReservation(null); setShowPaymentForm(false); }} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm max-h-[85vh] flex flex-col overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
               <h3 id="reservation-detail-title" className="text-lg font-bold text-ios-text">{t.reservation}</h3>

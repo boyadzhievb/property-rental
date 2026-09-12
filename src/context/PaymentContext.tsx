@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Payment } from '../domain/Payment';
 import { paymentService } from '../services/PaymentService';
 
@@ -35,7 +35,7 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   useEffect(() => { refresh(); }, [refresh]);
 
   return (
-    <PaymentContext.Provider value={{ payments, loading, error, clearError, refresh }}>
+    <PaymentContext.Provider value={useMemo(() => ({ payments, loading, error, clearError, refresh }), [payments, loading, error, clearError, refresh])}>
       {children}
     </PaymentContext.Provider>
   );

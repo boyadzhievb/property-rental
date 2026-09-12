@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Reservation } from '../domain/Reservation';
 import { reservationService } from '../services/ReservationService';
 
@@ -35,7 +35,7 @@ export function ReservationProvider({ children }: { children: ReactNode }) {
   useEffect(() => { refresh(); }, [refresh]);
 
   return (
-    <ReservationContext.Provider value={{ reservations, loading, error, clearError, refresh }}>
+    <ReservationContext.Provider value={useMemo(() => ({ reservations, loading, error, clearError, refresh }), [reservations, loading, error, clearError, refresh])}>
       {children}
     </ReservationContext.Provider>
   );

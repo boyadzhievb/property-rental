@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -41,7 +41,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [mode]);
 
   return (
-    <ThemeContext.Provider value={{ mode, setMode }}>
+    <ThemeContext.Provider value={useMemo(() => ({ mode, setMode }), [mode, setMode])}>
       {children}
     </ThemeContext.Provider>
   );

@@ -60,8 +60,18 @@ export default function GuestsView() {
       .sort((a, b) => b.arrivalDate.localeCompare(a.arrivalDate));
   }, [selectedGuest, reservations]);
 
+  const paymentsByReservation = useMemo(() => {
+    const grouped = new Map<string, typeof payments>();
+    for (const payment of payments) {
+      const existing = grouped.get(payment.reservationId);
+      if (existing) existing.push(payment);
+      else grouped.set(payment.reservationId, [payment]);
+    }
+    return grouped;
+  }, [payments]);
+
   const getPaymentsForReservation = (reservationId: string) =>
-    payments.filter(p => p.reservationId === reservationId);
+    paymentsByReservation.get(reservationId) ?? [];
 
   const getTotalPaid = (reservationId: string) =>
     getPaymentsForReservation(reservationId).reduce((sum, p) => sum + p.amount, 0);
@@ -209,7 +219,7 @@ export default function GuestsView() {
 
       {selectedGuest && !payingReservation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="guest-detail-title" onKeyDown={e => e.key === 'Escape' && setSelectedGuest(null)}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSelectedGuest(null)} />
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSelectedGuest(null)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
               <div>
@@ -308,7 +318,7 @@ export default function GuestsView() {
 
       {payingReservation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-5" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title" onKeyDown={e => e.key === 'Escape' && setPayingReservation(null)}>
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setPayingReservation(null)} />
+          <div className="absolute inset-0 bg-black/40" onClick={() => setPayingReservation(null)} />
           <div className="relative bg-ios-card rounded-3xl shadow-xl w-full max-w-sm overflow-hidden border border-black/[0.04]">
             <div className="flex items-center justify-between p-5 border-b border-ios-border/40">
               <h3 id="payment-modal-title" className="text-lg font-bold text-ios-text">{t.addPayment}</h3>

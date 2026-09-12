@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import { type Locale, type TranslationKeys, getTranslations, loadTranslations } from '../i18n';
 
 interface LocaleContextValue {
@@ -38,7 +38,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <LocaleContext.Provider value={{ locale, setLocale, t }}>
+    <LocaleContext.Provider value={useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t])}>
       {children}
     </LocaleContext.Provider>
   );

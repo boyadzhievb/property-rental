@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { api, seedDemoData, configureProperty, importBackup, exportBackup, resetData as resetDataDb, type BackupData } from '../api/client';
 
 interface PropertyContextValue {
@@ -107,7 +107,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <PropertyContext.Provider value={{ propertyName, isConfigured, loading, error, clearError, updateName, configureApp, seedData, importData, resetData }}>
+    <PropertyContext.Provider value={useMemo(() => ({ propertyName, isConfigured, loading, error, clearError, updateName, configureApp, seedData, importData, resetData }), [propertyName, isConfigured, loading, error, clearError, updateName, configureApp, seedData, importData, resetData])}>
       {children}
     </PropertyContext.Provider>
   );

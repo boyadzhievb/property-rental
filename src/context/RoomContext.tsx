@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Room } from '../domain/Room';
 import { roomService } from '../services/RoomService';
 
@@ -36,7 +36,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
   useEffect(() => { refresh(); }, [refresh]);
 
   return (
-    <RoomContext.Provider value={{ rooms, loading, error, clearError, refresh }}>
+    <RoomContext.Provider value={useMemo(() => ({ rooms, loading, error, clearError, refresh }), [rooms, loading, error, clearError, refresh])}>
       {children}
     </RoomContext.Provider>
   );
