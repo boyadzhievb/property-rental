@@ -10,6 +10,8 @@ vite.config.*.timestamp-*
 logs/
 *.log
 .claude-replay.*
+.claude/
+playwright-report/
 .tmp-*
 server/data.db
 server/data.db-wal
