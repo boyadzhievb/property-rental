@@ -183,6 +183,19 @@ const el: TranslationKeys = {
   confirmCancelSeries: 'Ακύρωση όλων των μελλοντικών κρατήσεων αυτής της σειράς;',
   seriesLabel: 'Σειρά',
 
+  notifications: 'Ειδοποιήσεις',
+  enableNotifications: 'Ενεργοποίηση ειδοποιήσεων',
+  notificationsDescription: 'Λάβετε υπενθυμίσεις για αφίξεις, αναχωρήσεις, καθαρισμό και πληρωμές',
+  notificationPermissionDenied: 'Η άδεια ειδοποιήσεων απορρίφθηκε. Ενεργοποιήστε στις ρυθμίσεις συσκευής.',
+  notificationArrivalTitle: 'Άφιξη επισκέπτη',
+  notificationArrivalBody: '{guest} φτάνει — {room}',
+  notificationDepartureTitle: 'Αναχώρηση επισκέπτη',
+  notificationDepartureBody: '{guest} αναχωρεί — {room}',
+  notificationCleaningTitle: 'Απαιτείται καθαρισμός',
+  notificationCleaningBody: '{room} χρειάζεται καθαρισμό',
+  notificationPaymentTitle: 'Υπενθύμιση πληρωμής',
+  notificationPaymentBody: 'Εκκρεμές υπόλοιπο από {guest}',
+
   loading: 'Φόρτωση...',
 };
 

@@ -198,6 +198,20 @@ const en = {
   confirmCancelSeries: 'Cancel all future reservations in this series?',
   seriesLabel: 'Series',
 
+  // Notifications
+  notifications: 'Notifications',
+  enableNotifications: 'Enable Notifications',
+  notificationsDescription: 'Get reminders for arrivals, departures, cleaning, and payments',
+  notificationPermissionDenied: 'Notification permission denied. Enable in device settings.',
+  notificationArrivalTitle: 'Guest Arriving',
+  notificationArrivalBody: '{guest} arriving — {room}',
+  notificationDepartureTitle: 'Guest Departing',
+  notificationDepartureBody: '{guest} departing — {room}',
+  notificationCleaningTitle: 'Cleaning Needed',
+  notificationCleaningBody: '{room} needs cleaning',
+  notificationPaymentTitle: 'Payment Reminder',
+  notificationPaymentBody: 'Outstanding balance from {guest}',
+
   // Common
   loading: 'Loading...',
 };

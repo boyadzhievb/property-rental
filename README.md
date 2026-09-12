@@ -12,7 +12,8 @@ A property management application for short-term rentals. An owner's daily opera
 - **Payments** — Separate payment entity tracking partial/advance payments per reservation. Record amount, method (cash/card/transfer), and notes. Balance tracking across the system.
 - **Reports** — Revenue summary, occupancy rate, payment breakdown by method, outstanding balances, and recent payment history. Filterable by week or month with period navigation.
 - **Reservations** — Book rooms, check in/out guests, and cancel with automatic room status updates. Date conflict detection and capacity validation.
-- **Settings** — Property configuration, language selection (EN/BG/DE/EL/FR), appearance (light/dark/system), data import/export, and reset.
+- **Notifications** — Local push notifications on native devices for guest arrivals, departures, cleaning reminders, and outstanding payment alerts. Configurable via Settings toggle.
+- **Settings** — Property configuration, language selection (EN/BG/DE/EL/FR), appearance (light/dark/system), notifications toggle, data import/export, and reset.
 
 ## Privacy & Offline
 

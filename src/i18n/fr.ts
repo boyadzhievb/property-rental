@@ -183,6 +183,19 @@ const fr: TranslationKeys = {
   confirmCancelSeries: 'Annuler toutes les réservations futures de cette série ?',
   seriesLabel: 'Série',
 
+  notifications: 'Notifications',
+  enableNotifications: 'Activer les notifications',
+  notificationsDescription: 'Recevez des rappels pour les arrivées, départs, nettoyage et paiements',
+  notificationPermissionDenied: 'Permission de notification refusée. Activez dans les paramètres de l\'appareil.',
+  notificationArrivalTitle: 'Arrivée d\'un client',
+  notificationArrivalBody: '{guest} arrive — {room}',
+  notificationDepartureTitle: 'Départ d\'un client',
+  notificationDepartureBody: '{guest} part — {room}',
+  notificationCleaningTitle: 'Nettoyage nécessaire',
+  notificationCleaningBody: '{room} a besoin d\'être nettoyée',
+  notificationPaymentTitle: 'Rappel de paiement',
+  notificationPaymentBody: 'Solde impayé de {guest}',
+
   loading: 'Chargement...',
 };
 

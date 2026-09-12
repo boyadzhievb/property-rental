@@ -183,6 +183,19 @@ const bg: TranslationKeys = {
   confirmCancelSeries: 'Откажи всички бъдещи резервации от тази серия?',
   seriesLabel: 'Серия',
 
+  notifications: 'Известия',
+  enableNotifications: 'Включи известия',
+  notificationsDescription: 'Получавай напомняния за пристигания, заминавания, почистване и плащания',
+  notificationPermissionDenied: 'Разрешението за известия е отказано. Включете от настройките на устройството.',
+  notificationArrivalTitle: 'Пристигане на гост',
+  notificationArrivalBody: '{guest} пристига — {room}',
+  notificationDepartureTitle: 'Заминаване на гост',
+  notificationDepartureBody: '{guest} заминава — {room}',
+  notificationCleaningTitle: 'Необходимо почистване',
+  notificationCleaningBody: '{room} се нуждае от почистване',
+  notificationPaymentTitle: 'Напомняне за плащане',
+  notificationPaymentBody: 'Неплатен остатък от {guest}',
+
   loading: 'Зареждане...',
 };
 

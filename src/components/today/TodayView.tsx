@@ -9,6 +9,7 @@ import { useTaskContext } from '../../context/TaskContext';
 import { useLocale } from '../../context/LocaleContext';
 import { reservationService } from '../../services/ReservationService';
 import { taskService } from '../../services/TaskService';
+import { notificationService } from '../../services/NotificationService';
 import { RoomStatus } from '../../domain/Room';
 import { type Task, type TaskCategory } from '../../domain/Task';
 import PageHeader from '../layout/PageHeader';
@@ -65,7 +66,30 @@ export default function TodayView() {
 
     await taskService.ensureAutoTasks({ cleaningRoomIds, preparationRoomIds, pendingPayments });
     await refreshTasks();
-  }, [data, payments, refreshTasks, guestMap, roomMap]);
+
+    notificationService.scheduleDailyNotifications({
+      arrivals: data.arrivals.map(res => ({
+        guestName: guestMap.get(res.guestId)?.name ?? '',
+        roomName: roomMap.get(res.roomId)?.name ?? '',
+      })),
+      departures: data.departures.map(res => ({
+        guestName: guestMap.get(res.guestId)?.name ?? '',
+        roomName: roomMap.get(res.roomId)?.name ?? '',
+      })),
+      cleaningRooms: cleaningRoomIds.map(room => ({ roomName: room.name })),
+      pendingPayments: pendingPayments.map(payment => ({ guestName: payment.guestName })),
+      translations: {
+        notificationArrivalTitle: t.notificationArrivalTitle,
+        notificationArrivalBody: t.notificationArrivalBody,
+        notificationDepartureTitle: t.notificationDepartureTitle,
+        notificationDepartureBody: t.notificationDepartureBody,
+        notificationCleaningTitle: t.notificationCleaningTitle,
+        notificationCleaningBody: t.notificationCleaningBody,
+        notificationPaymentTitle: t.notificationPaymentTitle,
+        notificationPaymentBody: t.notificationPaymentBody,
+      },
+    });
+  }, [data, payments, refreshTasks, guestMap, roomMap, t]);
 
   useEffect(() => {
     if (data) generateAutoTasks();

@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
-import { Download, Upload, RotateCcw, Palette, Check, Globe, Shield } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Download, Upload, RotateCcw, Palette, Check, Globe, Shield, Bell } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { usePropertyContext } from '../../context/PropertyContext';
 import { APP_VERSION } from '../../version';
 import { useTheme, type ThemeMode } from '../../context/ThemeContext';
@@ -9,6 +10,7 @@ import { useRoomContext } from '../../context/RoomContext';
 import { useGuestContext } from '../../context/GuestContext';
 import { useReservationContext } from '../../context/ReservationContext';
 import { exportBackup, importBackup, type BackupData } from '../../api/client';
+import { notificationService } from '../../services/NotificationService';
 import { SettingsGroup, SettingsItem } from '../ui/SettingsGroup';
 import PageHeader from '../layout/PageHeader';
 
@@ -51,9 +53,26 @@ export default function SettingsView() {
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   const [restoreStatus, setRestoreStatus] = useState<string | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationError, setNotificationError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isNative = Capacitor.isNativePlatform();
+
+  useEffect(() => {
+    notificationService.isEnabled().then(setNotificationsEnabled);
+  }, []);
 
   const THEME_LABELS: Record<ThemeMode, string> = { light: t.light, dark: t.dark, system: t.system };
+
+  const handleToggleNotifications = async () => {
+    setNotificationError(null);
+    const newValue = !notificationsEnabled;
+    const result = await notificationService.setEnabled(newValue);
+    setNotificationsEnabled(result);
+    if (newValue && !result) {
+      setNotificationError(t.notificationPermissionDenied);
+    }
+  };
 
   const handleBackup = async () => {
     try {
@@ -197,6 +216,25 @@ export default function SettingsView() {
                 </button>
               ))}
             </div>
+          )}
+
+          {isNative && (
+            <div onClick={handleToggleNotifications} className="relative">
+              <SettingsItem
+                icon={Bell}
+                label={t.enableNotifications}
+                color="bg-ios-orange"
+                value={notificationsEnabled ? t.done : ''}
+              />
+              <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                <div className={`w-12 h-7 rounded-full transition-colors ${notificationsEnabled ? 'bg-ios-green' : 'bg-ios-border'}`}>
+                  <div className={`w-5.5 h-5.5 mt-[3px] rounded-full bg-white shadow transition-transform ${notificationsEnabled ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} style={{ width: 22, height: 22 }} />
+                </div>
+              </div>
+            </div>
+          )}
+          {notificationError && (
+            <div className="px-4 py-3 text-sm text-ios-red">{notificationError}</div>
           )}
         </SettingsGroup>
 
