@@ -17,7 +17,7 @@
 - ~~Expand test coverage (more E2E flows, edge cases)~~ ✓
 - ~~Accessibility audit (screen reader, keyboard navigation)~~ ✓
 - ~~PWA install prompt and offline indicators~~ ✓
-- Performance profiling on low-end Android devices
+- ~~Performance profiling on low-end Android devices~~ ✓
 
 ## 4. Store Submission
 - ~~Publish to Google Play Store~~ ✓
