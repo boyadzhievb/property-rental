@@ -46,6 +46,26 @@ import { reservationRepository } from '../../repositories/ReservationRepository'
 const payStore = (paymentRepository as any)._store as Map<string, any>
 const resStore = (reservationRepository as any)._store as Map<string, any>
 
+vi.mock('../../api/client', () => ({
+  atomicReadWrite: vi.fn(async (_storeNames: string[], callback: Function) => {
+    const stores: Record<string, any> = {
+      reservations: {
+        get: async (key: string) => resStore.get(key),
+        getAllByIndex: async (_index: string, key: string) =>
+          [...payStore.values()].filter((record: any) => record.reservationId === key),
+        put: (data: any) => { payStore.set(data.id, data) },
+      },
+      payments: {
+        get: async (key: string) => payStore.get(key),
+        getAllByIndex: async (_index: string, key: string) =>
+          [...payStore.values()].filter((record: any) => record.reservationId === key),
+        put: (data: any) => { payStore.set(data.id, data) },
+      },
+    }
+    return callback(stores)
+  }),
+}))
+
 function seedReservation(overrides: Partial<any> = {}) {
   const data = {
     id: 'res-1', roomId: 'room-1', guestId: 'guest-1',

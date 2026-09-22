@@ -52,14 +52,23 @@ export class Reservation {
   }
 
   cancel(): void {
+    if (this._status !== 'Confirmed' && this._status !== 'Checked In') {
+      throw new Error(`Cannot cancel a reservation that is ${this._status}`);
+    }
     this._status = 'Cancelled';
   }
 
   checkIn(): void {
+    if (this._status !== 'Confirmed') {
+      throw new Error(`Can only check in a Confirmed reservation, current status is ${this._status}`);
+    }
     this._status = 'Checked In';
   }
 
   checkOut(): void {
+    if (this._status !== 'Checked In') {
+      throw new Error(`Can only check out a Checked In reservation, current status is ${this._status}`);
+    }
     this._status = 'Checked Out';
   }
 

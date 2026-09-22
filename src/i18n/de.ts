@@ -141,6 +141,9 @@ const de: TranslationKeys = {
   fileNotValidJson: 'Fehler: Datei ist kein gültiges JSON',
   backupRestored: 'Backup erfolgreich wiederhergestellt',
   failedToRestore: 'Fehler: Backup konnte nicht wiederhergestellt werden',
+  invalidRecordsSkipped: 'ungültige Einträge übersprungen',
+  roomNotFound: 'Zimmer nicht gefunden',
+  guestNotFound: 'Gast nicht gefunden',
 
   welcome: 'Willkommen',
   setupTagline: 'Eine einfache und private Verwaltung für Ihre Unterkunft.',

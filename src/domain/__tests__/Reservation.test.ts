@@ -24,22 +24,68 @@ describe('Reservation', () => {
   })
 
   describe('status transitions', () => {
-    it('cancel sets status to Cancelled', () => {
+    it('cancel sets Confirmed to Cancelled', () => {
       const r = makeReservation()
       r.cancel()
       expect(r.status).toBe('Cancelled')
     })
 
-    it('checkIn sets status to Checked In', () => {
+    it('cancel sets Checked In to Cancelled', () => {
+      const r = makeReservation({ status: 'Checked In' })
+      r.cancel()
+      expect(r.status).toBe('Cancelled')
+    })
+
+    it('cancel throws from Checked Out', () => {
+      expect(() => makeReservation({ status: 'Checked Out' }).cancel())
+        .toThrow('Cannot cancel a reservation that is Checked Out')
+    })
+
+    it('cancel throws from Cancelled', () => {
+      expect(() => makeReservation({ status: 'Cancelled' }).cancel())
+        .toThrow('Cannot cancel a reservation that is Cancelled')
+    })
+
+    it('checkIn sets Confirmed to Checked In', () => {
       const r = makeReservation()
       r.checkIn()
       expect(r.status).toBe('Checked In')
     })
 
-    it('checkOut sets status to Checked Out', () => {
+    it('checkIn throws from Checked In', () => {
+      expect(() => makeReservation({ status: 'Checked In' }).checkIn())
+        .toThrow('Can only check in a Confirmed reservation')
+    })
+
+    it('checkIn throws from Checked Out', () => {
+      expect(() => makeReservation({ status: 'Checked Out' }).checkIn())
+        .toThrow('Can only check in a Confirmed reservation')
+    })
+
+    it('checkIn throws from Cancelled', () => {
+      expect(() => makeReservation({ status: 'Cancelled' }).checkIn())
+        .toThrow('Can only check in a Confirmed reservation')
+    })
+
+    it('checkOut sets Checked In to Checked Out', () => {
       const r = makeReservation({ status: 'Checked In' })
       r.checkOut()
       expect(r.status).toBe('Checked Out')
+    })
+
+    it('checkOut throws from Confirmed', () => {
+      expect(() => makeReservation({ status: 'Confirmed' }).checkOut())
+        .toThrow('Can only check out a Checked In reservation')
+    })
+
+    it('checkOut throws from Checked Out', () => {
+      expect(() => makeReservation({ status: 'Checked Out' }).checkOut())
+        .toThrow('Can only check out a Checked In reservation')
+    })
+
+    it('checkOut throws from Cancelled', () => {
+      expect(() => makeReservation({ status: 'Cancelled' }).checkOut())
+        .toThrow('Can only check out a Checked In reservation')
     })
   })
 

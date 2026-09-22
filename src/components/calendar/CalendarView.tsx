@@ -84,7 +84,7 @@ export default function CalendarView() {
         id: `pay-${Date.now()}`,
         reservationId: selectedReservation.id,
         amount,
-        date: new Date().toISOString().split('T')[0],
+        date: format(new Date(), 'yyyy-MM-dd'),
         method: paymentMethod,
         note: paymentNote,
       });

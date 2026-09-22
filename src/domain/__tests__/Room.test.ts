@@ -36,8 +36,8 @@ describe('Room', () => {
     expect(room.status).toBe(RoomStatus.OCCUPIED)
   })
 
-  it('markCleaning changes status to Cleaning', () => {
-    const room = makeRoom()
+  it('markCleaning changes Occupied to Cleaning', () => {
+    const room = makeRoom({ status: RoomStatus.OCCUPIED })
     room.markCleaning()
     expect(room.status).toBe(RoomStatus.CLEANING)
   })
@@ -92,6 +92,28 @@ describe('Room', () => {
         .toThrow('Only a maintenance room can be marked available this way')
       expect(() => makeRoom({ status: RoomStatus.CLEANING }).markAvailable())
         .toThrow('Only a maintenance room can be marked available this way')
+    })
+  })
+
+  describe('occupy', () => {
+    it('throws if room is not Available', () => {
+      expect(() => makeRoom({ status: RoomStatus.OCCUPIED }).occupy())
+        .toThrow('Room can only be occupied from Available status')
+      expect(() => makeRoom({ status: RoomStatus.CLEANING }).occupy())
+        .toThrow('Room can only be occupied from Available status')
+      expect(() => makeRoom({ status: RoomStatus.MAINTENANCE }).occupy())
+        .toThrow('Room can only be occupied from Available status')
+    })
+  })
+
+  describe('markCleaning', () => {
+    it('throws if room is not Occupied', () => {
+      expect(() => makeRoom({ status: RoomStatus.AVAILABLE }).markCleaning())
+        .toThrow('Room can only be marked for cleaning from Occupied status')
+      expect(() => makeRoom({ status: RoomStatus.CLEANING }).markCleaning())
+        .toThrow('Room can only be marked for cleaning from Occupied status')
+      expect(() => makeRoom({ status: RoomStatus.MAINTENANCE }).markCleaning())
+        .toThrow('Room can only be marked for cleaning from Occupied status')
     })
   })
 

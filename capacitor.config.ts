@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.boyadboz.propertyrental',
+  appId: 'com.boyadboz.property-rental',
   appName: 'Property Rental',
   webDir: 'dist',
   server: {

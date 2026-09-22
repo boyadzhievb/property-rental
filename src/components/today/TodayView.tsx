@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { format } from 'date-fns';
 import { LogIn, LogOut, SprayCan, CreditCard, CheckCircle2, Plus, X, Phone, MessageSquare, Sparkles, Home } from 'lucide-react';
 import { useToday } from '../../hooks/useToday';
 import { usePropertyContext } from '../../context/PropertyContext';
@@ -129,7 +130,7 @@ export default function TodayView() {
 
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return;
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = format(today, 'yyyy-MM-dd');
     await taskService.createTask({
       id: `task-${Date.now()}`,
       title: newTaskTitle.trim(),

@@ -30,6 +30,8 @@ export class NotificationService {
       if (pending.notifications.length > 0) {
         await LocalNotifications.cancel({ notifications: pending.notifications });
       }
+      const today = format(new Date(), 'yyyy-MM-dd');
+      localStorage.removeItem(`notifications-scheduled-${today}`);
     }
 
     return enabled;

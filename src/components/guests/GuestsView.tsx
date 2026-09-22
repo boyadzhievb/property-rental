@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { format } from 'date-fns';
 import { Search, ChevronRight, Phone, X, Calendar, DoorOpen, Plus, Banknote } from 'lucide-react';
 import { useGuests } from '../../hooks/useGuests';
 import { useReservationContext } from '../../context/ReservationContext';
@@ -118,7 +119,7 @@ export default function GuestsView() {
         id: `pay-${Date.now()}`,
         reservationId: payingReservation.id,
         amount,
-        date: new Date().toISOString().split('T')[0],
+        date: format(new Date(), 'yyyy-MM-dd'),
         method: paymentMethod,
         note: paymentNote,
       });

@@ -150,6 +150,9 @@ const en = {
   fileNotValidJson: 'Error: file is not valid JSON',
   backupRestored: 'Backup restored successfully',
   failedToRestore: 'Error: failed to restore backup',
+  invalidRecordsSkipped: 'invalid records skipped',
+  roomNotFound: 'Room not found',
+  guestNotFound: 'Guest not found',
 
   // Setup
   welcome: 'Welcome',

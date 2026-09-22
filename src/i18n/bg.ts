@@ -141,6 +141,9 @@ const bg: TranslationKeys = {
   fileNotValidJson: 'Грешка: файлът не е валиден JSON',
   backupRestored: 'Резервното копие е възстановено успешно',
   failedToRestore: 'Грешка: неуспешно възстановяване',
+  invalidRecordsSkipped: 'невалидни записи пропуснати',
+  roomNotFound: 'Стаята не е намерена',
+  guestNotFound: 'Гостът не е намерен',
 
   welcome: 'Добре дошли',
   setupTagline: 'Лесен и поверителен начин да управлявате имота си.',

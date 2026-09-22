@@ -141,6 +141,9 @@ const fr: TranslationKeys = {
   fileNotValidJson: "Erreur : le fichier n'est pas un JSON valide",
   backupRestored: 'Sauvegarde restaurée avec succès',
   failedToRestore: 'Erreur : échec de la restauration',
+  invalidRecordsSkipped: 'enregistrements invalides ignorés',
+  roomNotFound: 'Chambre introuvable',
+  guestNotFound: 'Client introuvable',
 
   welcome: 'Bienvenue',
   setupTagline: 'Un moyen simple et privé de gérer votre propriété.',

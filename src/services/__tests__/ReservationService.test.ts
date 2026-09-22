@@ -54,15 +54,47 @@ vi.mock('../../repositories/RoomRepository', () => {
   }
 })
 
+vi.mock('../../repositories/GuestRepository', () => {
+  const store = new Map<string, any>()
+  return {
+    guestRepository: {
+      getById: vi.fn(async (id: string) => {
+        const d = store.get(id)
+        if (!d) return null
+        const { Guest } = await import('../../domain/Guest')
+        return new Guest(d)
+      }),
+      _store: store,
+    },
+  }
+})
+
 import { reservationRepository } from '../../repositories/ReservationRepository'
 import { roomRepository } from '../../repositories/RoomRepository'
+import { guestRepository } from '../../repositories/GuestRepository'
 
 const resStore = (reservationRepository as any)._store as Map<string, any>
 const roomStore = (roomRepository as any)._store as Map<string, any>
+const guestStore = (guestRepository as any)._store as Map<string, any>
+
+vi.mock('../../api/client', () => ({
+  batchPut: vi.fn(async (operations: Array<{ store: string; data: any }>) => {
+    for (const operation of operations) {
+      if (operation.store === 'reservations') resStore.set(operation.data.id, operation.data)
+      if (operation.store === 'rooms') roomStore.set(operation.data.id, operation.data)
+    }
+  }),
+}))
 
 function seedRoom(overrides: Partial<any> = {}) {
   const data = { id: 'room-1', name: 'Suite 1', status: RoomStatus.AVAILABLE, pricePerNight: 100, maxGuests: 2, ...overrides }
   roomStore.set(data.id, data)
+  return data
+}
+
+function seedGuest(overrides: Partial<any> = {}) {
+  const data = { id: 'guest-1', name: 'John Smith', phone: '+1 555-0100', email: 'john@test.com', previousStays: 0, notes: '', ...overrides }
+  guestStore.set(data.id, data)
   return data
 }
 
@@ -82,12 +114,14 @@ describe('ReservationService', () => {
   beforeEach(() => {
     resStore.clear()
     roomStore.clear()
+    guestStore.clear()
     service = new ReservationService()
   })
 
   describe('createReservation', () => {
     it('creates a valid reservation', async () => {
       seedRoom()
+      seedGuest()
       const result = await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-09-10', departureDate: '2026-09-15',
@@ -97,8 +131,27 @@ describe('ReservationService', () => {
       expect(result.status).toBe('Confirmed')
     })
 
+    it('rejects when room does not exist', async () => {
+      seedGuest()
+      await expect(service.createReservation({
+        id: 'res-1', roomId: 'no-room', guestId: 'guest-1',
+        arrivalDate: '2026-09-10', departureDate: '2026-09-15',
+        guestsCount: 1, status: 'Confirmed', price: 500,
+      })).rejects.toThrow('Room not found')
+    })
+
+    it('rejects when guest does not exist', async () => {
+      seedRoom()
+      await expect(service.createReservation({
+        id: 'res-1', roomId: 'room-1', guestId: 'no-guest',
+        arrivalDate: '2026-09-10', departureDate: '2026-09-15',
+        guestsCount: 1, status: 'Confirmed', price: 500,
+      })).rejects.toThrow('Guest not found')
+    })
+
     it('rejects when guest count exceeds room capacity', async () => {
       seedRoom({ maxGuests: 2 })
+      seedGuest()
       await expect(service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-09-10', departureDate: '2026-09-15',
@@ -108,6 +161,8 @@ describe('ReservationService', () => {
 
     it('rejects overlapping active reservations', async () => {
       seedRoom()
+      seedGuest()
+      seedGuest({ id: 'guest-2', name: 'Jane Doe' })
       seedReservation()
       await expect(service.createReservation({
         id: 'res-2', roomId: 'room-1', guestId: 'guest-2',
@@ -118,6 +173,8 @@ describe('ReservationService', () => {
 
     it('allows booking after cancelled reservation dates', async () => {
       seedRoom()
+      seedGuest()
+      seedGuest({ id: 'guest-2', name: 'Jane Doe' })
       seedReservation({ status: 'Cancelled' })
       const result = await service.createReservation({
         id: 'res-2', roomId: 'room-1', guestId: 'guest-2',
@@ -129,6 +186,7 @@ describe('ReservationService', () => {
 
     it('rejects invalid data via schema', async () => {
       seedRoom()
+      seedGuest()
       await expect(service.createReservation({
         id: '', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-09-10', departureDate: '2026-09-15',
@@ -138,6 +196,7 @@ describe('ReservationService', () => {
 
     it('rejects when departure is before arrival', async () => {
       seedRoom()
+      seedGuest()
       await expect(service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-09-15', departureDate: '2026-09-10',
@@ -206,6 +265,7 @@ describe('ReservationService', () => {
   describe('createReservation with recurrence', () => {
     it('creates multiple reservations for a weekly series', async () => {
       seedRoom()
+      seedGuest()
       const result = await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
@@ -218,6 +278,7 @@ describe('ReservationService', () => {
 
     it('all series reservations share the same seriesId', async () => {
       seedRoom()
+      seedGuest()
       await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
@@ -231,6 +292,7 @@ describe('ReservationService', () => {
 
     it('rejects recurring series if any occurrence conflicts', async () => {
       seedRoom()
+      seedGuest()
       seedReservation({ id: 'existing', arrivalDate: '2026-10-08', departureDate: '2026-10-10' })
       await expect(service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
@@ -242,6 +304,7 @@ describe('ReservationService', () => {
 
     it('rejects recurring series if guest count exceeds capacity', async () => {
       seedRoom({ maxGuests: 2 })
+      seedGuest()
       await expect(service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
@@ -254,6 +317,7 @@ describe('ReservationService', () => {
   describe('cancelSeries', () => {
     it('cancels all active reservations in a series', async () => {
       seedRoom()
+      seedGuest()
       await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
@@ -271,6 +335,7 @@ describe('ReservationService', () => {
 
     it('skips already terminal reservations', async () => {
       seedRoom()
+      seedGuest()
       await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',

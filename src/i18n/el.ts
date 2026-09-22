@@ -141,6 +141,9 @@ const el: TranslationKeys = {
   fileNotValidJson: 'Σφάλμα: το αρχείο δεν είναι έγκυρο JSON',
   backupRestored: 'Το αντίγραφο αποκαταστάθηκε επιτυχώς',
   failedToRestore: 'Σφάλμα: αποτυχία αποκατάστασης',
+  invalidRecordsSkipped: 'μη έγκυρες εγγραφές παραλείφθηκαν',
+  roomNotFound: 'Το δωμάτιο δεν βρέθηκε',
+  guestNotFound: 'Ο επισκέπτης δεν βρέθηκε',
 
   welcome: 'Καλώς ήρθατε',
   setupTagline: 'Ένας απλός και ιδιωτικός τρόπος διαχείρισης του καταλύματός σας.',

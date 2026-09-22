@@ -3,6 +3,8 @@ import { Reservation, type ReservationData, type RecurrenceRule } from '../domai
 import { ReservationSchema } from '../schemas/ReservationSchema';
 import { reservationRepository } from '../repositories/ReservationRepository';
 import { roomRepository } from '../repositories/RoomRepository';
+import { guestRepository } from '../repositories/GuestRepository';
+import { batchPut } from '../api/client';
 
 export class ReservationService {
   async getAllReservations(): Promise<Reservation[]> {
@@ -12,6 +14,10 @@ export class ReservationService {
   async getReservations(month: Date): Promise<Reservation[]> {
     const from = format(startOfMonth(month), 'yyyy-MM-dd');
     const to = format(endOfMonth(month), 'yyyy-MM-dd');
+    return reservationRepository.getByMonth(from, to);
+  }
+
+  async getReservationsByRange(from: string, to: string): Promise<Reservation[]> {
     return reservationRepository.getByMonth(from, to);
   }
 
@@ -33,7 +39,16 @@ export class ReservationService {
     const reservation = new Reservation(data);
 
     const room = await roomRepository.getById(reservation.roomId);
-    if (room && reservation.guestsCount > room.maxGuests) {
+    if (!room) {
+      throw new Error('Room not found');
+    }
+
+    const guest = await guestRepository.getById(reservation.guestId);
+    if (!guest) {
+      throw new Error('Guest not found');
+    }
+
+    if (reservation.guestsCount > room.maxGuests) {
       throw new Error(
         `Guest count (${reservation.guestsCount}) exceeds room capacity (${room.maxGuests})`
       );
@@ -60,7 +75,16 @@ export class ReservationService {
     }
 
     const room = await roomRepository.getById(data.roomId);
-    if (room && data.guestsCount > room.maxGuests) {
+    if (!room) {
+      throw new Error('Room not found');
+    }
+
+    const guest = await guestRepository.getById(data.guestId);
+    if (!guest) {
+      throw new Error('Guest not found');
+    }
+
+    if (data.guestsCount > room.maxGuests) {
       throw new Error(
         `Guest count (${data.guestsCount}) exceeds room capacity (${room.maxGuests})`
       );
@@ -79,13 +103,11 @@ export class ReservationService {
       }
     }
 
-    let firstSaved: Reservation | null = null;
-    for (const occurrence of occurrences) {
-      const saved = await reservationRepository.save(new Reservation(occurrence));
-      if (!firstSaved) firstSaved = saved;
-    }
+    await batchPut(
+      occurrences.map(occurrence => ({ store: 'reservations', data: occurrence }))
+    );
 
-    return firstSaved!;
+    return new Reservation(occurrences[0]);
   }
 
   async checkIn(id: string): Promise<Reservation | null> {
@@ -93,12 +115,16 @@ export class ReservationService {
     if (!reservation) return null;
 
     reservation.checkIn();
-    await reservationRepository.save(reservation);
 
     const room = await roomRepository.getById(reservation.roomId);
     if (room) {
       room.occupy();
-      await roomRepository.save(room);
+      await batchPut([
+        { store: 'reservations', data: reservation.toData() },
+        { store: 'rooms', data: room.toData() },
+      ]);
+    } else {
+      await reservationRepository.save(reservation);
     }
 
     return reservation;
@@ -109,12 +135,16 @@ export class ReservationService {
     if (!reservation) return null;
 
     reservation.checkOut();
-    await reservationRepository.save(reservation);
 
     const room = await roomRepository.getById(reservation.roomId);
     if (room) {
       room.markCleaning();
-      await roomRepository.save(room);
+      await batchPut([
+        { store: 'reservations', data: reservation.toData() },
+        { store: 'rooms', data: room.toData() },
+      ]);
+    } else {
+      await reservationRepository.save(reservation);
     }
 
     return reservation;
@@ -128,23 +158,28 @@ export class ReservationService {
   async cancelSeries(seriesId: string): Promise<Reservation[]> {
     const seriesReservations = await this.getSeriesReservations(seriesId);
     const cancelled: Reservation[] = [];
+    const operations: Array<{ store: string; data: unknown }> = [];
 
     for (const reservation of seriesReservations) {
       if (!reservation.isActive()) continue;
 
       const wasCheckedIn = reservation.status === 'Checked In';
       reservation.cancel();
-      await reservationRepository.save(reservation);
+      operations.push({ store: 'reservations', data: reservation.toData() });
 
       if (wasCheckedIn) {
         const room = await roomRepository.getById(reservation.roomId);
         if (room) {
           room.markCleaning();
-          await roomRepository.save(room);
+          operations.push({ store: 'rooms', data: room.toData() });
         }
       }
 
       cancelled.push(reservation);
+    }
+
+    if (operations.length > 0) {
+      await batchPut(operations);
     }
 
     return cancelled;
@@ -156,14 +191,20 @@ export class ReservationService {
 
     const wasCheckedIn = reservation.status === 'Checked In';
     reservation.cancel();
-    await reservationRepository.save(reservation);
 
     if (wasCheckedIn) {
       const room = await roomRepository.getById(reservation.roomId);
       if (room) {
         room.markCleaning();
-        await roomRepository.save(room);
+        await batchPut([
+          { store: 'reservations', data: reservation.toData() },
+          { store: 'rooms', data: room.toData() },
+        ]);
+      } else {
+        await reservationRepository.save(reservation);
       }
+    } else {
+      await reservationRepository.save(reservation);
     }
 
     return reservation;

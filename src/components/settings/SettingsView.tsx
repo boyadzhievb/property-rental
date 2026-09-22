@@ -10,6 +10,8 @@ import { LOCALE_LABELS, type Locale } from '../../i18n';
 import { useRoomContext } from '../../context/RoomContext';
 import { useGuestContext } from '../../context/GuestContext';
 import { useReservationContext } from '../../context/ReservationContext';
+import { usePaymentContext } from '../../context/PaymentContext';
+import { useTaskContext } from '../../context/TaskContext';
 import { exportBackup, importBackup, type BackupData } from '../../api/client';
 import { notificationService } from '../../services/NotificationService';
 import { SettingsGroup, SettingsItem } from '../ui/SettingsGroup';
@@ -49,6 +51,8 @@ export default function SettingsView() {
   const { refresh: refreshRooms } = useRoomContext();
   const { refresh: refreshGuests } = useGuestContext();
   const { refresh: refreshReservations } = useReservationContext();
+  const { refresh: refreshPayments } = usePaymentContext();
+  const { refresh: refreshTasks } = useTaskContext();
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(propertyName);
   const [showThemePicker, setShowThemePicker] = useState(false);
@@ -135,9 +139,13 @@ export default function SettingsView() {
         return;
       }
 
-      await importBackup(result.data!);
-      await Promise.all([refreshRooms(), refreshGuests(), refreshReservations()]);
-      setRestoreStatus(t.backupRestored);
+      const report = await importBackup(result.data!);
+      await Promise.all([refreshRooms(), refreshGuests(), refreshReservations(), refreshPayments(), refreshTasks()]);
+      if (report.total > 0) {
+        setRestoreStatus(`${t.backupRestored} (${report.total} ${t.invalidRecordsSkipped})`);
+      } else {
+        setRestoreStatus(t.backupRestored);
+      }
     } catch {
       setRestoreStatus(t.failedToRestore);
     }
@@ -230,18 +238,13 @@ export default function SettingsView() {
           )}
 
           {isNative && (
-            <div onClick={handleToggleNotifications} className="relative">
+            <div onClick={handleToggleNotifications}>
               <SettingsItem
                 icon={Bell}
                 label={t.enableNotifications}
                 color="bg-ios-orange"
-                value={notificationsEnabled ? t.done : ''}
+                value={notificationsEnabled ? '✓' : ''}
               />
-              <div className="absolute right-12 top-1/2 -translate-y-1/2">
-                <div className={`w-12 h-7 rounded-full transition-colors ${notificationsEnabled ? 'bg-ios-green' : 'bg-ios-border'}`}>
-                  <div className={`w-5.5 h-5.5 mt-[3px] rounded-full bg-white shadow transition-transform ${notificationsEnabled ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} style={{ width: 22, height: 22 }} />
-                </div>
-              </div>
             </div>
           )}
           {notificationError && (

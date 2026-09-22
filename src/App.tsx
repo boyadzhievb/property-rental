@@ -124,13 +124,15 @@ function AppContent() {
           </ErrorBoundary>
         </main>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          aria-label={t.newReservation}
-          className="absolute bottom-24 right-5 sm:right-8 lg:right-12 w-14 h-14 bg-ios-blue text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 active:scale-95 transition-all z-20"
-        >
-          <Plus size={28} />
-        </button>
+        {(activeTab === 'today' || activeTab === 'calendar') && (
+          <button
+            onClick={() => setIsModalOpen(true)}
+            aria-label={t.newReservation}
+            className="absolute bottom-24 right-5 sm:right-8 lg:right-12 w-14 h-14 bg-ios-blue text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-600 active:scale-95 transition-all z-20"
+          >
+            <Plus size={28} />
+          </button>
+        )}
 
         <TabBar items={NAV_ITEMS} activeTab={activeTab} onTabChange={(id) => setActiveTab(id as Tab)} />
 

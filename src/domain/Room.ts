@@ -39,6 +39,9 @@ export class Room {
   }
 
   occupy(): void {
+    if (this._status !== RoomStatus.AVAILABLE) {
+      throw new Error('Room can only be occupied from Available status');
+    }
     this._status = RoomStatus.OCCUPIED;
   }
 
@@ -50,6 +53,9 @@ export class Room {
   }
 
   markCleaning(): void {
+    if (this._status !== RoomStatus.OCCUPIED) {
+      throw new Error('Room can only be marked for cleaning from Occupied status');
+    }
     this._status = RoomStatus.CLEANING;
   }
 
