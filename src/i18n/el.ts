@@ -8,16 +8,10 @@ const el: TranslationKeys = {
   settings: 'Ρυθμίσεις',
 
   todaysSchedule: 'Σημερινό πρόγραμμα',
-  todaysArrivals: 'Σημερινές αφίξεις',
-  todaysDepartures: 'Σημερινές αναχωρήσεις',
-  occupiedRooms: 'Κατειλημμένα δωμάτια',
-  roomsBeingCleaned: 'Δωμάτια υπό καθαρισμό',
   arrivals: 'Αφίξεις',
   departures: 'Αναχωρήσεις',
   occupied: 'Κατειλημμένα',
   cleaning: 'Καθαρισμός',
-  noArrivalsToday: 'Δεν υπάρχουν αφίξεις σήμερα.',
-  noDeparturesToday: 'Δεν υπάρχουν αναχωρήσεις σήμερα.',
   noEventsToday: 'Δεν υπάρχουν προγραμματισμένα γεγονότα για σήμερα.',
   noOccupiedRooms: 'Δεν υπάρχουν κατειλημμένα δωμάτια.',
   noRoomsCleaning: 'Δεν υπάρχουν δωμάτια για καθαρισμό.',
@@ -51,7 +45,6 @@ const el: TranslationKeys = {
   checkedOut: 'Αναχωρημένος',
   cancelled: 'Ακυρωμένη',
 
-  noReservationsThisWeek: 'Δεν υπάρχουν κρατήσεις αυτή την εβδομάδα.',
   reservation: 'Κράτηση',
   guest: 'Επισκέπτης',
   room: 'Δωμάτιο',
@@ -142,8 +135,6 @@ const el: TranslationKeys = {
   backupRestored: 'Το αντίγραφο αποκαταστάθηκε επιτυχώς',
   failedToRestore: 'Σφάλμα: αποτυχία αποκατάστασης',
   invalidRecordsSkipped: 'μη έγκυρες εγγραφές παραλείφθηκαν',
-  roomNotFound: 'Το δωμάτιο δεν βρέθηκε',
-  guestNotFound: 'Ο επισκέπτης δεν βρέθηκε',
 
   welcome: 'Καλώς ήρθατε',
   setupTagline: 'Ένας απλός και ιδιωτικός τρόπος διαχείρισης του καταλύματός σας.',
@@ -159,9 +150,6 @@ const el: TranslationKeys = {
 
   // Privacy Policy
   privacyPolicy: 'Πολιτική Απορρήτου',
-
-  somethingWentWrong: 'Κάτι πήγε στραβά',
-  tryAgain: 'Δοκιμάστε ξανά',
 
   close: 'Κλείσιμο',
   edit: 'Επεξεργασία',
@@ -182,14 +170,8 @@ const el: TranslationKeys = {
   recurrenceMonthly: 'Μηνιαία',
   recurrenceEndDate: 'Επανάληψη μέχρι',
   recurrenceOccurrences: 'κρατήσεις θα δημιουργηθούν',
-  recurrenceConflict: 'Η επαναλαμβανόμενη κράτηση έχει σύγκρουση ημερομηνιών',
-  cancelSeries: 'Ακύρωση όλων στη σειρά',
-  confirmCancelSeries: 'Ακύρωση όλων των μελλοντικών κρατήσεων αυτής της σειράς;',
-  seriesLabel: 'Σειρά',
 
-  notifications: 'Ειδοποιήσεις',
   enableNotifications: 'Ενεργοποίηση ειδοποιήσεων',
-  notificationsDescription: 'Λάβετε υπενθυμίσεις για αφίξεις, αναχωρήσεις, καθαρισμό και πληρωμές',
   notificationPermissionDenied: 'Η άδεια ειδοποιήσεων απορρίφθηκε. Ενεργοποιήστε στις ρυθμίσεις συσκευής.',
   notificationArrivalTitle: 'Άφιξη επισκέπτη',
   notificationArrivalBody: '{guest} φτάνει — {room}',

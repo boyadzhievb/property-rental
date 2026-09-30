@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Home, Upload } from 'lucide-react';
 import { useLocale } from '../context/LocaleContext';
-import { type BackupData } from '../api/client';
+import { type BackupData } from '../services/BackupService';
 
 interface SetupViewProps {
   onConfigure: (name: string, roomCount: number) => void;

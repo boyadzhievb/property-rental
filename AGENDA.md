@@ -17,3 +17,10 @@
 ## 4. Store Submission
 - ~~Publish to Google Play Store~~ ✓
 - ~~iOS App Store submission~~ ✓
+
+## 5. Review Fixes
+- Accessibility — WCAG AA compliance (form labels, aria-describedby, keyboard nav, focus-visible)
+- npm dependency vulnerabilities (npm audit fix)
+- Architecture — extract BackupService to fix layer violation
+- i18n cleanup — remove 17 unused keys from all 6 locales
+- Test coverage — repository, hook, and component tests

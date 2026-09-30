@@ -12,37 +12,10 @@ import { useGuestContext } from '../../context/GuestContext';
 import { useReservationContext } from '../../context/ReservationContext';
 import { usePaymentContext } from '../../context/PaymentContext';
 import { useTaskContext } from '../../context/TaskContext';
-import { exportBackup, importBackup, type BackupData } from '../../api/client';
+import { backupService } from '../../services/BackupService';
 import { notificationService } from '../../services/NotificationService';
 import { SettingsGroup, SettingsItem } from '../ui/SettingsGroup';
 import PageHeader from '../layout/PageHeader';
-
-function validateBackupFormat(data: unknown): { valid: boolean; error?: string; data?: BackupData } {
-  if (data === null || typeof data !== 'object') {
-    return { valid: false, error: 'Invalid file: not a JSON object' };
-  }
-
-  const obj = data as Record<string, unknown>;
-
-  if (obj.rooms !== undefined && !Array.isArray(obj.rooms)) {
-    return { valid: false, error: 'Invalid format: "rooms" must be an array' };
-  }
-  if (obj.guests !== undefined && !Array.isArray(obj.guests)) {
-    return { valid: false, error: 'Invalid format: "guests" must be an array' };
-  }
-  if (obj.reservations !== undefined && !Array.isArray(obj.reservations)) {
-    return { valid: false, error: 'Invalid format: "reservations" must be an array' };
-  }
-  if (obj.settings !== undefined && (typeof obj.settings !== 'object' || obj.settings === null)) {
-    return { valid: false, error: 'Invalid format: "settings" must be an object' };
-  }
-
-  if (!obj.rooms && !obj.guests && !obj.reservations && !obj.settings) {
-    return { valid: false, error: 'Invalid backup: file contains no recognizable data (rooms, guests, reservations, or settings)' };
-  }
-
-  return { valid: true, data: obj as BackupData };
-}
 
 export default function SettingsView() {
   const { propertyName, updateName, resetData } = usePropertyContext();
@@ -81,7 +54,7 @@ export default function SettingsView() {
 
   const handleBackup = async () => {
     try {
-      const data = await exportBackup();
+      const data = await backupService.export();
       const json = JSON.stringify(data, null, 2);
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `property-backup-${timestamp}.json`;
@@ -132,14 +105,14 @@ export default function SettingsView() {
         return;
       }
 
-      const result = validateBackupFormat(parsed);
+      const result = backupService.validate(parsed);
       if (!result.valid) {
         setRestoreStatus(`Error: ${result.error}`);
         e.target.value = '';
         return;
       }
 
-      const report = await importBackup(result.data!);
+      const report = await backupService.import(result.data!);
       await Promise.all([refreshRooms(), refreshGuests(), refreshReservations(), refreshPayments(), refreshTasks()]);
       if (report.total > 0) {
         setRestoreStatus(`${t.backupRestored} (${report.total} ${t.invalidRecordsSkipped})`);
@@ -159,7 +132,7 @@ export default function SettingsView() {
 
       <div className="px-5 max-w-screen-md mx-auto">
         <SettingsGroup>
-          <div className="flex items-center p-4" onClick={() => { setEditing(true); setNameInput(propertyName); }}>
+          <div className="flex items-center p-4" role="button" tabIndex={0} onClick={() => { setEditing(true); setNameInput(propertyName); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing(true); setNameInput(propertyName); } }}>
             <div className="w-16 h-16 rounded-full bg-ios-gray-light flex items-center justify-center text-2xl font-bold text-ios-text-secondary mr-4">
               {propertyName.slice(0, 2).toUpperCase()}
             </div>
@@ -168,6 +141,7 @@ export default function SettingsView() {
                 <div className="flex items-center gap-2">
                   <input
                     autoFocus
+                    aria-label={t.propertyName}
                     value={nameInput}
                     onChange={(e) => setNameInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -177,10 +151,11 @@ export default function SettingsView() {
                       }
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="text-xl font-bold text-ios-text bg-transparent border-b-2 border-ios-blue outline-none w-full"
+                    className="text-xl font-bold text-ios-text bg-transparent border-b-2 border-ios-blue outline-none w-full focus-visible:ring-2 focus-visible:ring-ios-blue"
                   />
                   <button
                     onClick={(e) => { e.stopPropagation(); updateName(nameInput); setEditing(false); }}
+                    aria-label={t.save}
                     className="text-ios-blue"
                   >
                     <Check size={22} />

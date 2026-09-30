@@ -8,16 +8,10 @@ const de: TranslationKeys = {
   settings: 'Einstellungen',
 
   todaysSchedule: 'Heutiger Zeitplan',
-  todaysArrivals: 'Heutige Anreisen',
-  todaysDepartures: 'Heutige Abreisen',
-  occupiedRooms: 'Belegte Zimmer',
-  roomsBeingCleaned: 'Zimmer werden gereinigt',
   arrivals: 'Anreisen',
   departures: 'Abreisen',
   occupied: 'Belegt',
   cleaning: 'Reinigung',
-  noArrivalsToday: 'Keine Anreisen heute.',
-  noDeparturesToday: 'Keine Abreisen heute.',
   noEventsToday: 'Keine Termine für heute geplant.',
   noOccupiedRooms: 'Keine belegten Zimmer.',
   noRoomsCleaning: 'Keine Zimmer müssen gereinigt werden.',
@@ -51,7 +45,6 @@ const de: TranslationKeys = {
   checkedOut: 'Ausgecheckt',
   cancelled: 'Storniert',
 
-  noReservationsThisWeek: 'Keine Reservierungen diese Woche.',
   reservation: 'Reservierung',
   guest: 'Gast',
   room: 'Zimmer',
@@ -142,8 +135,6 @@ const de: TranslationKeys = {
   backupRestored: 'Backup erfolgreich wiederhergestellt',
   failedToRestore: 'Fehler: Backup konnte nicht wiederhergestellt werden',
   invalidRecordsSkipped: 'ungültige Einträge übersprungen',
-  roomNotFound: 'Zimmer nicht gefunden',
-  guestNotFound: 'Gast nicht gefunden',
 
   welcome: 'Willkommen',
   setupTagline: 'Eine einfache und private Verwaltung für Ihre Unterkunft.',
@@ -159,9 +150,6 @@ const de: TranslationKeys = {
 
   // Privacy Policy
   privacyPolicy: 'Datenschutzrichtlinie',
-
-  somethingWentWrong: 'Etwas ist schiefgelaufen',
-  tryAgain: 'Erneut versuchen',
 
   close: 'Schließen',
   edit: 'Bearbeiten',
@@ -182,14 +170,8 @@ const de: TranslationKeys = {
   recurrenceMonthly: 'Monatlich',
   recurrenceEndDate: 'Wiederholen bis',
   recurrenceOccurrences: 'Buchungen werden erstellt',
-  recurrenceConflict: 'Wiederkehrende Reservierung hat einen Datumskonflikt',
-  cancelSeries: 'Alle in Serie stornieren',
-  confirmCancelSeries: 'Alle zukünftigen Reservierungen dieser Serie stornieren?',
-  seriesLabel: 'Serie',
 
-  notifications: 'Benachrichtigungen',
   enableNotifications: 'Benachrichtigungen aktivieren',
-  notificationsDescription: 'Erinnerungen für Anreisen, Abreisen, Reinigung und Zahlungen erhalten',
   notificationPermissionDenied: 'Benachrichtigungsberechtigung verweigert. In den Geräteeinstellungen aktivieren.',
   notificationArrivalTitle: 'Gast kommt an',
   notificationArrivalBody: '{guest} reist an — {room}',

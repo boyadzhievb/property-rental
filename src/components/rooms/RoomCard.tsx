@@ -64,29 +64,32 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
         <div className="space-y-3">
           <input
             type="text"
+            aria-label={t.roomName}
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             autoFocus
-            className="w-full p-3 border border-ios-border/40 rounded-xl focus:outline-none focus:border-ios-blue bg-ios-bg/30 text-ios-text font-bold text-lg"
+            className="w-full p-3 border border-ios-border/40 rounded-xl focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-ios-bg/30 text-ios-text font-bold text-lg"
           />
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="text-xs text-ios-text-secondary ml-1 mb-1 block">{t.pricePerNight}</label>
+              <label htmlFor={`price-${room.id}`} className="text-xs text-ios-text-secondary ml-1 mb-1 block">{t.pricePerNight}</label>
               <input
+                id={`price-${room.id}`}
                 type="number"
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
-                className="w-full p-3 border border-ios-border/40 rounded-xl focus:outline-none focus:border-ios-blue bg-ios-bg/30 text-ios-text"
+                className="w-full p-3 border border-ios-border/40 rounded-xl focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-ios-bg/30 text-ios-text"
               />
             </div>
             <div className="flex-1">
-              <label className="text-xs text-ios-text-secondary ml-1 mb-1 block">{t.maxGuests}</label>
+              <label htmlFor={`maxguests-${room.id}`} className="text-xs text-ios-text-secondary ml-1 mb-1 block">{t.maxGuests}</label>
               <input
+                id={`maxguests-${room.id}`}
                 type="number"
                 min="1"
                 value={editMaxGuests}
                 onChange={(e) => setEditMaxGuests(e.target.value)}
-                className="w-full p-3 border border-ios-border/40 rounded-xl focus:outline-none focus:border-ios-blue bg-ios-bg/30 text-ios-text"
+                className="w-full p-3 border border-ios-border/40 rounded-xl focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-ios-bg/30 text-ios-text"
               />
             </div>
           </div>

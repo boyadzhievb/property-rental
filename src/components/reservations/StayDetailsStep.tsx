@@ -56,7 +56,7 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
                 </button>
               ))}
             </div>
-            {errors.roomId && <div className="px-4 pb-2 text-xs text-ios-red">{errors.roomId}</div>}
+            {errors.roomId && <div id="error-roomId" role="alert" className="px-4 pb-2 text-xs text-ios-red">{errors.roomId}</div>}
           </div>
 
           {roomId && occupiedDates.length > 0 && (
@@ -73,26 +73,30 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
           )}
 
           <div className="flex flex-col p-4">
-            <div className="flex justify-between items-center mb-4">
+            <label className="flex justify-between items-center mb-4 cursor-pointer">
               <span className="text-ios-text font-medium">{t.checkInDate}</span>
               <input
                 type="date"
+                aria-invalid={!!errors.checkIn}
+                aria-describedby={errors.checkIn ? 'error-checkIn' : undefined}
                 value={checkIn}
                 onChange={(e) => onUpdate('checkIn', e.target.value)}
-                className="text-ios-blue text-right focus:outline-none bg-transparent"
+                className="text-ios-blue text-right focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent"
               />
-            </div>
-            {errors.checkIn && <div className="text-xs text-ios-red mb-2">{errors.checkIn}</div>}
-            <div className="flex justify-between items-center">
+            </label>
+            {errors.checkIn && <div id="error-checkIn" className="text-xs text-ios-red mb-2">{errors.checkIn}</div>}
+            <label className="flex justify-between items-center cursor-pointer">
               <span className="text-ios-text font-medium">{t.checkOutDate}</span>
               <input
                 type="date"
+                aria-invalid={!!errors.checkOut}
+                aria-describedby={errors.checkOut ? 'error-checkOut' : undefined}
                 value={checkOut}
                 onChange={(e) => onUpdate('checkOut', e.target.value)}
-                className="text-ios-blue text-right focus:outline-none bg-transparent"
+                className="text-ios-blue text-right focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent"
               />
-            </div>
-            {errors.checkOut && <div className="text-xs text-ios-red mt-2">{errors.checkOut}</div>}
+            </label>
+            {errors.checkOut && <div id="error-checkOut" className="text-xs text-ios-red mt-2">{errors.checkOut}</div>}
           </div>
 
           <div className="flex justify-between items-center p-4">
@@ -118,11 +122,14 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
           <input
             type="number"
             placeholder="$0.00"
+            aria-label={t.totalPrice}
+            aria-invalid={!!errors.price}
+            aria-describedby={errors.price ? 'error-price' : undefined}
             value={price}
             onChange={(e) => onUpdate('price', e.target.value)}
-            className="w-full p-4 focus:outline-none text-xl font-bold text-ios-text"
+            className="w-full p-4 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none text-xl font-bold text-ios-text"
           />
-          {errors.price && <div className="px-4 pb-3 text-xs text-ios-red">{errors.price}</div>}
+          {errors.price && <div id="error-price" className="px-4 pb-3 text-xs text-ios-red">{errors.price}</div>}
         </div>
       </div>
 
@@ -159,17 +166,19 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
 
           {recurrencePattern && (
             <>
-              <div className="flex justify-between items-center p-4">
+              <label className="flex justify-between items-center p-4 cursor-pointer">
                 <span className="text-ios-text font-medium">{t.recurrenceEndDate}</span>
                 <input
                   type="date"
+                  aria-invalid={!!errors.recurrenceEndDate}
+                  aria-describedby={errors.recurrenceEndDate ? 'error-recurrenceEndDate' : undefined}
                   value={recurrenceEndDate}
                   onChange={(e) => onUpdate('recurrenceEndDate', e.target.value)}
-                  className="text-ios-blue text-right focus:outline-none bg-transparent"
+                  className="text-ios-blue text-right focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent"
                 />
-              </div>
+              </label>
               {errors.recurrenceEndDate && (
-                <div className="px-4 pb-3 text-xs text-ios-red">{errors.recurrenceEndDate}</div>
+                <div id="error-recurrenceEndDate" className="px-4 pb-3 text-xs text-ios-red">{errors.recurrenceEndDate}</div>
               )}
               {occurrenceCount > 0 && (
                 <div className="px-4 py-3 text-sm text-ios-text-secondary">

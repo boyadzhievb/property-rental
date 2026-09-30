@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
-import { api, seedDemoData, configureProperty, importBackup, exportBackup, resetData as resetDataDb, type BackupData } from '../api/client';
+import { api, seedDemoData, configureProperty, resetData as resetDataDb } from '../api/client';
+import { backupService, type BackupData } from '../services/BackupService';
 
 interface PropertyContextValue {
   propertyName: string;
@@ -66,7 +67,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
 
   const importData = useCallback(async (data: BackupData) => {
     try {
-      await importBackup(data);
+      await backupService.import(data);
       setPropertyName(data.settings?.name || 'My Property');
       setIsConfigured(true);
     } catch (e: any) {
@@ -77,7 +78,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   const resetData = useCallback(async () => {
     let backup: BackupData;
     try {
-      backup = await exportBackup();
+      backup = await backupService.export();
     } catch {
       setError('Failed to export backup. Reset aborted.');
       return;

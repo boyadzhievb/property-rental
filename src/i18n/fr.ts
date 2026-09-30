@@ -8,16 +8,10 @@ const fr: TranslationKeys = {
   settings: 'Paramètres',
 
   todaysSchedule: "Programme du jour",
-  todaysArrivals: "Arrivées du jour",
-  todaysDepartures: "Départs du jour",
-  occupiedRooms: 'Chambres occupées',
-  roomsBeingCleaned: 'Chambres en nettoyage',
   arrivals: 'Arrivées',
   departures: 'Départs',
   occupied: 'Occupées',
   cleaning: 'Nettoyage',
-  noArrivalsToday: "Aucune arrivée aujourd'hui.",
-  noDeparturesToday: "Aucun départ aujourd'hui.",
   noEventsToday: "Aucun événement prévu aujourd'hui.",
   noOccupiedRooms: 'Aucune chambre occupée.',
   noRoomsCleaning: 'Aucune chambre à nettoyer.',
@@ -51,7 +45,6 @@ const fr: TranslationKeys = {
   checkedOut: 'Libéré',
   cancelled: 'Annulée',
 
-  noReservationsThisWeek: 'Aucune réservation cette semaine.',
   reservation: 'Réservation',
   guest: 'Client',
   room: 'Chambre',
@@ -142,8 +135,6 @@ const fr: TranslationKeys = {
   backupRestored: 'Sauvegarde restaurée avec succès',
   failedToRestore: 'Erreur : échec de la restauration',
   invalidRecordsSkipped: 'enregistrements invalides ignorés',
-  roomNotFound: 'Chambre introuvable',
-  guestNotFound: 'Client introuvable',
 
   welcome: 'Bienvenue',
   setupTagline: 'Un moyen simple et privé de gérer votre propriété.',
@@ -159,9 +150,6 @@ const fr: TranslationKeys = {
 
   // Privacy Policy
   privacyPolicy: 'Politique de confidentialité',
-
-  somethingWentWrong: "Quelque chose s'est mal passé",
-  tryAgain: 'Réessayer',
 
   close: 'Fermer',
   edit: 'Modifier',
@@ -182,14 +170,8 @@ const fr: TranslationKeys = {
   recurrenceMonthly: 'Mensuel',
   recurrenceEndDate: 'Répéter jusqu\'au',
   recurrenceOccurrences: 'réservations seront créées',
-  recurrenceConflict: 'La réservation récurrente a un conflit de dates',
-  cancelSeries: 'Annuler toute la série',
-  confirmCancelSeries: 'Annuler toutes les réservations futures de cette série ?',
-  seriesLabel: 'Série',
 
-  notifications: 'Notifications',
   enableNotifications: 'Activer les notifications',
-  notificationsDescription: 'Recevez des rappels pour les arrivées, départs, nettoyage et paiements',
   notificationPermissionDenied: 'Permission de notification refusée. Activez dans les paramètres de l\'appareil.',
   notificationArrivalTitle: 'Arrivée d\'un client',
   notificationArrivalBody: '{guest} arrive — {room}',

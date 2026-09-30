@@ -8,16 +8,10 @@ const es = {
 
   // Today view
   todaysSchedule: 'Agenda de hoy',
-  todaysArrivals: 'Llegadas de hoy',
-  todaysDepartures: 'Salidas de hoy',
-  occupiedRooms: 'Habitaciones ocupadas',
-  roomsBeingCleaned: 'Habitaciones en limpieza',
   arrivals: 'Llegadas',
   departures: 'Salidas',
   occupied: 'Ocupada',
   cleaning: 'Limpieza',
-  noArrivalsToday: 'No hay llegadas hoy.',
-  noDeparturesToday: 'No hay salidas hoy.',
   noEventsToday: 'No hay eventos programados para hoy.',
   noOccupiedRooms: 'No hay habitaciones ocupadas.',
   noRoomsCleaning: 'No hay habitaciones en limpieza.',
@@ -54,7 +48,6 @@ const es = {
   cancelled: 'Cancelada',
 
   // Calendar & Reservation detail
-  noReservationsThisWeek: 'No hay reservas esta semana.',
   reservation: 'Reserva',
   guest: 'Huésped',
   room: 'Habitación',
@@ -151,8 +144,6 @@ const es = {
   backupRestored: 'Copia de seguridad restaurada correctamente',
   failedToRestore: 'Error: no se pudo restaurar la copia de seguridad',
   invalidRecordsSkipped: 'registros inválidos omitidos',
-  roomNotFound: 'Habitación no encontrada',
-  guestNotFound: 'Huésped no encontrado',
 
   // Setup
   welcome: 'Bienvenido',
@@ -169,10 +160,6 @@ const es = {
 
   // Privacy Policy
   privacyPolicy: 'Política de privacidad',
-
-  // Error
-  somethingWentWrong: 'Algo salió mal',
-  tryAgain: 'Intentar de nuevo',
 
   // Accessibility
   close: 'Cerrar',
@@ -197,15 +184,9 @@ const es = {
   recurrenceMonthly: 'Mensual',
   recurrenceEndDate: 'Repetir hasta',
   recurrenceOccurrences: 'reservas se crearán',
-  recurrenceConflict: 'La reserva recurrente tiene un conflicto de fechas',
-  cancelSeries: 'Cancelar toda la serie',
-  confirmCancelSeries: '¿Cancelar todas las reservas futuras de esta serie?',
-  seriesLabel: 'Serie',
 
   // Notifications
-  notifications: 'Notificaciones',
   enableNotifications: 'Activar notificaciones',
-  notificationsDescription: 'Recibir recordatorios de llegadas, salidas, limpieza y pagos',
   notificationPermissionDenied: 'Permiso de notificaciones denegado. Actívelo en los ajustes del dispositivo.',
   notificationArrivalTitle: 'Llegada de huésped',
   notificationArrivalBody: '{guest} llega — {room}',

@@ -46,32 +46,41 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
               <input
                 type="text"
                 placeholder={t.guestName}
+                aria-label={t.guestName}
+                aria-invalid={!!errors.guestName}
+                aria-describedby={errors.guestName ? 'error-guestName' : undefined}
                 value={guestName}
                 onChange={(e) => onUpdate('guestName', e.target.value)}
-                className="w-full p-4 border-b border-ios-border/40 focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
+                className="w-full p-4 border-b border-ios-border/40 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
                 autoFocus
               />
-              {errors.guestName && <div className="px-4 pb-2 text-xs text-ios-red">{errors.guestName}</div>}
+              {errors.guestName && <div id="error-guestName" className="px-4 pb-2 text-xs text-ios-red">{errors.guestName}</div>}
             </div>
             <div>
               <input
                 type="tel"
                 placeholder={t.phoneNumber}
+                aria-label={t.phoneNumber}
+                aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? 'error-phone' : undefined}
                 value={phone}
                 onChange={(e) => onUpdate('phone', e.target.value)}
-                className="w-full p-4 border-b border-ios-border/40 focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
+                className="w-full p-4 border-b border-ios-border/40 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
               />
-              {errors.phone && <div className="px-4 pb-2 text-xs text-ios-red">{errors.phone}</div>}
+              {errors.phone && <div id="error-phone" className="px-4 pb-2 text-xs text-ios-red">{errors.phone}</div>}
             </div>
             <div>
               <input
                 type="email"
                 placeholder={t.emailOptional}
+                aria-label={t.emailOptional}
+                aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? 'error-email' : undefined}
                 value={email}
                 onChange={(e) => onUpdate('email', e.target.value)}
-                className="w-full p-4 focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
+                className="w-full p-4 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
               />
-              {errors.email && <div className="px-4 pb-2 text-xs text-ios-red">{errors.email}</div>}
+              {errors.email && <div id="error-email" className="px-4 pb-2 text-xs text-ios-red">{errors.email}</div>}
             </div>
           </div>
         </div>
@@ -94,9 +103,10 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
             <input
               type="text"
               placeholder={t.searchGuests}
+              aria-label={t.searchGuests}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full focus:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
+              className="w-full focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent text-ios-text placeholder-ios-text-secondary"
               autoFocus
             />
           </div>

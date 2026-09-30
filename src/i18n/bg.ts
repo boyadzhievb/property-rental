@@ -8,16 +8,10 @@ const bg: TranslationKeys = {
   settings: 'Настройки',
 
   todaysSchedule: 'Дневен график',
-  todaysArrivals: 'Пристигания днес',
-  todaysDepartures: 'Заминавания днес',
-  occupiedRooms: 'Заети стаи',
-  roomsBeingCleaned: 'Стаи в почистване',
   arrivals: 'Пристигания',
   departures: 'Заминавания',
   occupied: 'Заети',
   cleaning: 'Почистване',
-  noArrivalsToday: 'Няма пристигания днес.',
-  noDeparturesToday: 'Няма заминавания днес.',
   noEventsToday: 'Няма планирани събития за днес.',
   noOccupiedRooms: 'Няма заети стаи.',
   noRoomsCleaning: 'Няма стаи за почистване.',
@@ -51,7 +45,6 @@ const bg: TranslationKeys = {
   checkedOut: 'Освободен',
   cancelled: 'Отказана',
 
-  noReservationsThisWeek: 'Няма резервации тази седмица.',
   reservation: 'Резервация',
   guest: 'Гост',
   room: 'Стая',
@@ -142,8 +135,6 @@ const bg: TranslationKeys = {
   backupRestored: 'Резервното копие е възстановено успешно',
   failedToRestore: 'Грешка: неуспешно възстановяване',
   invalidRecordsSkipped: 'невалидни записи пропуснати',
-  roomNotFound: 'Стаята не е намерена',
-  guestNotFound: 'Гостът не е намерен',
 
   welcome: 'Добре дошли',
   setupTagline: 'Лесен и поверителен начин да управлявате имота си.',
@@ -159,9 +150,6 @@ const bg: TranslationKeys = {
 
   // Privacy Policy
   privacyPolicy: 'Политика за поверителност',
-
-  somethingWentWrong: 'Нещо се обърка',
-  tryAgain: 'Опитай отново',
 
   close: 'Затвори',
   edit: 'Редактирай',
@@ -182,14 +170,8 @@ const bg: TranslationKeys = {
   recurrenceMonthly: 'Всеки месец',
   recurrenceEndDate: 'Повтаряй до',
   recurrenceOccurrences: 'резервации ще бъдат създадени',
-  recurrenceConflict: 'Повтарящата се резервация има конфликт на дати',
-  cancelSeries: 'Откажи всички от серията',
-  confirmCancelSeries: 'Откажи всички бъдещи резервации от тази серия?',
-  seriesLabel: 'Серия',
 
-  notifications: 'Известия',
   enableNotifications: 'Включи известия',
-  notificationsDescription: 'Получавай напомняния за пристигания, заминавания, почистване и плащания',
   notificationPermissionDenied: 'Разрешението за известия е отказано. Включете от настройките на устройството.',
   notificationArrivalTitle: 'Пристигане на гост',
   notificationArrivalBody: '{guest} пристига — {room}',

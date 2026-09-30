@@ -8,16 +8,10 @@ const en = {
 
   // Today view
   todaysSchedule: "Today's Schedule",
-  todaysArrivals: "Today's Arrivals",
-  todaysDepartures: "Today's Departures",
-  occupiedRooms: 'Occupied Rooms',
-  roomsBeingCleaned: 'Rooms Being Cleaned',
   arrivals: 'Arrivals',
   departures: 'Departures',
   occupied: 'Occupied',
   cleaning: 'Cleaning',
-  noArrivalsToday: 'No arrivals today.',
-  noDeparturesToday: 'No departures today.',
   noEventsToday: 'No events scheduled for today.',
   noOccupiedRooms: 'No occupied rooms.',
   noRoomsCleaning: 'No rooms need cleaning.',
@@ -54,7 +48,6 @@ const en = {
   cancelled: 'Cancelled',
 
   // Calendar & Reservation detail
-  noReservationsThisWeek: 'No reservations this week.',
   reservation: 'Reservation',
   guest: 'Guest',
   room: 'Room',
@@ -151,8 +144,6 @@ const en = {
   backupRestored: 'Backup restored successfully',
   failedToRestore: 'Error: failed to restore backup',
   invalidRecordsSkipped: 'invalid records skipped',
-  roomNotFound: 'Room not found',
-  guestNotFound: 'Guest not found',
 
   // Setup
   welcome: 'Welcome',
@@ -169,10 +160,6 @@ const en = {
 
   // Privacy Policy
   privacyPolicy: 'Privacy Policy',
-
-  // Error
-  somethingWentWrong: 'Something went wrong',
-  tryAgain: 'Try again',
 
   // Accessibility
   close: 'Close',
@@ -197,15 +184,9 @@ const en = {
   recurrenceMonthly: 'Monthly',
   recurrenceEndDate: 'Repeat until',
   recurrenceOccurrences: 'bookings will be created',
-  recurrenceConflict: 'Recurring reservation has a date conflict',
-  cancelSeries: 'Cancel All in Series',
-  confirmCancelSeries: 'Cancel all future reservations in this series?',
-  seriesLabel: 'Series',
 
   // Notifications
-  notifications: 'Notifications',
   enableNotifications: 'Enable Notifications',
-  notificationsDescription: 'Get reminders for arrivals, departures, cleaning, and payments',
   notificationPermissionDenied: 'Notification permission denied. Enable in device settings.',
   notificationArrivalTitle: 'Guest Arriving',
   notificationArrivalBody: '{guest} arriving — {room}',
