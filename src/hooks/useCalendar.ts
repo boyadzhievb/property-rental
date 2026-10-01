@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { addDays, format } from 'date-fns';
 import { useRoomContext } from '../context/RoomContext';
 import { useGuestContext } from '../context/GuestContext';
+import { useReservationContext } from '../context/ReservationContext';
 import { type Room } from '../domain/Room';
 import { type Guest } from '../domain/Guest';
 import { type Reservation } from '../domain/Reservation';
@@ -16,6 +17,7 @@ export interface CalendarData {
 export function useCalendar(weekStart: Date) {
   const { rooms } = useRoomContext();
   const { guests } = useGuestContext();
+  const { reservations: contextReservations } = useReservationContext();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +38,7 @@ export function useCalendar(weekStart: Date) {
     }
   }, [fromDate, toDate]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { refresh(); }, [contextReservations, refresh]);
 
   const data: CalendarData | null = loading ? null : { rooms, guests, reservations };
 
