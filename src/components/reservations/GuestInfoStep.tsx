@@ -39,7 +39,9 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
         <div>
           <div className="flex items-center justify-between ml-4 mr-4 mb-2">
             <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold">{t.newGuest}</div>
-            <button onClick={onToggleNewGuest} className="text-xs text-ios-blue font-medium">{t.selectExisting}</button>
+            <button onClick={onToggleNewGuest} className="text-sm text-ios-blue font-medium px-3 py-1.5 rounded-full bg-ios-blue/10 active:bg-ios-blue/20 min-h-[36px] flex items-center gap-1">
+              <Search size={14} /> {t.selectExisting}
+            </button>
           </div>
           <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
             <div>
@@ -93,8 +95,8 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
       <div>
         <div className="flex items-center justify-between ml-4 mr-4 mb-2">
           <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold">{t.selectGuest}</div>
-          <button onClick={onToggleNewGuest} className="text-xs text-ios-blue font-medium flex items-center gap-1">
-            <UserPlus size={12} /> {t.newGuest}
+          <button onClick={onToggleNewGuest} className="text-sm text-ios-blue font-medium px-3 py-1.5 rounded-full bg-ios-blue/10 active:bg-ios-blue/20 min-h-[36px] flex items-center gap-1">
+            <UserPlus size={14} /> {t.newGuest}
           </button>
         </div>
         <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">

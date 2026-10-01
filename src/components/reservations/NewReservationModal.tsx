@@ -249,9 +249,9 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-ios-bg animate-in slide-in-from-bottom-full duration-300 sm:p-5 sm:bg-black/40 sm:justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="new-reservation-title" onKeyDown={e => { if (e.key === 'Escape') onClose(); }}>
+    <div className="fixed inset-0 z-50 flex flex-col bg-ios-bg animate-in slide-in-from-bottom-full duration-300 pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] sm:p-5 sm:bg-black/40 sm:justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="new-reservation-title" onKeyDown={e => { if (e.key === 'Escape') onClose(); }}>
       <div className="flex-1 w-full bg-ios-bg sm:max-w-md sm:flex-none sm:rounded-3xl sm:h-auto sm:max-h-[90vh] sm:overflow-hidden flex flex-col shadow-2xl">
-        <header className="flex items-center justify-between p-4 bg-ios-bg border-b border-ios-border/30">
+        <header className="flex items-center justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))] sm:pt-4 bg-ios-bg border-b border-ios-border/30">
           <button onClick={onClose} className="text-ios-blue text-lg px-2 active:opacity-70 transition-opacity">{t.cancel}</button>
           <h2 id="new-reservation-title" className="font-semibold text-ios-text">{t.newReservation}</h2>
           <button
@@ -263,42 +263,45 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-5">
-          {step === 1 ? (
-            <GuestInfoStep
-              guests={guests}
-              selectedGuestId={form.guestId}
-              isNewGuest={form.isNewGuest}
-              guestName={form.guestName}
-              phone={form.phone}
-              email={form.email}
-              errors={errors}
-              onSelectGuest={(id) => {
-                setForm(prev => ({ ...prev, guestId: id }));
-                setErrors(prev => ({ ...prev, guestId: undefined }));
-              }}
-              onToggleNewGuest={() => {
-                setForm(prev => ({ ...prev, isNewGuest: !prev.isNewGuest, guestId: '' }));
-                setErrors({});
-              }}
-              onUpdate={updateForm}
-            />
-          ) : (
-            <StayDetailsStep
-              rooms={rooms}
-              reservations={reservations}
-              roomId={form.roomId}
-              checkIn={form.checkIn}
-              checkOut={form.checkOut}
-              guestsCount={form.guestsCount}
-              price={form.price}
-              recurrencePattern={form.recurrencePattern}
-              recurrenceEndDate={form.recurrenceEndDate}
-              occurrenceCount={occurrenceCount}
-              errors={errors}
-              onUpdate={updateForm}
-            />
-          )}
+        <div className="relative flex-1 min-h-0">
+          <div className="h-full overflow-y-auto p-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
+            {step === 1 ? (
+              <GuestInfoStep
+                guests={guests}
+                selectedGuestId={form.guestId}
+                isNewGuest={form.isNewGuest}
+                guestName={form.guestName}
+                phone={form.phone}
+                email={form.email}
+                errors={errors}
+                onSelectGuest={(id) => {
+                  setForm(prev => ({ ...prev, guestId: id }));
+                  setErrors(prev => ({ ...prev, guestId: undefined }));
+                }}
+                onToggleNewGuest={() => {
+                  setForm(prev => ({ ...prev, isNewGuest: !prev.isNewGuest, guestId: '' }));
+                  setErrors({});
+                }}
+                onUpdate={updateForm}
+              />
+            ) : (
+              <StayDetailsStep
+                rooms={rooms}
+                reservations={reservations}
+                roomId={form.roomId}
+                checkIn={form.checkIn}
+                checkOut={form.checkOut}
+                guestsCount={form.guestsCount}
+                price={form.price}
+                recurrencePattern={form.recurrencePattern}
+                recurrenceEndDate={form.recurrenceEndDate}
+                occurrenceCount={occurrenceCount}
+                errors={errors}
+                onUpdate={updateForm}
+              />
+            )}
+          </div>
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-ios-bg to-transparent" />
         </div>
       </div>
     </div>

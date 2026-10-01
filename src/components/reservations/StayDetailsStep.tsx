@@ -1,4 +1,4 @@
-import { Check, Repeat } from 'lucide-react';
+import { Calendar, Check, Repeat } from 'lucide-react';
 import { type Room } from '../../domain/Room';
 import { type Reservation, type RecurrencePattern } from '../../domain/Reservation';
 import { useLocale } from '../../context/LocaleContext';
@@ -72,31 +72,37 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
             </div>
           )}
 
-          <div className="flex flex-col p-4">
-            <label className="flex justify-between items-center mb-4 cursor-pointer">
+          <div className="flex flex-col p-4 gap-3">
+            <label className="flex justify-between items-center cursor-pointer min-h-[44px]">
               <span className="text-ios-text font-medium">{t.checkInDate}</span>
-              <input
-                type="date"
-                aria-invalid={!!errors.checkIn}
-                aria-describedby={errors.checkIn ? 'error-checkIn' : undefined}
-                value={checkIn}
-                onChange={(e) => onUpdate('checkIn', e.target.value)}
-                className="text-ios-blue text-right focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent"
-              />
+              <span className="flex items-center gap-2 bg-ios-gray-light rounded-xl px-3 py-2">
+                <input
+                  type="date"
+                  aria-invalid={!!errors.checkIn}
+                  aria-describedby={errors.checkIn ? 'error-checkIn' : undefined}
+                  value={checkIn}
+                  onChange={(e) => onUpdate('checkIn', e.target.value)}
+                  className="text-ios-blue font-medium focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent"
+                />
+                <Calendar size={16} className="text-ios-blue flex-shrink-0" />
+              </span>
             </label>
-            {errors.checkIn && <div id="error-checkIn" className="text-xs text-ios-red mb-2">{errors.checkIn}</div>}
-            <label className="flex justify-between items-center cursor-pointer">
+            {errors.checkIn && <div id="error-checkIn" className="text-xs text-ios-red">{errors.checkIn}</div>}
+            <label className="flex justify-between items-center cursor-pointer min-h-[44px]">
               <span className="text-ios-text font-medium">{t.checkOutDate}</span>
-              <input
-                type="date"
-                aria-invalid={!!errors.checkOut}
-                aria-describedby={errors.checkOut ? 'error-checkOut' : undefined}
-                value={checkOut}
-                onChange={(e) => onUpdate('checkOut', e.target.value)}
-                className="text-ios-blue text-right focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent"
-              />
+              <span className="flex items-center gap-2 bg-ios-gray-light rounded-xl px-3 py-2">
+                <input
+                  type="date"
+                  aria-invalid={!!errors.checkOut}
+                  aria-describedby={errors.checkOut ? 'error-checkOut' : undefined}
+                  value={checkOut}
+                  onChange={(e) => onUpdate('checkOut', e.target.value)}
+                  className="text-ios-blue font-medium focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent"
+                />
+                <Calendar size={16} className="text-ios-blue flex-shrink-0" />
+              </span>
             </label>
-            {errors.checkOut && <div id="error-checkOut" className="text-xs text-ios-red mt-2">{errors.checkOut}</div>}
+            {errors.checkOut && <div id="error-checkOut" className="text-xs text-ios-red">{errors.checkOut}</div>}
           </div>
 
           <div className="flex justify-between items-center p-4">
@@ -166,16 +172,19 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
 
           {recurrencePattern && (
             <>
-              <label className="flex justify-between items-center p-4 cursor-pointer">
+              <label className="flex justify-between items-center p-4 cursor-pointer min-h-[44px]">
                 <span className="text-ios-text font-medium">{t.recurrenceEndDate}</span>
-                <input
-                  type="date"
-                  aria-invalid={!!errors.recurrenceEndDate}
-                  aria-describedby={errors.recurrenceEndDate ? 'error-recurrenceEndDate' : undefined}
-                  value={recurrenceEndDate}
-                  onChange={(e) => onUpdate('recurrenceEndDate', e.target.value)}
-                  className="text-ios-blue text-right focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent"
-                />
+                <span className="flex items-center gap-2 bg-ios-gray-light rounded-xl px-3 py-2">
+                  <input
+                    type="date"
+                    aria-invalid={!!errors.recurrenceEndDate}
+                    aria-describedby={errors.recurrenceEndDate ? 'error-recurrenceEndDate' : undefined}
+                    value={recurrenceEndDate}
+                    onChange={(e) => onUpdate('recurrenceEndDate', e.target.value)}
+                    className="text-ios-blue font-medium focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none bg-transparent"
+                  />
+                  <Calendar size={16} className="text-ios-blue flex-shrink-0" />
+                </span>
               </label>
               {errors.recurrenceEndDate && (
                 <div id="error-recurrenceEndDate" className="px-4 pb-3 text-xs text-ios-red">{errors.recurrenceEndDate}</div>
