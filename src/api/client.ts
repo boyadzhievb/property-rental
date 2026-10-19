@@ -1,3 +1,9 @@
+import { RoomSchema } from '../schemas/RoomSchema';
+import { GuestSchema } from '../schemas/GuestSchema';
+import { ReservationSchema } from '../schemas/ReservationSchema';
+import { PaymentSchema } from '../schemas/PaymentSchema';
+import { TaskSchema } from '../schemas/TaskSchema';
+
 export interface Room {
   id: string;
   name: string;
@@ -57,9 +63,10 @@ export interface PropertySettings {
 }
 
 const DB_NAME = 'property-rental';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 import { format as fmtDate, addDays, subDays } from 'date-fns';
+import { notifyOtherTabs } from './sync';
 
 const fmt = (d: Date) => fmtDate(d, 'yyyy-MM-dd');
 
@@ -103,29 +110,39 @@ function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
       const db = request.result;
-      if (!db.objectStoreNames.contains('rooms')) {
+      const oldVersion = event.oldVersion;
+
+      if (oldVersion < 1) {
         db.createObjectStore('rooms', { keyPath: 'id' });
-      }
-      if (!db.objectStoreNames.contains('guests')) {
         db.createObjectStore('guests', { keyPath: 'id' });
-      }
-      if (!db.objectStoreNames.contains('reservations')) {
-        const store = db.createObjectStore('reservations', { keyPath: 'id' });
-        store.createIndex('roomId', 'roomId', { unique: false });
-        store.createIndex('arrivalDate', 'arrivalDate', { unique: false });
-      }
-      if (!db.objectStoreNames.contains('settings')) {
+        const resStore = db.createObjectStore('reservations', { keyPath: 'id' });
+        resStore.createIndex('roomId', 'roomId', { unique: false });
+        resStore.createIndex('arrivalDate', 'arrivalDate', { unique: false });
         db.createObjectStore('settings', { keyPath: 'id' });
       }
-      if (!db.objectStoreNames.contains('payments')) {
-        const store = db.createObjectStore('payments', { keyPath: 'id' });
-        store.createIndex('reservationId', 'reservationId', { unique: false });
+
+      if (oldVersion < 3) {
+        if (!db.objectStoreNames.contains('payments')) {
+          const payStore = db.createObjectStore('payments', { keyPath: 'id' });
+          payStore.createIndex('reservationId', 'reservationId', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('tasks')) {
+          const taskStore = db.createObjectStore('tasks', { keyPath: 'id' });
+          taskStore.createIndex('date', 'date', { unique: false });
+        }
       }
-      if (!db.objectStoreNames.contains('tasks')) {
-        const store = db.createObjectStore('tasks', { keyPath: 'id' });
-        store.createIndex('date', 'date', { unique: false });
+
+      if (oldVersion < 5) {
+        const tx = request.transaction!;
+        const resStore = tx.objectStore('reservations');
+        if (!resStore.indexNames.contains('guestId')) {
+          resStore.createIndex('guestId', 'guestId', { unique: false });
+        }
+        if (!resStore.indexNames.contains('seriesId')) {
+          resStore.createIndex('seriesId', 'seriesId', { unique: false });
+        }
       }
     };
 
@@ -166,6 +183,12 @@ export async function seedDemoData() {
   });
 }
 
+export interface BackupPreferences {
+  locale?: string;
+  theme?: string;
+  notificationsEnabled?: boolean;
+}
+
 export interface BackupData {
   settings?: PropertySettings;
   rooms?: Room[];
@@ -173,6 +196,7 @@ export interface BackupData {
   reservations?: Reservation[];
   payments?: Payment[];
   tasks?: Task[];
+  preferences?: BackupPreferences;
 }
 
 export async function exportBackup(): Promise<BackupData> {
@@ -188,7 +212,19 @@ export async function exportBackup(): Promise<BackupData> {
     new Promise<PropertySettings>((resolve) => { const r = tx.objectStore('settings').get('property'); r.onsuccess = () => resolve(r.result); }),
   ]);
 
-  return { settings, rooms, guests, reservations, payments, tasks };
+  const preferences: BackupPreferences = {
+    locale: localStorage.getItem('app-locale') ?? undefined,
+    theme: localStorage.getItem('theme-mode') ?? undefined,
+    notificationsEnabled: localStorage.getItem('notifications-enabled') === 'true',
+  };
+
+  return { settings, rooms, guests, reservations, payments, tasks, preferences };
+}
+
+export interface SkippedRecord {
+  index: number;
+  id?: string;
+  error: string;
 }
 
 export interface ImportReport {
@@ -199,36 +235,58 @@ export interface ImportReport {
     payments: number;
     tasks: number;
   };
+  skippedDetails: {
+    rooms: SkippedRecord[];
+    guests: SkippedRecord[];
+    reservations: SkippedRecord[];
+    payments: SkippedRecord[];
+    tasks: SkippedRecord[];
+  };
   total: number;
 }
 
 export async function importBackup(data: BackupData): Promise<ImportReport> {
-  const { RoomSchema } = await import('../schemas/RoomSchema');
-  const { GuestSchema } = await import('../schemas/GuestSchema');
-  const { ReservationSchema } = await import('../schemas/ReservationSchema');
-  const { PaymentSchema } = await import('../schemas/PaymentSchema');
-  const { TaskSchema } = await import('../schemas/TaskSchema');
-
   const allRooms = data.rooms ?? [];
   const allGuests = data.guests ?? [];
   const allReservations = data.reservations ?? [];
   const allPayments = data.payments ?? [];
   const allTasks = data.tasks ?? [];
 
-  const validRooms = allRooms.filter(r => RoomSchema.safeParse(r).success);
-  const validGuests = allGuests.filter(g => GuestSchema.safeParse(g).success);
-  const validReservations = allReservations.filter(r => ReservationSchema.safeParse(r).success);
-  const validPayments = allPayments.filter(p => PaymentSchema.safeParse(p).success);
-  const validTasks = allTasks.filter(t => TaskSchema.safeParse(t).success);
+  function validateRecords<T extends { id?: string }>(items: T[], schema: { safeParse: (v: unknown) => { success: boolean; error?: { message: string } } }) {
+    const valid: T[] = [];
+    const failures: SkippedRecord[] = [];
+    for (let i = 0; i < items.length; i++) {
+      const result = schema.safeParse(items[i]);
+      if (result.success) {
+        valid.push(items[i]);
+      } else {
+        failures.push({ index: i, id: items[i]?.id, error: result.error?.message ?? 'Validation failed' });
+      }
+    }
+    return { valid, failures };
+  }
+
+  const rooms = validateRecords(allRooms, RoomSchema);
+  const guests = validateRecords(allGuests, GuestSchema);
+  const reservations = validateRecords(allReservations, ReservationSchema);
+  const payments = validateRecords(allPayments, PaymentSchema);
+  const tasks = validateRecords(allTasks, TaskSchema);
 
   const skipped = {
-    rooms: allRooms.length - validRooms.length,
-    guests: allGuests.length - validGuests.length,
-    reservations: allReservations.length - validReservations.length,
-    payments: allPayments.length - validPayments.length,
-    tasks: allTasks.length - validTasks.length,
+    rooms: rooms.failures.length,
+    guests: guests.failures.length,
+    reservations: reservations.failures.length,
+    payments: payments.failures.length,
+    tasks: tasks.failures.length,
   };
-  const totalSkipped = skipped.rooms + skipped.guests + skipped.reservations + skipped.payments + skipped.tasks;
+  const skippedDetails = {
+    rooms: rooms.failures,
+    guests: guests.failures,
+    reservations: reservations.failures,
+    payments: payments.failures,
+    tasks: tasks.failures,
+  };
+  const totalSkipped = rooms.failures.length + guests.failures.length + reservations.failures.length + payments.failures.length + tasks.failures.length;
 
   const db = await getDB();
   const tx = db.transaction(['rooms', 'guests', 'reservations', 'payments', 'tasks', 'settings'], 'readwrite');
@@ -239,11 +297,11 @@ export async function importBackup(data: BackupData): Promise<ImportReport> {
   tx.objectStore('payments').clear();
   tx.objectStore('tasks').clear();
 
-  for (const room of validRooms) tx.objectStore('rooms').put(room);
-  for (const guest of validGuests) tx.objectStore('guests').put(guest);
-  for (const res of validReservations) tx.objectStore('reservations').put(res);
-  for (const payment of validPayments) tx.objectStore('payments').put(payment);
-  for (const task of validTasks) tx.objectStore('tasks').put(task);
+  for (const room of rooms.valid) tx.objectStore('rooms').put(room);
+  for (const guest of guests.valid) tx.objectStore('guests').put(guest);
+  for (const res of reservations.valid) tx.objectStore('reservations').put(res);
+  for (const payment of payments.valid) tx.objectStore('payments').put(payment);
+  for (const task of tasks.valid) tx.objectStore('tasks').put(task);
   if (data.settings) tx.objectStore('settings').put({ ...data.settings, id: 'property', isConfigured: true });
   else tx.objectStore('settings').put({ id: 'property', name: 'My Property', isConfigured: true });
 
@@ -252,7 +310,15 @@ export async function importBackup(data: BackupData): Promise<ImportReport> {
     tx.onerror = () => reject(tx.error);
   });
 
-  return { skipped, total: totalSkipped };
+  if (data.preferences) {
+    if (data.preferences.locale) localStorage.setItem('app-locale', data.preferences.locale);
+    if (data.preferences.theme) localStorage.setItem('theme-mode', data.preferences.theme);
+    if (data.preferences.notificationsEnabled !== undefined) {
+      localStorage.setItem('notifications-enabled', String(data.preferences.notificationsEnabled));
+    }
+  }
+
+  return { skipped, skippedDetails, total: totalSkipped };
 }
 
 export async function resetData() {
@@ -327,7 +393,7 @@ function put<T>(storeName: string, item: T): Promise<T> {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readwrite');
       tx.objectStore(storeName).put(item);
-      tx.oncomplete = () => resolve(item);
+      tx.oncomplete = () => { notifyOtherTabs(); resolve(item); };
       tx.onerror = () => reject(tx.error);
     });
   });
@@ -338,7 +404,7 @@ function deleteById(storeName: string, id: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readwrite');
       tx.objectStore(storeName).delete(id);
-      tx.oncomplete = () => resolve();
+      tx.oncomplete = () => { notifyOtherTabs(); resolve(); };
       tx.onerror = () => reject(tx.error);
     });
   });
@@ -394,7 +460,7 @@ export async function atomicReadWrite<T>(
   const result = await callback(stores);
 
   await new Promise<void>((resolve, reject) => {
-    transaction.oncomplete = () => resolve();
+    transaction.oncomplete = () => { notifyOtherTabs(); resolve(); };
     transaction.onerror = () => reject(transaction.error);
     transaction.onabort = () => reject(transaction.error);
   });
@@ -410,7 +476,7 @@ export async function batchPut(operations: BatchOperation[]): Promise<void> {
     transaction.objectStore(operation.store).put(operation.data);
   }
   await new Promise<void>((resolve, reject) => {
-    transaction.oncomplete = () => resolve();
+    transaction.oncomplete = () => { notifyOtherTabs(); resolve(); };
     transaction.onerror = () => reject(transaction.error);
   });
 }

@@ -48,27 +48,29 @@ export default function SetupView({ onConfigure, onSeedData, onImport }: SetupVi
 
       <div className="w-full bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04] mb-6 space-y-4 text-left">
         <div>
-          <label className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-2 mb-1 block">{t.propertyName}</label>
+          <label htmlFor="setup-property-name" className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-2 mb-1 block">{t.propertyName}</label>
           <input
+            id="setup-property-name"
             type="text"
             value={configName}
             onChange={(e) => setConfigName(e.target.value)}
-            className="w-full p-4 border border-ios-border/40 rounded-xl focus:outline-none focus:border-ios-blue bg-ios-bg/30 text-ios-text"
+            className="w-full p-4 border border-ios-border/40 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue bg-ios-bg/30 text-ios-text"
           />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-2 mb-1 block">{t.numberOfRooms}</label>
+          <label htmlFor="setup-room-count" className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-2 mb-1 block">{t.numberOfRooms}</label>
           <input
+            id="setup-room-count"
             type="number"
             min="1"
             value={configRooms}
             onChange={(e) => setConfigRooms(Number(e.target.value))}
-            className="w-full p-4 border border-ios-border/40 rounded-xl focus:outline-none focus:border-ios-blue bg-ios-bg/30 text-ios-text"
+            className="w-full p-4 border border-ios-border/40 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue bg-ios-bg/30 text-ios-text"
           />
         </div>
         <button
           onClick={() => onConfigure(configName, configRooms)}
-          className="w-full bg-ios-blue text-white font-semibold py-4 rounded-xl active:opacity-70 mt-2"
+          className="w-full bg-ios-blue text-white font-semibold py-4 rounded-xl active:opacity-70 mt-2 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           {t.configureApp}
         </button>
@@ -81,7 +83,7 @@ export default function SetupView({ onConfigure, onSeedData, onImport }: SetupVi
 
       <button
         onClick={() => fileInputRef.current?.click()}
-        className="w-full bg-ios-card text-ios-text font-semibold py-4 rounded-xl active:opacity-70 border border-black/[0.04] shadow-sm flex items-center justify-center gap-2 mb-4"
+        className="w-full bg-ios-card text-ios-text font-semibold py-4 rounded-xl active:opacity-70 border border-black/[0.04] shadow-sm flex items-center justify-center gap-2 mb-4 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
       >
         <Upload size={20} className="text-ios-blue" />
         {t.importBackup}
@@ -90,6 +92,7 @@ export default function SetupView({ onConfigure, onSeedData, onImport }: SetupVi
         ref={fileInputRef}
         type="file"
         accept=".json"
+        aria-label={t.importBackup}
         onChange={handleFileChange}
         className="hidden"
       />
@@ -99,7 +102,7 @@ export default function SetupView({ onConfigure, onSeedData, onImport }: SetupVi
 
       <button
         onClick={onSeedData}
-        className="w-full bg-ios-gray-light text-ios-blue font-semibold py-4 rounded-xl active:opacity-70"
+        className="w-full bg-ios-gray-light text-ios-blue font-semibold py-4 rounded-xl active:opacity-70 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
       >
         {t.seedDemoData}
       </button>

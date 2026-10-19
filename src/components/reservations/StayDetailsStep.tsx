@@ -45,7 +45,7 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
                 <button
                   key={room.id}
                   onClick={() => onUpdate('roomId', room.id)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
                     roomId === room.id
                       ? 'bg-ios-blue text-white'
                       : 'bg-ios-gray-light text-ios-text'
@@ -110,12 +110,14 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
             <div className="flex items-center gap-4">
               <button
                 onClick={() => onUpdate('guestsCount', Math.max(1, guestsCount - 1))}
-                className="w-8 h-8 rounded-full bg-ios-gray-light flex items-center justify-center font-bold text-lg text-ios-blue active:opacity-70"
+                aria-label={t.decreaseGuests}
+                className="w-8 h-8 rounded-full bg-ios-gray-light flex items-center justify-center font-bold text-lg text-ios-blue active:opacity-70 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
               >-</button>
-              <span className="font-semibold text-lg w-4 text-center text-ios-text">{guestsCount}</span>
+              <span className="font-semibold text-lg w-4 text-center text-ios-text" aria-live="polite">{guestsCount}</span>
               <button
                 onClick={() => onUpdate('guestsCount', guestsCount + 1)}
-                className="w-8 h-8 rounded-full bg-ios-gray-light flex items-center justify-center font-bold text-lg text-ios-blue active:opacity-70"
+                aria-label={t.increaseGuests}
+                className="w-8 h-8 rounded-full bg-ios-gray-light flex items-center justify-center font-bold text-lg text-ios-blue active:opacity-70 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
               >+</button>
             </div>
           </div>
@@ -157,7 +159,7 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
                 <button
                   key={pattern}
                   onClick={() => onUpdate('recurrencePattern', pattern)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
                     recurrencePattern === pattern
                       ? 'bg-ios-blue text-white'
                       : 'bg-ios-gray-light text-ios-text'

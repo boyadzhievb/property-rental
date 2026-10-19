@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { format } from 'date-fns';
 import { LogIn, LogOut, SprayCan, CreditCard, CheckCircle2, Plus, X, Phone, MessageSquare, Sparkles, Home } from 'lucide-react';
 import { useToday } from '../../hooks/useToday';
@@ -16,7 +16,7 @@ import { type Task, type TaskCategory } from '../../domain/Task';
 import PageHeader from '../layout/PageHeader';
 import StatCard from '../ui/StatCard';
 
-export default function TodayView() {
+export default memo(function TodayView() {
   const { data, loading } = useToday();
   const { propertyName } = usePropertyContext();
   const { refresh: refreshReservations } = useReservationContext();
@@ -44,11 +44,9 @@ export default function TodayView() {
       .filter(r => r.status === RoomStatus.CLEANING)
       .map(r => ({ id: r.id, name: r.name }));
 
-    const preparationRoomIds = data.arrivals.map(res => {
-      const room = roomMap.get(res.roomId);
-      const guest = guestMap.get(res.guestId);
-      return { id: res.roomId, name: room?.name ?? '', guestName: guest?.name ?? '' };
-    });
+    const preparationRoomIds = data.arrivals
+      .filter(res => roomMap.has(res.roomId) && guestMap.has(res.guestId))
+      .map(res => ({ id: res.roomId, name: roomMap.get(res.roomId)!.name, guestName: guestMap.get(res.guestId)!.name }));
 
     const pendingPayments: { reservationId: string; guestName: string }[] = [];
     const todayReservations = [...data.arrivals, ...data.departures];
@@ -154,10 +152,10 @@ export default function TodayView() {
     );
   }
 
-  const occupiedRooms = data.rooms.filter(r => r.status === RoomStatus.OCCUPIED);
-  const cleaningRooms = data.rooms.filter(r => r.status === RoomStatus.CLEANING);
-  const pendingTasks = tasks.filter(t => !t.completed);
-  const completedTasks = tasks.filter(t => t.completed);
+  const occupiedRooms = useMemo(() => data.rooms.filter(r => r.status === RoomStatus.OCCUPIED), [data.rooms]);
+  const cleaningRooms = useMemo(() => data.rooms.filter(r => r.status === RoomStatus.CLEANING), [data.rooms]);
+  const pendingTasks = useMemo(() => tasks.filter(t => !t.completed), [tasks]);
+  const completedTasks = useMemo(() => tasks.filter(t => t.completed), [tasks]);
 
   const categoryIcon = (cat: TaskCategory) => {
     switch (cat) {
@@ -235,7 +233,7 @@ export default function TodayView() {
                         <button
                           onClick={() => handleCheckIn(res.id)}
                           disabled={loadingId === res.id}
-                          className="flex-shrink-0 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                          className="flex-shrink-0 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-full active:scale-95 transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                         >
                           {t.checkIn}
                         </button>
@@ -273,7 +271,7 @@ export default function TodayView() {
                         <button
                           onClick={() => handleCheckOut(res.id)}
                           disabled={loadingId === res.id}
-                          className="flex-shrink-0 px-3 py-1.5 bg-ios-orange text-white text-xs font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                          className="flex-shrink-0 px-3 py-1.5 bg-ios-orange text-white text-xs font-semibold rounded-full active:scale-95 transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                         >
                           {t.checkOut}
                         </button>
@@ -317,7 +315,7 @@ export default function TodayView() {
                           <button
                             onClick={() => handleCheckOut(res.id)}
                             disabled={loadingId === res.id}
-                            className="flex-shrink-0 px-3 py-1.5 bg-ios-orange text-white text-xs font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                            className="flex-shrink-0 px-3 py-1.5 bg-ios-orange text-white text-xs font-semibold rounded-full active:scale-95 transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                           >
                             {t.checkOut}
                           </button>
@@ -365,7 +363,7 @@ export default function TodayView() {
             <h3 className="text-xl font-bold">{t.todaysTasks}</h3>
             <button
               onClick={() => setShowAddTask(true)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-full active:scale-95 transition-all"
+              className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-full active:scale-95 transition-[transform,opacity] focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <Plus size={14} />
               {t.add}
@@ -386,7 +384,8 @@ export default function TodayView() {
                     <button
                       onClick={() => handleToggleTask(task)}
                       disabled={loadingId === task.id}
-                      className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-ios-border flex items-center justify-center transition-colors hover:border-ios-blue disabled:opacity-50"
+                      aria-label={`${t.complete}: ${task.title}`}
+                      className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-ios-border flex items-center justify-center transition-colors hover:border-ios-blue disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
                     >
                     </button>
                     <div className="flex-shrink-0">
@@ -409,7 +408,8 @@ export default function TodayView() {
                     <button
                       onClick={() => handleToggleTask(task)}
                       disabled={loadingId === task.id}
-                      className="flex-shrink-0 w-6 h-6 rounded-full bg-ios-green border-2 border-ios-green flex items-center justify-center transition-colors disabled:opacity-50"
+                      aria-label={`${t.reopen}: ${task.title}`}
+                      className="flex-shrink-0 w-6 h-6 rounded-full bg-ios-green border-2 border-ios-green flex items-center justify-center transition-colors disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
                     >
                       <CheckCircle2 size={14} className="text-white" />
                     </button>
@@ -445,21 +445,22 @@ export default function TodayView() {
 
             <div className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-1">{t.whatNeedsDoing}</label>
+                <label htmlFor="new-task-title" className="block text-sm font-medium text-ios-text mb-1">{t.whatNeedsDoing}</label>
                 <input
+                  id="new-task-title"
                   type="text"
                   value={newTaskTitle}
                   onChange={e => setNewTaskTitle(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddTask()}
-                  className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                  className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue"
                   placeholder={t.taskPlaceholder}
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-2">{t.category}</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="block text-sm font-medium text-ios-text mb-2" id="task-category-label">{t.category}</div>
+                <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="task-category-label">
                   {([
                     { key: 'cleaning', label: t.taskCleaning, icon: <SprayCan size={14} /> },
                     { key: 'preparation', label: t.taskPreparation, icon: <Sparkles size={14} /> },
@@ -470,7 +471,7 @@ export default function TodayView() {
                     <button
                       key={cat.key}
                       onClick={() => setNewTaskCategory(cat.key)}
-                      className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-colors ${
+                      className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
                         newTaskCategory === cat.key
                           ? 'bg-ios-blue text-white'
                           : 'bg-ios-bg text-ios-text-secondary border border-ios-border/40'
@@ -486,7 +487,7 @@ export default function TodayView() {
               <button
                 onClick={handleAddTask}
                 disabled={!newTaskTitle.trim()}
-                className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 {t.addTask}
               </button>
@@ -496,4 +497,4 @@ export default function TodayView() {
       )}
     </div>
   );
-}
+});

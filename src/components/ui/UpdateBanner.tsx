@@ -20,7 +20,7 @@ export default function UpdateBanner() {
       <p className="flex-1 text-sm text-ios-text">{t.newVersionAvailable}</p>
       <button
         onClick={() => window.location.reload()}
-        className="shrink-0 rounded-lg bg-ios-blue px-3 py-1.5 text-xs font-semibold text-white active:scale-95 transition-transform"
+        className="shrink-0 rounded-lg bg-ios-blue px-3 py-1.5 text-xs font-semibold text-white active:scale-95 transition-transform focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {t.refresh}
       </button>

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, memo } from 'react';
 import { format } from 'date-fns';
 import { Search, ChevronRight, Phone, X, Calendar, DoorOpen, Plus, Banknote } from 'lucide-react';
 import { useGuests } from '../../hooks/useGuests';
@@ -11,7 +11,7 @@ import { type Guest } from '../../domain/Guest';
 import { type Reservation } from '../../domain/Reservation';
 import PageHeader from '../layout/PageHeader';
 
-export default function GuestsView() {
+export default memo(function GuestsView() {
   const { guests, loading } = useGuests();
   const { reservations } = useReservationContext();
   const { rooms } = useRoomContext();
@@ -156,7 +156,8 @@ export default function GuestsView() {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border-none rounded-xl leading-5 bg-ios-gray-light text-ios-text placeholder-ios-text-secondary focus:outline-none focus:ring-2 focus:ring-ios-blue focus:bg-ios-card transition-colors"
+            aria-label={t.searchGuests}
+            className="block w-full pl-10 pr-3 py-2 border-none rounded-xl leading-5 bg-ios-gray-light text-ios-text placeholder-ios-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:bg-ios-card transition-colors"
             placeholder={t.searchGuests}
           />
         </div>
@@ -177,8 +178,8 @@ export default function GuestsView() {
                       role="button"
                       tabIndex={0}
                       onClick={() => setSelectedGuest(guest)}
-                      onKeyDown={e => e.key === 'Enter' && setSelectedGuest(guest)}
-                      className="flex items-center p-4 active:bg-ios-gray-light/30 transition-colors cursor-pointer"
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedGuest(guest); } }}
+                      className="flex items-center p-4 active:bg-ios-gray-light/30 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-inset focus-visible:outline-none"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-ios-text text-lg">{guest.name}</div>
@@ -286,7 +287,7 @@ export default function GuestsView() {
                           {balance > 0 && res.status !== 'Cancelled' && (
                             <button
                               onClick={() => setPayingReservation(res)}
-                              className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-xl active:scale-95 transition-transform"
+                              className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-xl active:scale-95 transition-transform focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                             >
                               <Plus size={12} />
                               {t.payment}
@@ -344,26 +345,28 @@ export default function GuestsView() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-1">{t.amount}</label>
+                <label htmlFor="guest-payment-amount" className="block text-sm font-medium text-ios-text mb-1">{t.amount}</label>
                 <input
+                  id="guest-payment-amount"
                   type="number"
                   min="0"
                   step="0.01"
                   value={paymentAmount}
                   onChange={e => setPaymentAmount(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                  aria-describedby={error ? 'guest-payment-error' : undefined}
+                  className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue"
                   placeholder="0.00"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-1">{t.method}</label>
-                <div className="flex gap-2">
+                <div className="block text-sm font-medium text-ios-text mb-1" id="guest-payment-method-label">{t.method}</div>
+                <div className="flex gap-2" role="group" aria-labelledby="guest-payment-method-label">
                   {(['cash', 'card', 'transfer'] as const).map(m => (
                     <button
                       key={m}
                       onClick={() => setPaymentMethod(m)}
-                      className={`flex-1 py-2 text-sm font-semibold rounded-xl capitalize transition-colors ${
+                      className={`flex-1 py-2 text-sm font-semibold rounded-xl capitalize transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
                         paymentMethod === m
                           ? 'bg-ios-blue text-white'
                           : 'bg-ios-bg text-ios-text-secondary border border-ios-border/40'
@@ -376,24 +379,25 @@ export default function GuestsView() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ios-text mb-1">{t.noteOptional}</label>
+                <label htmlFor="guest-payment-note" className="block text-sm font-medium text-ios-text mb-1">{t.noteOptional}</label>
                 <input
+                  id="guest-payment-note"
                   type="text"
                   value={paymentNote}
                   onChange={e => setPaymentNote(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                  className="w-full px-4 py-2.5 bg-ios-bg border border-ios-border/40 rounded-xl text-ios-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue"
                   placeholder={t.notePlaceholder}
                 />
               </div>
 
               {error && (
-                <div className="text-sm text-ios-red bg-ios-red/10 rounded-xl px-4 py-2">{error}</div>
+                <div id="guest-payment-error" role="alert" className="text-sm text-ios-red bg-ios-red/10 rounded-xl px-4 py-2">{error}</div>
               )}
 
               <button
                 onClick={handleAddPayment}
                 disabled={saving || !paymentAmount || parseFloat(paymentAmount) <= 0}
-                className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 {saving ? t.saving : t.recordPayment}
               </button>
@@ -403,4 +407,4 @@ export default function GuestsView() {
       )}
     </div>
   );
-}
+});

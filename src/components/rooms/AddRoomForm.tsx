@@ -33,38 +33,41 @@ export default function AddRoomForm({ onAdded, onCancel }: AddRoomFormProps) {
         <input
           type="text"
           placeholder={t.roomName}
+          aria-label={t.roomName}
           value={name}
           onChange={(e) => setName(e.target.value)}
           autoFocus
-          className="w-full p-3 border border-ios-border/40 rounded-xl focus:outline-none focus:border-ios-blue bg-ios-bg/30 text-ios-text"
+          className="w-full p-3 border border-ios-border/40 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue bg-ios-bg/30 text-ios-text"
         />
         <div className="flex gap-3">
           <input
             type="number"
             placeholder={t.pricePerNight}
+            aria-label={t.pricePerNight}
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="flex-1 p-3 border border-ios-border/40 rounded-xl focus:outline-none focus:border-ios-blue bg-ios-bg/30 text-ios-text"
+            className="flex-1 p-3 border border-ios-border/40 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue bg-ios-bg/30 text-ios-text"
           />
           <input
             type="number"
             placeholder={t.maxGuests}
+            aria-label={t.maxGuests}
             min="1"
             value={maxGuests}
             onChange={(e) => setMaxGuests(e.target.value)}
-            className="flex-1 p-3 border border-ios-border/40 rounded-xl focus:outline-none focus:border-ios-blue bg-ios-bg/30 text-ios-text"
+            className="flex-1 p-3 border border-ios-border/40 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue bg-ios-bg/30 text-ios-text"
           />
         </div>
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 py-3 rounded-xl bg-ios-gray-light text-ios-text font-semibold active:opacity-70"
+            className="flex-1 py-3 rounded-xl bg-ios-gray-light text-ios-text font-semibold active:opacity-70 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
           >
             {t.cancel}
           </button>
           <button
             onClick={handleAdd}
-            className="flex-1 py-3 rounded-xl bg-ios-blue text-white font-semibold active:opacity-70"
+            className="flex-1 py-3 rounded-xl bg-ios-blue text-white font-semibold active:opacity-70 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
           >
             {t.addRoom}
           </button>

@@ -95,7 +95,7 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
                     <button
                       onClick={() => handleCheckIn(event.reservation.id)}
                       disabled={loadingId === event.reservation.id}
-                      className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-blue text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                      className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-blue text-white text-sm font-semibold rounded-full active:scale-95 transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                       <LogIn size={14} />
                       {t.checkIn}
@@ -106,7 +106,7 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
                     <button
                       onClick={() => handleCheckOut(event.reservation.id)}
                       disabled={loadingId === event.reservation.id}
-                      className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-orange text-white text-sm font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                      className="flex-shrink-0 ml-3 flex items-center gap-1.5 px-3 py-1.5 bg-ios-orange text-white text-sm font-semibold rounded-full active:scale-95 transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                       <LogOut size={14} />
                       {t.checkOut}

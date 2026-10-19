@@ -17,14 +17,14 @@ export default function InstallBanner() {
       </div>
       <button
         onClick={install}
-        className="shrink-0 rounded-lg bg-ios-blue px-3 py-1.5 text-xs font-semibold text-white active:scale-95 transition-transform"
+        className="shrink-0 rounded-lg bg-ios-blue px-3 py-1.5 text-xs font-semibold text-white active:scale-95 transition-transform focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {t.install}
       </button>
       <button
         onClick={dismiss}
         aria-label={t.close}
-        className="shrink-0 p-1 text-ios-text-secondary hover:text-ios-text transition-colors"
+        className="shrink-0 p-1 text-ios-text-secondary hover:text-ios-text transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded focus-visible:outline-none"
       >
         <X size={16} />
       </button>

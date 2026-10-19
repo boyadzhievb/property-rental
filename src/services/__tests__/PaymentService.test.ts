@@ -92,6 +92,39 @@ describe('PaymentService', () => {
     service = new PaymentService()
   })
 
+  describe('getAllPayments', () => {
+    it('returns all payments', async () => {
+      payStore.set('pay-1', makePaymentData({ id: 'pay-1' }))
+      payStore.set('pay-2', makePaymentData({ id: 'pay-2', amount: 100 }))
+      const payments = await service.getAllPayments()
+      expect(payments).toHaveLength(2)
+      expect(payments.map(p => p.id)).toContain('pay-1')
+      expect(payments.map(p => p.id)).toContain('pay-2')
+    })
+
+    it('returns empty array when no payments exist', async () => {
+      const payments = await service.getAllPayments()
+      expect(payments).toEqual([])
+    })
+  })
+
+  describe('getPaymentsByReservationId', () => {
+    it('returns payments for a specific reservation', async () => {
+      payStore.set('pay-1', makePaymentData({ id: 'pay-1', reservationId: 'res-1' }))
+      payStore.set('pay-2', makePaymentData({ id: 'pay-2', reservationId: 'res-1', amount: 50 }))
+      payStore.set('pay-3', makePaymentData({ id: 'pay-3', reservationId: 'res-2', amount: 300 }))
+      const payments = await service.getPaymentsByReservationId('res-1')
+      expect(payments).toHaveLength(2)
+      expect(payments.every(p => p.reservationId === 'res-1')).toBe(true)
+    })
+
+    it('returns empty array when no payments for reservation', async () => {
+      payStore.set('pay-1', makePaymentData({ id: 'pay-1', reservationId: 'res-1' }))
+      const payments = await service.getPaymentsByReservationId('res-999')
+      expect(payments).toEqual([])
+    })
+  })
+
   describe('createPayment', () => {
     it('creates a valid payment', async () => {
       seedReservation()

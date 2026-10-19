@@ -96,13 +96,13 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
           <div className="flex gap-3">
             <button
               onClick={cancelEdit}
-              className="flex-1 py-2.5 rounded-xl bg-ios-gray-light text-ios-text font-semibold active:opacity-70 flex items-center justify-center gap-1"
+              className="flex-1 py-2.5 rounded-xl bg-ios-gray-light text-ios-text font-semibold active:opacity-70 flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
             >
               <X size={16} /> {t.cancel}
             </button>
             <button
               onClick={saveEdit}
-              className="flex-1 py-2.5 rounded-xl bg-ios-blue text-white font-semibold active:opacity-70 flex items-center justify-center gap-1"
+              className="flex-1 py-2.5 rounded-xl bg-ios-blue text-white font-semibold active:opacity-70 flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <Check size={16} /> {t.save}
             </button>
@@ -140,7 +140,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
           {room.status === RoomStatus.CLEANING && (
             <button
               onClick={() => handleStatusAction('clean')}
-              className="mt-4 w-full py-2.5 rounded-xl bg-ios-green/10 text-ios-green font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity"
+              className="mt-4 w-full py-2.5 rounded-xl bg-ios-green/10 text-ios-green font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
             >
               <SprayCan size={16} /> {t.markAsCleaned}
             </button>
@@ -149,7 +149,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
           {room.status === RoomStatus.AVAILABLE && (
             <button
               onClick={() => handleStatusAction('maintenance')}
-              className="mt-4 w-full py-2.5 rounded-xl bg-ios-red/10 text-ios-red font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity"
+              className="mt-4 w-full py-2.5 rounded-xl bg-ios-red/10 text-ios-red font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
             >
               <Wrench size={16} /> {t.markForMaintenance}
             </button>
@@ -158,7 +158,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
           {room.status === RoomStatus.MAINTENANCE && (
             <button
               onClick={() => handleStatusAction('available')}
-              className="mt-4 w-full py-2.5 rounded-xl bg-ios-green/10 text-ios-green font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity"
+              className="mt-4 w-full py-2.5 rounded-xl bg-ios-green/10 text-ios-green font-semibold active:opacity-70 flex items-center justify-center gap-2 transition-opacity focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
             >
               <CheckCircle size={16} /> {t.markAsAvailable}
             </button>

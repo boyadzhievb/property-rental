@@ -77,6 +77,37 @@ describe('RoomService', () => {
     })
   })
 
+  describe('getRooms', () => {
+    it('returns all rooms', async () => {
+      seedRoom({ id: 'room-1', name: 'Suite 1' })
+      seedRoom({ id: 'room-2', name: 'Suite 2' })
+      const rooms = await service.getRooms()
+      expect(rooms).toHaveLength(2)
+      expect(rooms.map(r => r.id)).toContain('room-1')
+      expect(rooms.map(r => r.id)).toContain('room-2')
+    })
+
+    it('returns empty array when no rooms exist', async () => {
+      const rooms = await service.getRooms()
+      expect(rooms).toEqual([])
+    })
+  })
+
+  describe('getRoomById', () => {
+    it('returns room when found', async () => {
+      seedRoom({ id: 'room-1', name: 'Deluxe Suite' })
+      const room = await service.getRoomById('room-1')
+      expect(room).not.toBeNull()
+      expect(room!.id).toBe('room-1')
+      expect(room!.name).toBe('Deluxe Suite')
+    })
+
+    it('returns null when room is not found', async () => {
+      const room = await service.getRoomById('non-existent-id')
+      expect(room).toBeNull()
+    })
+  })
+
   describe('updateRoomStatus', () => {
     it('clean: transitions Cleaning to Available', async () => {
       seedRoom({ status: RoomStatus.CLEANING })

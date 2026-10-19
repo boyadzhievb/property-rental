@@ -1,9 +1,5 @@
-import {
-  exportBackup,
-  importBackup,
-  type BackupData,
-  type ImportReport,
-} from '../api/client';
+import { backupRepository } from '../repositories/BackupRepository';
+import type { BackupData, ImportReport } from '../api/client';
 
 export type { BackupData, ImportReport };
 
@@ -15,11 +11,11 @@ interface BackupValidationResult {
 
 export class BackupService {
   async export(): Promise<BackupData> {
-    return exportBackup();
+    return backupRepository.exportAll();
   }
 
   async import(data: BackupData): Promise<ImportReport> {
-    return importBackup(data);
+    return backupRepository.importAll(data);
   }
 
   validate(data: unknown): BackupValidationResult {

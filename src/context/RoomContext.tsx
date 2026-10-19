@@ -1,49 +1,16 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Room } from '../domain/Room';
 import { roomService } from '../services/RoomService';
+import { createEntityContext } from './createEntityContext';
 
-interface RoomContextValue {
-  rooms: Room[];
-  loading: boolean;
-  error: string | null;
-  clearError: () => void;
-  refresh: () => Promise<void>;
-}
+const { Provider, useEntityContext } = createEntityContext<Room>(
+  'Room',
+  () => roomService.getRooms(),
+  (rooms) => rooms.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })),
+);
 
-const RoomContext = createContext<RoomContextValue | null>(null);
-
-export function RoomProvider({ children }: { children: ReactNode }) {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await roomService.getRooms();
-      data.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-      setRooms(data);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const clearError = useCallback(() => setError(null), []);
-
-  useEffect(() => { refresh(); }, [refresh]);
-
-  return (
-    <RoomContext.Provider value={useMemo(() => ({ rooms, loading, error, clearError, refresh }), [rooms, loading, error, clearError, refresh])}>
-      {children}
-    </RoomContext.Provider>
-  );
-}
+export const RoomProvider = Provider;
 
 export function useRoomContext() {
-  const context = useContext(RoomContext);
-  if (!context) throw new Error('useRoomContext must be used within RoomProvider');
-  return context;
+  const { data: rooms, ...rest } = useEntityContext();
+  return { rooms, ...rest };
 }

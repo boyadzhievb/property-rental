@@ -39,7 +39,7 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
         <div>
           <div className="flex items-center justify-between ml-4 mr-4 mb-2">
             <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold">{t.newGuest}</div>
-            <button onClick={onToggleNewGuest} className="text-sm text-ios-blue font-medium px-3 py-1.5 rounded-full bg-ios-blue/10 active:bg-ios-blue/20 min-h-[36px] flex items-center gap-1">
+            <button onClick={onToggleNewGuest} className="text-sm text-ios-blue font-medium px-3 py-1.5 rounded-full bg-ios-blue/10 active:bg-ios-blue/20 min-h-[36px] flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none">
               <Search size={14} /> {t.selectExisting}
             </button>
           </div>
@@ -95,7 +95,7 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
       <div>
         <div className="flex items-center justify-between ml-4 mr-4 mb-2">
           <div className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold">{t.selectGuest}</div>
-          <button onClick={onToggleNewGuest} className="text-sm text-ios-blue font-medium px-3 py-1.5 rounded-full bg-ios-blue/10 active:bg-ios-blue/20 min-h-[36px] flex items-center gap-1">
+          <button onClick={onToggleNewGuest} className="text-sm text-ios-blue font-medium px-3 py-1.5 rounded-full bg-ios-blue/10 active:bg-ios-blue/20 min-h-[36px] flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none">
             <UserPlus size={14} /> {t.newGuest}
           </button>
         </div>
@@ -120,7 +120,7 @@ export default function GuestInfoStep({ guests, selectedGuestId, isNewGuest, gue
               <button
                 key={guest.id}
                 onClick={() => onSelectGuest(guest.id)}
-                className="w-full flex items-center justify-between p-4 text-left active:bg-ios-gray-light/50 transition-colors"
+                className="w-full flex items-center justify-between p-4 text-left active:bg-ios-gray-light/50 transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-inset focus-visible:outline-none"
               >
                 <div>
                   <div className="text-ios-text font-medium">{guest.name}</div>

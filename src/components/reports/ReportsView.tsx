@@ -133,7 +133,7 @@ export default function ReportsView() {
           <div className="flex bg-ios-gray-light rounded-xl p-1">
             <button
               onClick={() => { setPeriod('week'); setOffset(0); }}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+              className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
                 period === 'week' ? 'bg-ios-card text-ios-text shadow-sm' : 'text-ios-text-secondary'
               }`}
             >
@@ -141,7 +141,7 @@ export default function ReportsView() {
             </button>
             <button
               onClick={() => { setPeriod('month'); setOffset(0); }}
-              className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+              className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
                 period === 'month' ? 'bg-ios-card text-ios-text shadow-sm' : 'text-ios-text-secondary'
               }`}
             >
@@ -151,14 +151,16 @@ export default function ReportsView() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setOffset(o => o - 1)}
-              className="p-1.5 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70"
+              aria-label={t.previousPeriod}
+              className="p-1.5 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
             >
               <ChevronLeft size={18} />
             </button>
             <span className="text-sm font-semibold text-ios-text min-w-[140px] text-center">{periodLabel}</span>
             <button
               onClick={() => setOffset(o => o + 1)}
-              className="p-1.5 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70"
+              aria-label={t.nextPeriod}
+              className="p-1.5 bg-ios-gray-light rounded-full text-ios-text-secondary active:opacity-70 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
             >
               <ChevronRight size={18} />
             </button>

@@ -86,4 +86,30 @@ describe('GuestService', () => {
       expect(guests).toHaveLength(2)
     })
   })
+
+  describe('getAllGuests', () => {
+    it('returns the same result as getGuests', async () => {
+      store.set('g-1', { id: 'g-1', name: 'Alice', phone: '+111', email: '', previousStays: 0, notes: '' })
+      store.set('g-2', { id: 'g-2', name: 'Bob', phone: '+222', email: '', previousStays: 0, notes: '' })
+      const fromGetGuests = await service.getGuests()
+      const fromGetAllGuests = await service.getAllGuests()
+      expect(fromGetAllGuests).toHaveLength(fromGetGuests.length)
+      expect(fromGetAllGuests.map(g => g.id)).toEqual(fromGetGuests.map(g => g.id))
+    })
+  })
+
+  describe('getGuestById', () => {
+    it('returns the guest when found', async () => {
+      store.set('g-1', { id: 'g-1', name: 'Charlie', phone: '+333', email: 'charlie@test.com', previousStays: 2, notes: '' })
+      const guest = await service.getGuestById('g-1')
+      expect(guest).not.toBeNull()
+      expect(guest!.id).toBe('g-1')
+      expect(guest!.name).toBe('Charlie')
+    })
+
+    it('returns null when guest is not found', async () => {
+      const guest = await service.getGuestById('non-existent-id')
+      expect(guest).toBeNull()
+    })
+  })
 })

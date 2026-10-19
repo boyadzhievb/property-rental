@@ -1,48 +1,15 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Reservation } from '../domain/Reservation';
 import { reservationService } from '../services/ReservationService';
+import { createEntityContext } from './createEntityContext';
 
-interface ReservationContextValue {
-  reservations: Reservation[];
-  loading: boolean;
-  error: string | null;
-  clearError: () => void;
-  refresh: () => Promise<void>;
-}
+const { Provider, useEntityContext } = createEntityContext<Reservation>(
+  'Reservation',
+  () => reservationService.getAllReservations(),
+);
 
-const ReservationContext = createContext<ReservationContextValue | null>(null);
-
-export function ReservationProvider({ children }: { children: ReactNode }) {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await reservationService.getAllReservations();
-      setReservations(data);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const clearError = useCallback(() => setError(null), []);
-
-  useEffect(() => { refresh(); }, [refresh]);
-
-  return (
-    <ReservationContext.Provider value={useMemo(() => ({ reservations, loading, error, clearError, refresh }), [reservations, loading, error, clearError, refresh])}>
-      {children}
-    </ReservationContext.Provider>
-  );
-}
+export const ReservationProvider = Provider;
 
 export function useReservationContext() {
-  const context = useContext(ReservationContext);
-  if (!context) throw new Error('useReservationContext must be used within ReservationProvider');
-  return context;
+  const { data: reservations, ...rest } = useEntityContext();
+  return { reservations, ...rest };
 }
