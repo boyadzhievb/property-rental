@@ -20,7 +20,7 @@
 
 ## 5. Review Fixes
 - ~~Accessibility — WCAG AA compliance (form labels, aria-describedby, keyboard nav, focus-visible)~~ ✓
-- npm dependency vulnerabilities (npm audit fix)
+- ~~npm dependency vulnerabilities (npm audit fix)~~ ✓ — merged 10 Dependabot PRs, override tar; 2 remaining (sharp/libvips in dev-only @capacitor/assets) have no upstream fix — not actionable
 - ~~Architecture — extract BackupService to fix layer violation~~ ✓
 - i18n cleanup — remove 17 unused keys from all 6 locales
 - Test coverage — repository, hook, and component tests

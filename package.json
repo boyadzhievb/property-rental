@@ -1,7 +1,7 @@
 {
   "name": "property-rental",
   "private": true,
-  "version": "1.1.18",
+  "version": "1.1.19",
   "type": "module",
   "engines": {
     "node": ">=22"
@@ -34,7 +34,8 @@
     "zod": "^4.6.7"
   },
   "overrides": {
-    "uuid": "^11.1.1"
+    "uuid": "^11.1.1",
+    "tar": "^7.5.22"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
