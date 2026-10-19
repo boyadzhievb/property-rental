@@ -115,6 +115,7 @@ export default function SettingsView() {
       const report = await backupService.import(result.data!);
       await Promise.all([refreshRooms(), refreshGuests(), refreshReservations(), refreshPayments(), refreshTasks()]);
       if (report.total > 0) {
+        console.warn('Import skipped records:', report.skippedDetails);
         setRestoreStatus(`${t.backupRestored} (${report.total} ${t.invalidRecordsSkipped})`);
       } else {
         setRestoreStatus(t.backupRestored);
