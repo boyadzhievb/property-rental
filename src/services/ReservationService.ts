@@ -114,18 +114,15 @@ export class ReservationService {
     const reservation = await reservationRepository.getById(id);
     if (!reservation) return null;
 
-    reservation.checkIn();
-
     const room = await roomRepository.getById(reservation.roomId);
-    if (room) {
-      room.occupy();
-      await batchPut([
-        { store: 'reservations', data: reservation.toData() },
-        { store: 'rooms', data: room.toData() },
-      ]);
-    } else {
-      await reservationRepository.save(reservation);
-    }
+
+    reservation.checkIn();
+    if (room) room.occupy();
+
+    await batchPut([
+      { store: 'reservations', data: reservation.toData() },
+      ...(room ? [{ store: 'rooms', data: room.toData() }] : []),
+    ]);
 
     return reservation;
   }
@@ -134,18 +131,15 @@ export class ReservationService {
     const reservation = await reservationRepository.getById(id);
     if (!reservation) return null;
 
-    reservation.checkOut();
-
     const room = await roomRepository.getById(reservation.roomId);
-    if (room) {
-      room.markCleaning();
-      await batchPut([
-        { store: 'reservations', data: reservation.toData() },
-        { store: 'rooms', data: room.toData() },
-      ]);
-    } else {
-      await reservationRepository.save(reservation);
-    }
+
+    reservation.checkOut();
+    if (room) room.markCleaning();
+
+    await batchPut([
+      { store: 'reservations', data: reservation.toData() },
+      ...(room ? [{ store: 'rooms', data: room.toData() }] : []),
+    ]);
 
     return reservation;
   }
@@ -190,22 +184,15 @@ export class ReservationService {
     if (!reservation) return null;
 
     const wasCheckedIn = reservation.status === 'Checked In';
-    reservation.cancel();
+    const room = wasCheckedIn ? await roomRepository.getById(reservation.roomId) : null;
 
-    if (wasCheckedIn) {
-      const room = await roomRepository.getById(reservation.roomId);
-      if (room) {
-        room.markCleaning();
-        await batchPut([
-          { store: 'reservations', data: reservation.toData() },
-          { store: 'rooms', data: room.toData() },
-        ]);
-      } else {
-        await reservationRepository.save(reservation);
-      }
-    } else {
-      await reservationRepository.save(reservation);
-    }
+    reservation.cancel();
+    if (room) room.markCleaning();
+
+    await batchPut([
+      { store: 'reservations', data: reservation.toData() },
+      ...(room ? [{ store: 'rooms', data: room.toData() }] : []),
+    ]);
 
     return reservation;
   }

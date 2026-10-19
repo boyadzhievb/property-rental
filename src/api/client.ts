@@ -57,7 +57,7 @@ export interface PropertySettings {
 }
 
 const DB_NAME = 'property-rental';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 import { format as fmtDate, addDays, subDays } from 'date-fns';
 
@@ -103,29 +103,39 @@ function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
       const db = request.result;
-      if (!db.objectStoreNames.contains('rooms')) {
+      const oldVersion = event.oldVersion;
+
+      if (oldVersion < 1) {
         db.createObjectStore('rooms', { keyPath: 'id' });
-      }
-      if (!db.objectStoreNames.contains('guests')) {
         db.createObjectStore('guests', { keyPath: 'id' });
-      }
-      if (!db.objectStoreNames.contains('reservations')) {
-        const store = db.createObjectStore('reservations', { keyPath: 'id' });
-        store.createIndex('roomId', 'roomId', { unique: false });
-        store.createIndex('arrivalDate', 'arrivalDate', { unique: false });
-      }
-      if (!db.objectStoreNames.contains('settings')) {
+        const resStore = db.createObjectStore('reservations', { keyPath: 'id' });
+        resStore.createIndex('roomId', 'roomId', { unique: false });
+        resStore.createIndex('arrivalDate', 'arrivalDate', { unique: false });
         db.createObjectStore('settings', { keyPath: 'id' });
       }
-      if (!db.objectStoreNames.contains('payments')) {
-        const store = db.createObjectStore('payments', { keyPath: 'id' });
-        store.createIndex('reservationId', 'reservationId', { unique: false });
+
+      if (oldVersion < 3) {
+        if (!db.objectStoreNames.contains('payments')) {
+          const payStore = db.createObjectStore('payments', { keyPath: 'id' });
+          payStore.createIndex('reservationId', 'reservationId', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('tasks')) {
+          const taskStore = db.createObjectStore('tasks', { keyPath: 'id' });
+          taskStore.createIndex('date', 'date', { unique: false });
+        }
       }
-      if (!db.objectStoreNames.contains('tasks')) {
-        const store = db.createObjectStore('tasks', { keyPath: 'id' });
-        store.createIndex('date', 'date', { unique: false });
+
+      if (oldVersion < 5) {
+        const tx = request.transaction!;
+        const resStore = tx.objectStore('reservations');
+        if (!resStore.indexNames.contains('guestId')) {
+          resStore.createIndex('guestId', 'guestId', { unique: false });
+        }
+        if (!resStore.indexNames.contains('seriesId')) {
+          resStore.createIndex('seriesId', 'seriesId', { unique: false });
+        }
       }
     };
 
