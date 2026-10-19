@@ -143,6 +143,11 @@ export default memo(function TodayView() {
     setShowAddTask(false);
   };
 
+  const occupiedRooms = useMemo(() => data ? data.rooms.filter(r => r.status === RoomStatus.OCCUPIED) : [], [data?.rooms]);
+  const cleaningRooms = useMemo(() => data ? data.rooms.filter(r => r.status === RoomStatus.CLEANING) : [], [data?.rooms]);
+  const pendingTasks = useMemo(() => tasks.filter(t => !t.completed), [tasks]);
+  const completedTasks = useMemo(() => tasks.filter(t => t.completed), [tasks]);
+
   if (loading || !data) {
     return (
       <div className="pb-24">
@@ -151,11 +156,6 @@ export default memo(function TodayView() {
       </div>
     );
   }
-
-  const occupiedRooms = useMemo(() => data.rooms.filter(r => r.status === RoomStatus.OCCUPIED), [data.rooms]);
-  const cleaningRooms = useMemo(() => data.rooms.filter(r => r.status === RoomStatus.CLEANING), [data.rooms]);
-  const pendingTasks = useMemo(() => tasks.filter(t => !t.completed), [tasks]);
-  const completedTasks = useMemo(() => tasks.filter(t => t.completed), [tasks]);
 
   const categoryIcon = (cat: TaskCategory) => {
     switch (cat) {
