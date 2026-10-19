@@ -161,7 +161,6 @@ const el: TranslationKeys = {
   increaseGuests: 'Αύξηση επισκεπτών',
   complete: 'Ολοκλήρωση',
   reopen: 'Επαναφορά',
-  dismiss: 'Κλείσιμο',
   installApp: 'Εγκατάσταση εφαρμογής',
   installDescription: 'Προσθήκη στην αρχική οθόνη για γρήγορη πρόσβαση',
   install: 'Εγκατάσταση',

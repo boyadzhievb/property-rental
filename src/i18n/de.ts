@@ -161,7 +161,6 @@ const de: TranslationKeys = {
   increaseGuests: 'Gäste erhöhen',
   complete: 'Erledigen',
   reopen: 'Wieder öffnen',
-  dismiss: 'Schließen',
   installApp: 'App installieren',
   installDescription: 'Zum Startbildschirm hinzufügen für schnellen Zugriff',
   install: 'Installieren',

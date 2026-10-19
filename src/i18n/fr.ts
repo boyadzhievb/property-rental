@@ -161,7 +161,6 @@ const fr: TranslationKeys = {
   increaseGuests: 'Augmenter les invités',
   complete: 'Terminer',
   reopen: 'Rouvrir',
-  dismiss: 'Fermer',
   installApp: "Installer l'application",
   installDescription: "Ajoutez à votre écran d'accueil pour un accès rapide",
   install: 'Installer',

@@ -172,7 +172,6 @@ const en = {
   increaseGuests: 'Increase guests',
   complete: 'Complete',
   reopen: 'Reopen',
-  dismiss: 'Dismiss',
 
   // PWA
   installApp: 'Install App',

@@ -161,7 +161,6 @@ const bg: TranslationKeys = {
   increaseGuests: 'Увеличи гости',
   complete: 'Завърши',
   reopen: 'Отвори отново',
-  dismiss: 'Затвори',
   installApp: 'Инсталирай приложението',
   installDescription: 'Добави към началния екран за бърз достъп',
   install: 'Инсталирай',

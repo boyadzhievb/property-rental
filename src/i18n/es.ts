@@ -172,7 +172,6 @@ const es = {
   increaseGuests: 'Aumentar huéspedes',
   complete: 'Completar',
   reopen: 'Reabrir',
-  dismiss: 'Cerrar',
 
   // PWA
   installApp: 'Instalar aplicación',
