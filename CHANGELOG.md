@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.24 — 2026-10-19
+## 1.1.25 — 2026-10-19
 
 ### Bug Fixes
 - Fix React hooks violation in TodayView that caused crash after upgrading to React 19.3 — useMemo hooks were called after an early return, violating Rules of Hooks
