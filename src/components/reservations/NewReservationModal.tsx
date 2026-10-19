@@ -251,11 +251,11 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
     <div className="fixed inset-0 z-50 flex flex-col bg-ios-bg animate-in slide-in-from-bottom-full duration-300 pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] sm:p-5 sm:bg-black/40 sm:justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="new-reservation-title" onKeyDown={e => { if (e.key === 'Escape') onClose(); }}>
       <div className="flex-1 w-full bg-ios-bg sm:max-w-md sm:flex-none sm:rounded-3xl sm:h-auto sm:max-h-[90vh] sm:overflow-hidden flex flex-col shadow-2xl">
         <header className="flex items-center justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))] sm:pt-4 bg-ios-bg border-b border-ios-border/30">
-          <button onClick={onClose} className="text-ios-blue text-lg px-2 active:opacity-70 transition-opacity">{t.cancel}</button>
+          <button onClick={onClose} className="text-ios-blue text-lg px-2 active:opacity-70 transition-opacity focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded focus-visible:outline-none">{t.cancel}</button>
           <h2 id="new-reservation-title" className="font-semibold text-ios-text">{t.newReservation}</h2>
           <button
             onClick={step === 1 ? handleNext : handleSave}
-            className="text-ios-blue font-semibold text-lg px-2 active:opacity-70 transition-opacity disabled:opacity-40"
+            className="text-ios-blue font-semibold text-lg px-2 active:opacity-70 transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded focus-visible:outline-none"
             disabled={submitting}
           >
             {step === 1 ? t.next : t.save}

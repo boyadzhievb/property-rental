@@ -166,6 +166,13 @@ const es = {
   edit: 'Editar',
   previousWeek: 'Semana anterior',
   nextWeek: 'Semana siguiente',
+  previousPeriod: 'Periodo anterior',
+  nextPeriod: 'Periodo siguiente',
+  decreaseGuests: 'Disminuir huéspedes',
+  increaseGuests: 'Aumentar huéspedes',
+  complete: 'Completar',
+  reopen: 'Reabrir',
+  dismiss: 'Cerrar',
 
   // PWA
   installApp: 'Instalar aplicación',

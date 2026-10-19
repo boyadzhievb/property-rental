@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { BackupService } from '../BackupService'
 
-const mockExportBackup = vi.fn()
-const mockImportBackup = vi.fn()
+const mockExportAll = vi.fn()
+const mockImportAll = vi.fn()
 
-vi.mock('../../api/client', () => ({
-  exportBackup: (...args: unknown[]) => mockExportBackup(...args),
-  importBackup: (...args: unknown[]) => mockImportBackup(...args),
+vi.mock('../../repositories/BackupRepository', () => ({
+  backupRepository: {
+    exportAll: (...args: unknown[]) => mockExportAll(...args),
+    importAll: (...args: unknown[]) => mockImportAll(...args),
+  },
 }))
 
 describe('BackupService', () => {
@@ -18,27 +20,27 @@ describe('BackupService', () => {
   })
 
   describe('export', () => {
-    it('delegates to exportBackup from api/client', async () => {
+    it('delegates to backupRepository.exportAll', async () => {
       const fakeBackup = { rooms: [], guests: [], reservations: [] }
-      mockExportBackup.mockResolvedValue(fakeBackup)
+      mockExportAll.mockResolvedValue(fakeBackup)
 
       const result = await service.export()
 
-      expect(mockExportBackup).toHaveBeenCalledOnce()
+      expect(mockExportAll).toHaveBeenCalledOnce()
       expect(result).toBe(fakeBackup)
     })
   })
 
   describe('import', () => {
-    it('delegates to importBackup from api/client', async () => {
+    it('delegates to backupRepository.importAll', async () => {
       const fakeData = { rooms: [{ id: 'r1' }] }
       const fakeReport = { imported: { rooms: 1, guests: 0, reservations: 0 }, errors: [] }
-      mockImportBackup.mockResolvedValue(fakeReport)
+      mockImportAll.mockResolvedValue(fakeReport)
 
-      const result = await service.import(fakeData as any)
+      const result = await service.import(fakeData as unknown as import('../../api/client').BackupData)
 
-      expect(mockImportBackup).toHaveBeenCalledOnce()
-      expect(mockImportBackup).toHaveBeenCalledWith(fakeData)
+      expect(mockImportAll).toHaveBeenCalledOnce()
+      expect(mockImportAll).toHaveBeenCalledWith(fakeData)
       expect(result).toBe(fakeReport)
     })
   })

@@ -180,7 +180,7 @@ export default function SettingsView() {
                 <button
                   key={option}
                   onClick={() => { setMode(option); setShowThemePicker(false); }}
-                  className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                  className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
                     mode === option
                       ? 'bg-ios-blue text-white'
                       : 'bg-ios-gray-light text-ios-text'
@@ -201,7 +201,7 @@ export default function SettingsView() {
                 <button
                   key={loc}
                   onClick={() => { setLocale(loc); setShowLanguagePicker(false); }}
-                  className={`py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+                  className={`py-2.5 rounded-xl font-semibold text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
                     locale === loc
                       ? 'bg-ios-green text-white'
                       : 'bg-ios-gray-light text-ios-text'
@@ -251,7 +251,7 @@ export default function SettingsView() {
             restoreStatus.startsWith('Error') ? 'bg-red-50 text-ios-red' : 'bg-green-50 text-green-700'
           }`}>
             {restoreStatus}
-            <button onClick={() => setRestoreStatus(null)} className="float-right text-ios-text-secondary">✕</button>
+            <button onClick={() => setRestoreStatus(null)} aria-label={t.close || 'Close'} className="float-right text-ios-text-secondary focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded focus-visible:outline-none">✕</button>
           </div>
         )}
 
@@ -259,6 +259,7 @@ export default function SettingsView() {
           ref={fileInputRef}
           type="file"
           accept=".json"
+          aria-label={t.restoreBackup}
           onChange={handleFileSelect}
           className="hidden"
         />

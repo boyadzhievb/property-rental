@@ -27,7 +27,7 @@ export default function RoomsView() {
         right={
           <button
             onClick={() => setShowForm(true)}
-            className="text-ios-blue font-semibold flex items-center gap-1 active:opacity-70 transition-opacity"
+            className="text-ios-blue font-semibold flex items-center gap-1 active:opacity-70 transition-opacity focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
           >
             <Plus size={20} />
             <span>{t.add}</span>

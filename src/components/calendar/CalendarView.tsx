@@ -298,7 +298,9 @@ export default memo(function CalendarView() {
                           step="0.01"
                           value={paymentAmount}
                           onChange={e => setPaymentAmount(e.target.value)}
-                          className="w-full px-3 py-2 bg-ios-card border border-ios-border/40 rounded-xl text-sm text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                          aria-label={t.amount}
+                          aria-describedby={paymentError ? 'calendar-payment-error' : undefined}
+                          className="w-full px-3 py-2 bg-ios-card border border-ios-border/40 rounded-xl text-sm text-ios-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue"
                           placeholder={t.amount}
                           autoFocus
                         />
@@ -308,7 +310,7 @@ export default memo(function CalendarView() {
                           <button
                             key={m}
                             onClick={() => setPaymentMethod(m)}
-                            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg capitalize transition-colors ${
+                            className={`flex-1 py-1.5 text-xs font-semibold rounded-lg capitalize transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
                               paymentMethod === m
                                 ? 'bg-ios-blue text-white'
                                 : 'bg-ios-card text-ios-text-secondary border border-ios-border/40'
@@ -322,16 +324,17 @@ export default memo(function CalendarView() {
                         type="text"
                         value={paymentNote}
                         onChange={e => setPaymentNote(e.target.value)}
-                        className="w-full px-3 py-2 bg-ios-card border border-ios-border/40 rounded-xl text-sm text-ios-text focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                        aria-label={t.noteOptional}
+                        className="w-full px-3 py-2 bg-ios-card border border-ios-border/40 rounded-xl text-sm text-ios-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue"
                         placeholder={t.noteOptional}
                       />
                       {paymentError && (
-                        <div className="text-xs text-ios-red bg-ios-red/10 rounded-lg px-3 py-1.5">{paymentError}</div>
+                        <div id="calendar-payment-error" role="alert" className="text-xs text-ios-red bg-ios-red/10 rounded-lg px-3 py-1.5">{paymentError}</div>
                       )}
                       <button
                         onClick={handleAddPayment}
                         disabled={actionLoading || !paymentAmount || parseFloat(paymentAmount) <= 0}
-                        className="w-full py-2 bg-ios-blue text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
+                        className="w-full py-2 bg-ios-blue text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                       >
                         {actionLoading ? t.saving : t.recordPayment}
                       </button>
@@ -345,7 +348,7 @@ export default memo(function CalendarView() {
                   <button
                     onClick={handleCheckIn}
                     disabled={actionLoading}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                   >
                     <LogIn size={18} />
                     {t.checkIn}
@@ -356,7 +359,7 @@ export default memo(function CalendarView() {
                   <button
                     onClick={handleCheckOut}
                     disabled={actionLoading}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-orange text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-orange text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                   >
                     <LogOut size={18} />
                     {t.checkOut}
@@ -367,7 +370,7 @@ export default memo(function CalendarView() {
                   <button
                     onClick={handleCancel}
                     disabled={actionLoading}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-red/10 text-ios-red font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-red/10 text-ios-red font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
                   >
                     <XCircle size={18} />
                     {t.cancelReservation}

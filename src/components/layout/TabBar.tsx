@@ -25,7 +25,7 @@ export default memo(function TabBar({ items, activeTab, onTabChange }: TabBarPro
               key={item.id}
               onClick={() => onTabChange(item.id)}
               aria-current={isActive ? 'page' : undefined}
-              className={`flex flex-col items-center justify-center w-16 gap-1 transition-colors ${
+              className={`flex flex-col items-center justify-center w-16 gap-1 transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:rounded-lg focus-visible:outline-none ${
                 isActive ? 'text-ios-blue' : 'text-ios-gray hover:text-ios-text-secondary'
               }`}
             >
