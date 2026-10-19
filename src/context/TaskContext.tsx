@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Task } from '../domain/Task';
 import { taskService } from '../services/TaskService';
+import { onCrossTabRefresh } from '../api/sync';
 
 interface TaskContextValue {
   tasks: Task[];
@@ -33,6 +34,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => onCrossTabRefresh(refresh), [refresh]);
 
   return (
     <TaskContext.Provider value={useMemo(() => ({ tasks, loading, error, clearError, refresh }), [tasks, loading, error, clearError, refresh])}>

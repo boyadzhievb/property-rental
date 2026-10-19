@@ -4,6 +4,8 @@ import { ReservationSchema } from '../schemas/ReservationSchema';
 import { reservationRepository } from '../repositories/ReservationRepository';
 import { roomRepository } from '../repositories/RoomRepository';
 import { guestRepository } from '../repositories/GuestRepository';
+import { paymentRepository } from '../repositories/PaymentRepository';
+import { taskRepository } from '../repositories/TaskRepository';
 import { batchPut } from '../api/client';
 
 export class ReservationService {
@@ -195,6 +197,20 @@ export class ReservationService {
     ]);
 
     return reservation;
+  }
+  async deleteReservation(id: string): Promise<void> {
+    const payments = await paymentRepository.getByReservationId(id);
+    for (const payment of payments) {
+      await paymentRepository.delete(payment.id);
+    }
+
+    const allTasks = await taskRepository.getAll();
+    const linkedTasks = allTasks.filter(t => t.linkedReservationId === id);
+    for (const task of linkedTasks) {
+      await taskRepository.delete(task.id);
+    }
+
+    await reservationRepository.delete(id);
   }
 }
 

@@ -60,6 +60,7 @@ const DB_NAME = 'property-rental';
 const DB_VERSION = 5;
 
 import { format as fmtDate, addDays, subDays } from 'date-fns';
+import { notifyOtherTabs } from './sync';
 
 const fmt = (d: Date) => fmtDate(d, 'yyyy-MM-dd');
 
@@ -337,7 +338,7 @@ function put<T>(storeName: string, item: T): Promise<T> {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readwrite');
       tx.objectStore(storeName).put(item);
-      tx.oncomplete = () => resolve(item);
+      tx.oncomplete = () => { notifyOtherTabs(); resolve(item); };
       tx.onerror = () => reject(tx.error);
     });
   });
@@ -348,7 +349,7 @@ function deleteById(storeName: string, id: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readwrite');
       tx.objectStore(storeName).delete(id);
-      tx.oncomplete = () => resolve();
+      tx.oncomplete = () => { notifyOtherTabs(); resolve(); };
       tx.onerror = () => reject(tx.error);
     });
   });
@@ -404,7 +405,7 @@ export async function atomicReadWrite<T>(
   const result = await callback(stores);
 
   await new Promise<void>((resolve, reject) => {
-    transaction.oncomplete = () => resolve();
+    transaction.oncomplete = () => { notifyOtherTabs(); resolve(); };
     transaction.onerror = () => reject(transaction.error);
     transaction.onabort = () => reject(transaction.error);
   });
@@ -420,7 +421,7 @@ export async function batchPut(operations: BatchOperation[]): Promise<void> {
     transaction.objectStore(operation.store).put(operation.data);
   }
   await new Promise<void>((resolve, reject) => {
-    transaction.oncomplete = () => resolve();
+    transaction.oncomplete = () => { notifyOtherTabs(); resolve(); };
     transaction.onerror = () => reject(transaction.error);
   });
 }

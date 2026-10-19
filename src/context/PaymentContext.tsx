@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Payment } from '../domain/Payment';
 import { paymentService } from '../services/PaymentService';
+import { onCrossTabRefresh } from '../api/sync';
 
 interface PaymentContextValue {
   payments: Payment[];
@@ -33,6 +34,7 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => onCrossTabRefresh(refresh), [refresh]);
 
   return (
     <PaymentContext.Provider value={useMemo(() => ({ payments, loading, error, clearError, refresh }), [payments, loading, error, clearError, refresh])}>

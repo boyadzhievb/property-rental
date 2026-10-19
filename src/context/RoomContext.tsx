@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Room } from '../domain/Room';
 import { roomService } from '../services/RoomService';
+import { onCrossTabRefresh } from '../api/sync';
 
 interface RoomContextValue {
   rooms: Room[];
@@ -34,6 +35,7 @@ export function RoomProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => onCrossTabRefresh(refresh), [refresh]);
 
   return (
     <RoomContext.Provider value={useMemo(() => ({ rooms, loading, error, clearError, refresh }), [rooms, loading, error, clearError, refresh])}>

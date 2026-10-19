@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Guest } from '../domain/Guest';
 import { guestService } from '../services/GuestService';
+import { onCrossTabRefresh } from '../api/sync';
 
 interface GuestContextValue {
   guests: Guest[];
@@ -33,6 +34,7 @@ export function GuestProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => onCrossTabRefresh(refresh), [refresh]);
 
   return (
     <GuestContext.Provider value={useMemo(() => ({ guests, loading, error, clearError, refresh }), [guests, loading, error, clearError, refresh])}>

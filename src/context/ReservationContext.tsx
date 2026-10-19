@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Reservation } from '../domain/Reservation';
 import { reservationService } from '../services/ReservationService';
+import { onCrossTabRefresh } from '../api/sync';
 
 interface ReservationContextValue {
   reservations: Reservation[];
@@ -33,6 +34,7 @@ export function ReservationProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => onCrossTabRefresh(refresh), [refresh]);
 
   return (
     <ReservationContext.Provider value={useMemo(() => ({ reservations, loading, error, clearError, refresh }), [reservations, loading, error, clearError, refresh])}>
