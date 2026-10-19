@@ -81,7 +81,7 @@ export default function CalendarView() {
     setPaymentError(null);
     try {
       await paymentService.createPayment({
-        id: `pay-${Date.now()}`,
+        id: crypto.randomUUID(),
         reservationId: selectedReservation.id,
         amount,
         date: format(new Date(), 'yyyy-MM-dd'),
@@ -111,7 +111,7 @@ export default function CalendarView() {
   }, [payments]);
 
   const getReservationPaid = (resId: string) =>
-    (paymentsByReservation.get(resId) ?? []).reduce((sum, p) => sum + p.amount, 0);
+    Math.round((paymentsByReservation.get(resId) ?? []).reduce((sum, p) => sum + p.amount, 0) * 100) / 100;
 
   const getReservationPayments = (resId: string) =>
     paymentsByReservation.get(resId) ?? [];

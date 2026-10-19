@@ -30,9 +30,10 @@ export class PaymentService {
         const existing = await stores.payments.getAllByIndex<PaymentRecord>(
           'reservationId', validated.reservationId
         );
-        const totalPaid = existing.reduce((sum, record) => sum + record.amount, 0);
-        if (totalPaid + validated.amount > reservation.price) {
-          throw new Error(`Payment exceeds remaining balance of $${reservation.price - totalPaid}`);
+        const totalPaid = Math.round(existing.reduce((sum, record) => sum + record.amount, 0) * 100) / 100;
+        const remaining = Math.round((reservation.price - totalPaid) * 100) / 100;
+        if (Math.round((totalPaid + validated.amount) * 100) / 100 > reservation.price) {
+          throw new Error(`Payment exceeds remaining balance of $${remaining}`);
         }
 
         const newPayment = new Payment(validated);

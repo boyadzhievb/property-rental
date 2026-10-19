@@ -201,7 +201,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
 
       if (form.isNewGuest) {
         const guest = await guestService.createGuest({
-          id: `g-${Date.now()}`,
+          id: crypto.randomUUID(),
           name: form.guestName.trim(),
           phone: form.phone.trim(),
           email: form.email.trim(),
@@ -212,7 +212,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
       }
 
       const reservationData: import('../../domain/Reservation').ReservationData = {
-        id: `r-${Date.now()}`,
+        id: crypto.randomUUID(),
         roomId: form.roomId,
         guestId,
         arrivalDate: form.checkIn,

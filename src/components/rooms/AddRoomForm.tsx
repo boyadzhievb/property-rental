@@ -17,7 +17,7 @@ export default function AddRoomForm({ onAdded, onCancel }: AddRoomFormProps) {
   const handleAdd = async () => {
     if (!name.trim()) return;
     await roomService.createRoom({
-      id: `room-${Date.now()}`,
+      id: crypto.randomUUID(),
       name: name.trim(),
       status: RoomStatus.AVAILABLE,
       pricePerNight: parseFloat(price) || 100,

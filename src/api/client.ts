@@ -85,7 +85,7 @@ function getSeedData() {
 
   const reservations: Reservation[] = [
     { id: 'r1', roomId: '101', guestId: 'g1', arrivalDate: fmt(subDays(today, 1)), departureDate: fmt(addDays(today, 2)), guestsCount: 2, status: 'Checked In', price: 750 },
-    { id: 'r2', roomId: '104', guestId: 'g2', arrivalDate: fmt(today), departureDate: fmt(addDays(today, 4)), guestsCount: 1, status: 'Confirmed', price: 1200 },
+    { id: 'r2', roomId: '104', guestId: 'g2', arrivalDate: fmt(today), departureDate: fmt(addDays(today, 4)), guestsCount: 1, status: 'Checked In', price: 1200 },
     { id: 'r3', roomId: '103', guestId: 'g3', arrivalDate: fmt(subDays(today, 3)), departureDate: fmt(today), guestsCount: 2, status: 'Checked Out', price: 450 },
     { id: 'r4', roomId: '102', guestId: 'g4', arrivalDate: fmt(addDays(today, 1)), departureDate: fmt(addDays(today, 5)), guestsCount: 2, status: 'Confirmed', price: 800 },
     { id: 'r5', roomId: '105', guestId: 'g5', arrivalDate: fmt(addDays(today, 3)), departureDate: fmt(addDays(today, 7)), guestsCount: 3, status: 'Confirmed', price: 1600 },

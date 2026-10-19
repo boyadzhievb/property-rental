@@ -49,14 +49,14 @@ export default function ReportsView() {
   );
 
   const totalCollected = useMemo(() =>
-    periodPayments.reduce((sum, p) => sum + p.amount, 0),
+    Math.round(periodPayments.reduce((sum, p) => sum + p.amount, 0) * 100) / 100,
     [periodPayments]
   );
 
   const paymentsByMethod = useMemo(() => {
     const groups: Record<string, number> = { cash: 0, card: 0, transfer: 0 };
     for (const p of periodPayments) {
-      groups[p.method] = (groups[p.method] || 0) + p.amount;
+      groups[p.method] = Math.round(((groups[p.method] || 0) + p.amount) * 100) / 100;
     }
     return groups;
   }, [periodPayments]);
@@ -93,8 +93,8 @@ export default function ReportsView() {
     const active = reservations.filter(r => r.status !== 'Cancelled');
     const results: { reservationId: string; guestName: string; roomName: string; total: number; paid: number; balance: number; arrivalDate: string }[] = [];
     for (const res of active) {
-      const paid = payments.filter(p => p.reservationId === res.id).reduce((s, p) => s + p.amount, 0);
-      const balance = res.price - paid;
+      const paid = Math.round(payments.filter(p => p.reservationId === res.id).reduce((s, p) => s + p.amount, 0) * 100) / 100;
+      const balance = Math.round((res.price - paid) * 100) / 100;
       if (balance > 0) {
         const guest = guestMap.get(res.guestId);
         const room = roomMap.get(res.roomId);
@@ -114,7 +114,7 @@ export default function ReportsView() {
   }, [reservations, payments, guestMap, roomMap]);
 
   const totalOutstanding = useMemo(() =>
-    outstandingBalances.reduce((sum, b) => sum + b.balance, 0),
+    Math.round(outstandingBalances.reduce((sum, b) => sum + b.balance, 0) * 100) / 100,
     [outstandingBalances]
   );
 

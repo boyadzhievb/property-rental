@@ -56,10 +56,10 @@ export default function TodayView() {
     for (const res of todayReservations) {
       if (seen.has(res.id)) continue;
       seen.add(res.id);
-      const totalPaid = payments
+      const totalPaid = Math.round(payments
         .filter(p => p.reservationId === res.id)
-        .reduce((sum, p) => sum + p.amount, 0);
-      if (res.price - totalPaid > 0) {
+        .reduce((sum, p) => sum + p.amount, 0) * 100) / 100;
+      if (Math.round((res.price - totalPaid) * 100) / 100 > 0) {
         const guest = guestMap.get(res.guestId);
         pendingPayments.push({ reservationId: res.id, guestName: guest?.name ?? '' });
       }
@@ -132,7 +132,7 @@ export default function TodayView() {
     if (!newTaskTitle.trim()) return;
     const todayStr = format(today, 'yyyy-MM-dd');
     await taskService.createTask({
-      id: `task-${Date.now()}`,
+      id: crypto.randomUUID(),
       title: newTaskTitle.trim(),
       category: newTaskCategory,
       completed: false,

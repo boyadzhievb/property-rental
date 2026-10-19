@@ -75,7 +75,7 @@ export default function GuestsView() {
     paymentsByReservation.get(reservationId) ?? [];
 
   const getTotalPaid = (reservationId: string) =>
-    getPaymentsForReservation(reservationId).reduce((sum, p) => sum + p.amount, 0);
+    Math.round(getPaymentsForReservation(reservationId).reduce((sum, p) => sum + p.amount, 0) * 100) / 100;
 
   const scrollToLetter = (letter: string) => {
     setActiveLetter(letter);
@@ -116,7 +116,7 @@ export default function GuestsView() {
     setError(null);
     try {
       await paymentService.createPayment({
-        id: `pay-${Date.now()}`,
+        id: crypto.randomUUID(),
         reservationId: payingReservation.id,
         amount,
         date: format(new Date(), 'yyyy-MM-dd'),

@@ -122,7 +122,7 @@ export class Reservation {
     const occurrences: ReservationData[] = [];
     let currentArrival = new Date(baseData.arrivalDate);
     const seriesEnd = new Date(recurrence.endDate);
-    const seriesId = `series-${Date.now()}`;
+    const seriesId = `series-${crypto.randomUUID()}`;
 
     while (currentArrival <= seriesEnd) {
       const currentDeparture = new Date(currentArrival);
