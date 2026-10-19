@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, addWeeks } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, addWeeks, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ChevronLeft, ChevronRight, TrendingUp, AlertCircle, Banknote, BedDouble } from 'lucide-react';
 import { useReservationContext } from '../../context/ReservationContext';
 import { usePaymentContext } from '../../context/PaymentContext';
@@ -75,15 +75,15 @@ export default function ReportsView() {
 
   const occupancyRate = useMemo(() => {
     if (rooms.length === 0) return 0;
-    const start = new Date(dateRange.start);
-    const end = new Date(dateRange.end);
-    const totalDays = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000) + 1);
+    const start = parseISO(dateRange.start);
+    const end = parseISO(dateRange.end);
+    const totalDays = Math.max(1, differenceInCalendarDays(end, start) + 1);
     const totalRoomNights = rooms.length * totalDays;
     let occupiedNights = 0;
     for (const res of periodReservations) {
-      const resStart = new Date(res.arrivalDate) < start ? start : new Date(res.arrivalDate);
-      const resEnd = new Date(res.departureDate) > end ? end : new Date(res.departureDate);
-      const nights = Math.max(0, Math.round((resEnd.getTime() - resStart.getTime()) / 86400000));
+      const resStart = parseISO(res.arrivalDate) < start ? start : parseISO(res.arrivalDate);
+      const resEnd = parseISO(res.departureDate) > end ? end : parseISO(res.departureDate);
+      const nights = Math.max(0, differenceInCalendarDays(resEnd, resStart));
       occupiedNights += nights;
     }
     return Math.round((occupiedNights / totalRoomNights) * 100);

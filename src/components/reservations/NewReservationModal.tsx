@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { ZodError } from 'zod';
 import { useRooms } from '../../hooks/useRooms';
 import { useGuests } from '../../hooks/useGuests';
@@ -157,9 +158,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
     if (!form.roomId || !form.checkIn || !form.checkOut) return;
     const room = rooms.find(r => r.id === form.roomId);
     if (!room) return;
-    const arrival = new Date(form.checkIn);
-    const departure = new Date(form.checkOut);
-    const nights = Math.ceil((departure.getTime() - arrival.getTime()) / (1000 * 60 * 60 * 24));
+    const nights = differenceInCalendarDays(parseISO(form.checkOut), parseISO(form.checkIn));
     if (nights > 0) {
       setForm(prev => ({ ...prev, price: String(nights * room.pricePerNight) }));
     }

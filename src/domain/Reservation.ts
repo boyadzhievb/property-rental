@@ -1,3 +1,5 @@
+import { differenceInCalendarDays, parseISO } from 'date-fns';
+
 export type ReservationStatus = 'Confirmed' | 'Checked In' | 'Checked Out' | 'Cancelled';
 export type RecurrencePattern = 'weekly' | 'biweekly' | 'monthly';
 
@@ -73,9 +75,7 @@ export class Reservation {
   }
 
   duration(): number {
-    const arrival = new Date(this.arrivalDate);
-    const departure = new Date(this.departureDate);
-    return Math.ceil((departure.getTime() - arrival.getTime()) / (1000 * 60 * 60 * 24));
+    return differenceInCalendarDays(parseISO(this.departureDate), parseISO(this.arrivalDate));
   }
 
   isActive(): boolean {
@@ -120,15 +120,15 @@ export class Reservation {
   ): ReservationData[] {
     const stayDuration = new Reservation(baseData).duration();
     const occurrences: ReservationData[] = [];
-    let currentArrival = new Date(baseData.arrivalDate);
-    const seriesEnd = new Date(recurrence.endDate);
+    let currentArrival = parseISO(baseData.arrivalDate);
+    const seriesEnd = parseISO(recurrence.endDate);
     const seriesId = `series-${crypto.randomUUID()}`;
 
     while (currentArrival <= seriesEnd) {
       const currentDeparture = new Date(currentArrival);
       currentDeparture.setDate(currentDeparture.getDate() + stayDuration);
 
-      if (currentDeparture > new Date(recurrence.endDate + 'T23:59:59')) {
+      if (currentDeparture > seriesEnd) {
         break;
       }
 

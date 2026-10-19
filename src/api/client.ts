@@ -59,10 +59,9 @@ export interface PropertySettings {
 const DB_NAME = 'property-rental';
 const DB_VERSION = 4;
 
-const fmt = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
-const subDays = (d: Date, n: number) => new Date(d.getTime() - n * 86400000);
+import { format as fmtDate, addDays, subDays } from 'date-fns';
+
+const fmt = (d: Date) => fmtDate(d, 'yyyy-MM-dd');
 
 function getSeedData() {
   const today = new Date();
