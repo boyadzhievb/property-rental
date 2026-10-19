@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.24 — 2026-10-19
+
+### Bug Fixes
+- Fix React hooks violation in TodayView that caused crash after upgrading to React 19.3 — useMemo hooks were called after an early return, violating Rules of Hooks
+
+### Testing
+- Add TodayView component tests covering loading state, data state, and loading-to-loaded transition
+
 ## 1.0.3 — 2026-09-11
 
 > **Play Store:** Improved accessibility, offline experience, and app performance with better loading times.
