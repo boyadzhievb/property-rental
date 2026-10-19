@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { ZodError } from 'zod';
 import { useRooms } from '../../hooks/useRooms';
@@ -95,7 +95,7 @@ function validateStayStep(form: FormData): FormErrors {
   return errors;
 }
 
-export default function NewReservationModal({ onClose }: { onClose: () => void }) {
+export default memo(function NewReservationModal({ onClose }: { onClose: () => void }) {
   const { rooms, refresh: refreshRooms } = useRooms();
   const { guests } = useGuests();
   const { reservations, refresh: refreshReservations } = useReservationContext();
@@ -232,7 +232,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
 
       await Promise.all([refreshReservations(), refreshGuests(), refreshRooms()]);
       onClose();
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (e instanceof ZodError) {
         const zodErrors: FormErrors = {};
         for (const issue of e.issues) {
@@ -240,7 +240,7 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
         }
         setErrors(zodErrors);
       } else {
-        setErrors({ price: e.message });
+        setErrors({ price: e instanceof Error ? e.message : 'Unknown error' });
       }
     } finally {
       setSubmitting(false);
@@ -305,4 +305,4 @@ export default function NewReservationModal({ onClose }: { onClose: () => void }
       </div>
     </div>
   );
-}
+});

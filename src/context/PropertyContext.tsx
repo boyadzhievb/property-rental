@@ -30,8 +30,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       setPropertyName(s.name);
       setIsConfigured(s.isConfigured);
       setLoading(false);
-    }).catch((e: any) => {
-      setError(e.message || 'Failed to load property settings');
+    }).catch((e: unknown) => {
+      setError(e instanceof Error ? e.message : 'Failed to load property settings');
       setLoading(false);
     });
   }, []);
@@ -40,8 +40,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     try {
       await api.settings.saveProperty({ name });
       setPropertyName(name);
-    } catch (e: any) {
-      setError(e.message || 'Failed to update property name');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to update property name');
     }
   }, []);
 
@@ -50,8 +50,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       await configureProperty(name, roomCount);
       setPropertyName(name || 'My Property');
       setIsConfigured(true);
-    } catch (e: any) {
-      setError(e.message || 'Failed to configure property');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to configure property');
     }
   }, []);
 
@@ -60,8 +60,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       await seedDemoData();
       setPropertyName('Villa Blanca');
       setIsConfigured(true);
-    } catch (e: any) {
-      setError(e.message || 'Failed to seed demo data');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to seed demo data');
     }
   }, []);
 
@@ -70,8 +70,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       await backupService.import(data);
       setPropertyName(data.settings?.name || 'My Property');
       setIsConfigured(true);
-    } catch (e: any) {
-      setError(e.message || 'Failed to import backup');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to import backup');
     }
   }, []);
 
@@ -102,8 +102,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       await resetDataDb();
       setPropertyName('My Property');
       setIsConfigured(false);
-    } catch (e: any) {
-      setError(e.message || 'Failed to reset data');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to reset data');
     }
   }, []);
 

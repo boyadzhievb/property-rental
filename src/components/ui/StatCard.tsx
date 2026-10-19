@@ -16,7 +16,7 @@ export default memo(function StatCard({ icon, value, label, active, onClick }: S
       tabIndex={onClick ? 0 : undefined}
       aria-pressed={onClick ? active : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
-      className={`bg-ios-card rounded-3xl p-5 shadow-sm border transition-all ${
+      className={`bg-ios-card rounded-3xl p-5 shadow-sm border transition-[transform,opacity,border-color] ${
         active ? 'border-ios-blue ring-2 ring-ios-blue/20' : 'border-black/[0.04]'
       } ${onClick ? 'cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none' : ''}`}
     >

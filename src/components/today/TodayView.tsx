@@ -44,11 +44,9 @@ export default memo(function TodayView() {
       .filter(r => r.status === RoomStatus.CLEANING)
       .map(r => ({ id: r.id, name: r.name }));
 
-    const preparationRoomIds = data.arrivals.map(res => {
-      const room = roomMap.get(res.roomId);
-      const guest = guestMap.get(res.guestId);
-      return { id: res.roomId, name: room?.name ?? '', guestName: guest?.name ?? '' };
-    });
+    const preparationRoomIds = data.arrivals
+      .filter(res => roomMap.has(res.roomId) && guestMap.has(res.guestId))
+      .map(res => ({ id: res.roomId, name: roomMap.get(res.roomId)!.name, guestName: guestMap.get(res.guestId)!.name }));
 
     const pendingPayments: { reservationId: string; guestName: string }[] = [];
     const todayReservations = [...data.arrivals, ...data.departures];
@@ -235,7 +233,7 @@ export default memo(function TodayView() {
                         <button
                           onClick={() => handleCheckIn(res.id)}
                           disabled={loadingId === res.id}
-                          className="flex-shrink-0 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                          className="flex-shrink-0 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-full active:scale-95 transition-[transform,opacity] disabled:opacity-50"
                         >
                           {t.checkIn}
                         </button>
@@ -273,7 +271,7 @@ export default memo(function TodayView() {
                         <button
                           onClick={() => handleCheckOut(res.id)}
                           disabled={loadingId === res.id}
-                          className="flex-shrink-0 px-3 py-1.5 bg-ios-orange text-white text-xs font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                          className="flex-shrink-0 px-3 py-1.5 bg-ios-orange text-white text-xs font-semibold rounded-full active:scale-95 transition-[transform,opacity] disabled:opacity-50"
                         >
                           {t.checkOut}
                         </button>
@@ -317,7 +315,7 @@ export default memo(function TodayView() {
                           <button
                             onClick={() => handleCheckOut(res.id)}
                             disabled={loadingId === res.id}
-                            className="flex-shrink-0 px-3 py-1.5 bg-ios-orange text-white text-xs font-semibold rounded-full active:scale-95 transition-all disabled:opacity-50"
+                            className="flex-shrink-0 px-3 py-1.5 bg-ios-orange text-white text-xs font-semibold rounded-full active:scale-95 transition-[transform,opacity] disabled:opacity-50"
                           >
                             {t.checkOut}
                           </button>
@@ -365,7 +363,7 @@ export default memo(function TodayView() {
             <h3 className="text-xl font-bold">{t.todaysTasks}</h3>
             <button
               onClick={() => setShowAddTask(true)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-full active:scale-95 transition-all"
+              className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-full active:scale-95 transition-[transform,opacity]"
             >
               <Plus size={14} />
               {t.add}
@@ -486,7 +484,7 @@ export default memo(function TodayView() {
               <button
                 onClick={handleAddTask}
                 disabled={!newTaskTitle.trim()}
-                className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
               >
                 {t.addTask}
               </button>

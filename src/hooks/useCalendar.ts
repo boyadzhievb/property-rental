@@ -31,8 +31,8 @@ export function useCalendar(weekStart: Date) {
       setError(null);
       const data = await reservationService.getReservationsByRange(fromDate, toDate);
       setReservations(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
     }

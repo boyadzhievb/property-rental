@@ -1,50 +1,15 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { type Guest } from '../domain/Guest';
 import { guestService } from '../services/GuestService';
-import { onCrossTabRefresh } from '../api/sync';
+import { createEntityContext } from './createEntityContext';
 
-interface GuestContextValue {
-  guests: Guest[];
-  loading: boolean;
-  error: string | null;
-  clearError: () => void;
-  refresh: () => Promise<void>;
-}
+const { Provider, useEntityContext } = createEntityContext<Guest>(
+  'Guest',
+  () => guestService.getGuests(),
+);
 
-const GuestContext = createContext<GuestContextValue | null>(null);
-
-export function GuestProvider({ children }: { children: ReactNode }) {
-  const [guests, setGuests] = useState<Guest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await guestService.getGuests();
-      setGuests(data);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const clearError = useCallback(() => setError(null), []);
-
-  useEffect(() => { refresh(); }, [refresh]);
-  useEffect(() => onCrossTabRefresh(refresh), [refresh]);
-
-  return (
-    <GuestContext.Provider value={useMemo(() => ({ guests, loading, error, clearError, refresh }), [guests, loading, error, clearError, refresh])}>
-      {children}
-    </GuestContext.Provider>
-  );
-}
+export const GuestProvider = Provider;
 
 export function useGuestContext() {
-  const context = useContext(GuestContext);
-  if (!context) throw new Error('useGuestContext must be used within GuestProvider');
-  return context;
+  const { data: guests, ...rest } = useEntityContext();
+  return { guests, ...rest };
 }

@@ -18,8 +18,8 @@ export function useReservation(id?: string) {
       setError(null);
       const data = await reservationService.getReservationById(id);
       setReservation(data);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
     }

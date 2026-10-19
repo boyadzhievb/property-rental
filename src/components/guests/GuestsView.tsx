@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, memo } from 'react';
 import { format } from 'date-fns';
 import { Search, ChevronRight, Phone, X, Calendar, DoorOpen, Plus, Banknote } from 'lucide-react';
 import { useGuests } from '../../hooks/useGuests';
@@ -11,7 +11,7 @@ import { type Guest } from '../../domain/Guest';
 import { type Reservation } from '../../domain/Reservation';
 import PageHeader from '../layout/PageHeader';
 
-export default function GuestsView() {
+export default memo(function GuestsView() {
   const { guests, loading } = useGuests();
   const { reservations } = useReservationContext();
   const { rooms } = useRoomContext();
@@ -393,7 +393,7 @@ export default function GuestsView() {
               <button
                 onClick={handleAddPayment}
                 disabled={saving || !paymentAmount || parseFloat(paymentAmount) <= 0}
-                className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                className="w-full py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
               >
                 {saving ? t.saving : t.recordPayment}
               </button>
@@ -403,4 +403,4 @@ export default function GuestsView() {
       )}
     </div>
   );
-}
+});

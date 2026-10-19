@@ -1,3 +1,9 @@
+import { RoomSchema } from '../schemas/RoomSchema';
+import { GuestSchema } from '../schemas/GuestSchema';
+import { ReservationSchema } from '../schemas/ReservationSchema';
+import { PaymentSchema } from '../schemas/PaymentSchema';
+import { TaskSchema } from '../schemas/TaskSchema';
+
 export interface Room {
   id: string;
   name: string;
@@ -240,12 +246,6 @@ export interface ImportReport {
 }
 
 export async function importBackup(data: BackupData): Promise<ImportReport> {
-  const { RoomSchema } = await import('../schemas/RoomSchema');
-  const { GuestSchema } = await import('../schemas/GuestSchema');
-  const { ReservationSchema } = await import('../schemas/ReservationSchema');
-  const { PaymentSchema } = await import('../schemas/PaymentSchema');
-  const { TaskSchema } = await import('../schemas/TaskSchema');
-
   const allRooms = data.rooms ?? [];
   const allGuests = data.guests ?? [];
   const allReservations = data.reservations ?? [];

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { format, addDays, subDays, startOfWeek, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight, LogIn, LogOut, X, XCircle, Banknote, Plus } from 'lucide-react';
 import { useCalendar } from '../../hooks/useCalendar';
@@ -14,7 +14,7 @@ import { type Guest } from '../../domain/Guest';
 import PageHeader from '../layout/PageHeader';
 import CalendarRow from './CalendarRow';
 
-export default function CalendarView() {
+export default memo(function CalendarView() {
   const today = new Date();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(today, { weekStartsOn: 1 }));
   const { data, loading, refresh: refreshCalendar } = useCalendar(weekStart);
@@ -331,7 +331,7 @@ export default function CalendarView() {
                       <button
                         onClick={handleAddPayment}
                         disabled={actionLoading || !paymentAmount || parseFloat(paymentAmount) <= 0}
-                        className="w-full py-2 bg-ios-blue text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-all disabled:opacity-50"
+                        className="w-full py-2 bg-ios-blue text-white text-sm font-semibold rounded-xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
                       >
                         {actionLoading ? t.saving : t.recordPayment}
                       </button>
@@ -345,7 +345,7 @@ export default function CalendarView() {
                   <button
                     onClick={handleCheckIn}
                     disabled={actionLoading}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-blue text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
                   >
                     <LogIn size={18} />
                     {t.checkIn}
@@ -356,7 +356,7 @@ export default function CalendarView() {
                   <button
                     onClick={handleCheckOut}
                     disabled={actionLoading}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-orange text-white font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-orange text-white font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
                   >
                     <LogOut size={18} />
                     {t.checkOut}
@@ -367,7 +367,7 @@ export default function CalendarView() {
                   <button
                     onClick={handleCancel}
                     disabled={actionLoading}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-red/10 text-ios-red font-semibold rounded-2xl active:scale-[0.98] transition-all disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-ios-red/10 text-ios-red font-semibold rounded-2xl active:scale-[0.98] transition-[transform,opacity] disabled:opacity-50"
                   >
                     <XCircle size={18} />
                     {t.cancelReservation}
@@ -386,4 +386,4 @@ export default function CalendarView() {
       )}
     </div>
   );
-}
+});
