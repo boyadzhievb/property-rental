@@ -86,6 +86,66 @@ describe('TaskService', () => {
     service = new TaskService()
   })
 
+  describe('getAllTasks', () => {
+    it('returns all tasks', async () => {
+      seedTask({ id: 'task-1', title: 'Clean Suite 1' })
+      seedTask({ id: 'task-2', title: 'Prepare Suite 2', category: 'preparation' })
+      const tasks = await service.getAllTasks()
+      expect(tasks).toHaveLength(2)
+      expect(tasks.map(t => t.id)).toContain('task-1')
+      expect(tasks.map(t => t.id)).toContain('task-2')
+    })
+
+    it('returns empty array when no tasks exist', async () => {
+      const tasks = await service.getAllTasks()
+      expect(tasks).toEqual([])
+    })
+  })
+
+  describe('getTodayTasks', () => {
+    it('returns only tasks for today', async () => {
+      seedTask({ id: 'task-today', date: today, title: 'Today task' })
+      seedTask({ id: 'task-other', date: '2020-01-01', title: 'Old task' })
+      const tasks = await service.getTodayTasks()
+      expect(tasks).toHaveLength(1)
+      expect(tasks[0].id).toBe('task-today')
+    })
+
+    it('returns empty array when no tasks for today', async () => {
+      seedTask({ id: 'task-old', date: '2020-01-01', title: 'Old task' })
+      const tasks = await service.getTodayTasks()
+      expect(tasks).toEqual([])
+    })
+  })
+
+  describe('createTask', () => {
+    it('creates a task with valid data', async () => {
+      const task = await service.createTask({
+        id: 'task-new', title: 'Manual task', category: 'custom',
+        completed: false, date: today, auto: false,
+      })
+      expect(task.id).toBe('task-new')
+      expect(task.title).toBe('Manual task')
+      expect(task.category).toBe('custom')
+      expect(task.completed).toBe(false)
+    })
+
+    it('rejects invalid task data', async () => {
+      await expect(service.createTask({
+        id: '', title: '', category: 'cleaning',
+        completed: false, date: today, auto: false,
+      })).rejects.toThrow()
+    })
+  })
+
+  describe('deleteTask', () => {
+    it('deletes an existing task', async () => {
+      seedTask({ id: 'task-del' })
+      await service.deleteTask('task-del')
+      expect(taskStore.has('task-del')).toBe(false)
+    })
+  })
+
   describe('toggleTask', () => {
     it('completes an incomplete task', async () => {
       seedTask()

@@ -23,7 +23,36 @@ vi.mock('../../repositories/ReservationRepository', () => {
         const { Reservation } = await import('../../domain/Reservation')
         return new Reservation(data)
       }),
+      delete: vi.fn(async (id: string) => { store.delete(id) }),
       getByMonth: vi.fn(async () => []),
+      _store: store,
+    },
+  }
+})
+
+vi.mock('../../repositories/PaymentRepository', () => {
+  const store = new Map<string, any>()
+  return {
+    paymentRepository: {
+      getByReservationId: vi.fn(async (reservationId: string) => {
+        const { Payment } = await import('../../domain/Payment')
+        return [...store.values()].filter(d => d.reservationId === reservationId).map(d => new Payment(d))
+      }),
+      delete: vi.fn(async (id: string) => { store.delete(id) }),
+      _store: store,
+    },
+  }
+})
+
+vi.mock('../../repositories/TaskRepository', () => {
+  const store = new Map<string, any>()
+  return {
+    taskRepository: {
+      getAll: vi.fn(async () => {
+        const { Task } = await import('../../domain/Task')
+        return [...store.values()].map(d => new Task(d))
+      }),
+      delete: vi.fn(async (id: string) => { store.delete(id) }),
       _store: store,
     },
   }
@@ -72,10 +101,14 @@ vi.mock('../../repositories/GuestRepository', () => {
 import { reservationRepository } from '../../repositories/ReservationRepository'
 import { roomRepository } from '../../repositories/RoomRepository'
 import { guestRepository } from '../../repositories/GuestRepository'
+import { paymentRepository } from '../../repositories/PaymentRepository'
+import { taskRepository } from '../../repositories/TaskRepository'
 
 const resStore = (reservationRepository as any)._store as Map<string, any>
 const roomStore = (roomRepository as any)._store as Map<string, any>
 const guestStore = (guestRepository as any)._store as Map<string, any>
+const payStore = (paymentRepository as any)._store as Map<string, any>
+const taskStore = (taskRepository as any)._store as Map<string, any>
 
 vi.mock('../../api/client', () => ({
   batchPut: vi.fn(async (operations: Array<{ store: string; data: any }>) => {
@@ -115,6 +148,8 @@ describe('ReservationService', () => {
     resStore.clear()
     roomStore.clear()
     guestStore.clear()
+    payStore.clear()
+    taskStore.clear()
     service = new ReservationService()
   })
 
@@ -347,6 +382,54 @@ describe('ReservationService', () => {
       await service.cancel('res-1')
       const cancelled = await service.cancelSeries(seriesId)
       expect(cancelled.length).toBe(1)
+    })
+  })
+
+  describe('deleteReservation', () => {
+    it('deletes reservation and its payments', async () => {
+      seedRoom()
+      seedGuest()
+      seedReservation()
+      payStore.set('pay-1', { id: 'pay-1', reservationId: 'res-1', amount: 100, date: '2026-09-10', method: 'cash', note: '' })
+      payStore.set('pay-2', { id: 'pay-2', reservationId: 'res-1', amount: 200, date: '2026-09-11', method: 'card', note: '' })
+
+      await service.deleteReservation('res-1')
+
+      expect(resStore.has('res-1')).toBe(false)
+      expect(payStore.has('pay-1')).toBe(false)
+      expect(payStore.has('pay-2')).toBe(false)
+    })
+
+    it('deletes linked tasks', async () => {
+      seedRoom()
+      seedGuest()
+      seedReservation()
+      taskStore.set('task-1', {
+        id: 'task-1', title: 'Prepare room', category: 'preparation',
+        completed: false, date: '2026-09-10', linkedReservationId: 'res-1', auto: true,
+      })
+      taskStore.set('task-2', {
+        id: 'task-2', title: 'Unrelated task', category: 'custom',
+        completed: false, date: '2026-09-10', auto: false,
+      })
+
+      await service.deleteReservation('res-1')
+
+      expect(taskStore.has('task-1')).toBe(false)
+      expect(taskStore.has('task-2')).toBe(true)
+    })
+
+    it('works when no payments or tasks exist', async () => {
+      seedRoom()
+      seedGuest()
+      seedReservation()
+
+      await service.deleteReservation('res-1')
+
+      expect(resStore.has('res-1')).toBe(false)
+      expect(paymentRepository.getByReservationId).toHaveBeenCalledWith('res-1')
+      expect(taskRepository.getAll).toHaveBeenCalled()
+      expect(reservationRepository.delete).toHaveBeenCalledWith('res-1')
     })
   })
 })

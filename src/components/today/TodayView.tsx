@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { format } from 'date-fns';
 import { LogIn, LogOut, SprayCan, CreditCard, CheckCircle2, Plus, X, Phone, MessageSquare, Sparkles, Home } from 'lucide-react';
 import { useToday } from '../../hooks/useToday';
@@ -16,7 +16,7 @@ import { type Task, type TaskCategory } from '../../domain/Task';
 import PageHeader from '../layout/PageHeader';
 import StatCard from '../ui/StatCard';
 
-export default function TodayView() {
+export default memo(function TodayView() {
   const { data, loading } = useToday();
   const { propertyName } = usePropertyContext();
   const { refresh: refreshReservations } = useReservationContext();
@@ -154,10 +154,10 @@ export default function TodayView() {
     );
   }
 
-  const occupiedRooms = data.rooms.filter(r => r.status === RoomStatus.OCCUPIED);
-  const cleaningRooms = data.rooms.filter(r => r.status === RoomStatus.CLEANING);
-  const pendingTasks = tasks.filter(t => !t.completed);
-  const completedTasks = tasks.filter(t => t.completed);
+  const occupiedRooms = useMemo(() => data.rooms.filter(r => r.status === RoomStatus.OCCUPIED), [data.rooms]);
+  const cleaningRooms = useMemo(() => data.rooms.filter(r => r.status === RoomStatus.CLEANING), [data.rooms]);
+  const pendingTasks = useMemo(() => tasks.filter(t => !t.completed), [tasks]);
+  const completedTasks = useMemo(() => tasks.filter(t => t.completed), [tasks]);
 
   const categoryIcon = (cat: TaskCategory) => {
     switch (cat) {
@@ -496,4 +496,4 @@ export default function TodayView() {
       )}
     </div>
   );
-}
+});
