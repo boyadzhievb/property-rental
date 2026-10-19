@@ -1,7 +1,7 @@
 {
   "name": "property-rental",
   "private": true,
-  "version": "1.1.16",
+  "version": "1.1.17",
   "type": "module",
   "engines": {
     "node": ">=22"
@@ -32,6 +32,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^4.4.3"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
