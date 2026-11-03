@@ -89,3 +89,148 @@ Audit date: 2026-10-19. Findings from architecture, security, data integrity, pe
 | MS10 Test Coverage | 6 | 6 | ✅ Complete |
 | MS11 Final Validation | 3 | 3 | ✅ Complete |
 | **Total** | **34** | **34** | ✅ 100% complete |
+
+---
+
+# Milestones — Architecture Review (Round 2)
+
+Audit date: 2026-11-03. Architecture review of the code and LLM infrastructure (`CLAUDE.md`, `.claude/`). Baseline at audit time: typecheck clean, 371/371 unit tests passing, 0 production vulnerabilities, i18n keys in sync across 6 locales.
+
+Open items from the 2026-09-22 review (`chat-22sep.md`) that are still unresolved are folded into MS14–MS15.
+
+---
+
+## Phase 0 — LLM Infrastructure & Repo Hygiene (≈1 day, low risk)
+
+### MS12: Claude Code Infrastructure
+
+- [ ] Commit `HLD.md` and `FLOWS.md` — `.gitignore:15-16` ignores `HLD*`/`FLOWS*`/`TODO*`, but `CLAUDE.md` imports them and agents (`code-reviewer`, `track-architecture`) read them. Worktrees, cloud sessions, CI and fresh clones get no architecture or state-machine context.
+- [ ] Rewrite `CLAUDE.md` as concise rules — move mandatory conventions (no `any`, long names, i18n in all locales, date-fns, Tailwind only, layer boundaries, no Co-Authored-By) out of `lead-developer.md` into `CLAUDE.md`. Drop the eager `@README.md` import; point to `FLOWS.md` as "read before changing transitions".
+- [ ] Fix stale docs — 6 locales not 5 (`es` exists) in README, HLD, `i18n-audit`, `code-reviewer`, `lead-developer`; TypeScript 7 not 5.7; README app ID; HLD says Capacitor "planned" (shipped).
+- [ ] Hooks: replace hardcoded `/Users/boyadboz/...` with `$CLAUDE_PROJECT_DIR` in `.claude/settings.json` and all 13 agents.
+- [ ] Hooks: convert the commit check from `PostToolUse` to a blocking `PreToolUse` on `git commit` (exit 2 on failure). Currently it runs after the commit, and `tsc | tail` + `|| true` masks failures.
+- [ ] Hooks: replace full-suite run on every Write/Edit with `vitest related <file>` and surface failures (non-zero exit) instead of `|| true`. Verify the `if:` field is honored by the installed Claude Code version.
+- [ ] Add `permissions.deny` — `Read(android/keystore.properties)`, `Read(**/*.jks)`, `Read(**/*.keystore)`, `Bash(git push --force*)`, `Bash(git push*)` without approval.
+- [ ] Restrict read-only agents (`a11y`, `code-reviewer`, `data-integrity`, `deploy`, `performance`, `project-manager`, `security-privacy`, `test-website`, `track-architecture`) to Read/Grep/Glob or scoped Bash — "never write code" is currently prompt-only.
+- [ ] `code-reviewer.md` — `git diff main...HEAD` → `master...HEAD`.
+- [ ] `i18n-audit.md` — add `es` to the locale loop; extend the unused-key scan to `src/services/` and `src/context/`.
+- [ ] `test-website.md` — remove the stale "ignore Property.test.ts:68 TS error" note (typecheck is clean); start/stop the dev server in a single command (`npm run dev &` + `kill %1` across separate shells orphans the server on strict port 8443).
+- [ ] `track-architecture.md` — include `src/context/` in the layer-boundary greps (misses `PropertyContext` → `api/client`).
+- [ ] `release.md` — replace `git add -A` with explicit paths; align commit format with history (`Release vX.Y.Z — …`); add CHANGELOG step.
+- [ ] Consolidate overlapping agents — `release` / `track-versioning` / `project-manager` version checks; `code-reviewer` vs built-in `/code-review`; `security-privacy` vs `/security-review`.
+
+### MS13: Repo Hygiene
+
+- [ ] Gitignore `coverage/`, `test-results/`, `chat-*.md`, `.vscode/`; remove tracked `chat-22sep.md` and `test-results/.last-run.json`.
+- [ ] `.gitattributes` declares Git LFS for images, but LFS is not in use (files are raw blobs) — remove the LFS rules or migrate properly.
+- [ ] Remove duplicate `screenshots/` (also in `public/screenshots/`) if not needed for store listings.
+- [ ] Commit or revert the dangling `versionCode`/`CURRENT_PROJECT_VERSION` bumps in `android/app/build.gradle` and `project.pbxproj`.
+
+---
+
+## Phase 1 — Data Safety (P0)
+
+### MS14: Backup, Storage & Privacy
+
+- [ ] **Import wipes all data** — `importBackup()` clears all stores then writes only valid records (`client.ts:262-283`). A file containing only `{"settings":{}}` passes `BackupService.validate()` (`BackupService.ts:41`) and erases everything. Add: confirmation dialog, automatic pre-import backup (as reset already does), refuse when import would empty non-empty stores, all-or-nothing option when records are skipped.
+- [ ] Add `schemaVersion` to the backup format; validate `payments`/`tasks` are arrays; validate `settings` and `preferences` (locale/theme are written to localStorage unchecked).
+- [ ] Persist parsed Zod output instead of raw input in import (unknown fields are currently stored).
+- [ ] Referential checks on import — reservations → rooms/guests, payments → reservations.
+- [ ] Call `navigator.storage.persist()` on startup — IndexedDB is evictable (Safari especially) for PWA users.
+- [ ] Add `onblocked` / `onversionchange` handlers in `openDB()` (`client.ts:93`) so upgrades don't hang with another tab open.
+- [ ] **Privacy claim mismatch** — `android:allowBackup="true"` (`AndroidManifest.xml:4`) uploads guest PII to Google Drive; iOS backs up the app container to iCloud. Either disable (`allowBackup=false` + `dataExtractionRules`, iOS exclude-from-backup) or update README, privacy policy, and Play Data Safety form.
+
+### MS15: Transactional Integrity
+
+- [ ] `atomicReadWrite()` must call `transaction.abort()` when the callback throws (`client.ts:461-473`) — partial `put()`s currently commit.
+- [ ] Move reservation create (conflict check + save) into a single transaction — double-tap / two tabs can double-book (`ReservationService.ts:59-69`).
+- [ ] Move `checkIn` / `checkOut` / `cancel` / `cancelSeries` reads inside the write transaction (stale-read overwrite risk).
+- [ ] Make `deleteReservation()` cascade atomic (`ReservationService.ts:201`).
+- [ ] Make `toggleTask()` room transition + task save atomic (`TaskService.ts:23-39`).
+- [ ] `api.*.update()` on a missing ID silently writes a partial record (`client.ts:497`) — throw instead; do read+write in one transaction.
+- [ ] Repositories detect "not found" via a caught TypeError from `new Room(undefined)` and swallow real DB errors (`RoomRepository.ts:14-20`, Guest, Reservation). Check `data == null` explicitly, let other errors propagate (as `PaymentRepository` does).
+- [ ] `batchPut()` — add `onabort` handler so the promise can't hang.
+
+---
+
+## Phase 2 — Correctness (P1)
+
+Each fix starts with a failing test.
+
+### MS16: Domain & Scheduling Bugs
+
+- [ ] Monthly recurrence drift — `setMonth(+1)` turns Jan 31 into Mar 3 (`Reservation.ts:156`). Use `addMonths` from the original anchor date.
+- [ ] Weekly/biweekly series with stay longer than the interval overlaps itself → double booking (`ReservationService.ts:96`). Reject or check occurrences against each other.
+- [ ] Cap the number of generated occurrences (e.g. 104) and series end date.
+- [ ] Notification time bug — when the slot has passed, `setMinutes(now.getMinutes() + 1)` is applied to the 08:00 date, still in the past (`NotificationService.ts:71`, also lines 86, 101, 115). Use `now + 1 min`.
+- [ ] Reschedule notifications when today's data changes — the once-per-day localStorage flag suppresses later arrivals; clean up old `notifications-scheduled-*` keys.
+- [ ] Check-in proceeds silently when the room is missing (`ReservationService.ts:122`) — throw `Room not found`.
+- [ ] Validate date format `yyyy-MM-dd` (regex) in Reservation, Payment, Task schemas — overlap logic depends on lexical comparison.
+- [ ] Add a payment amount upper bound and 2-decimal precision in `PaymentSchema`.
+
+### MS17: Error Handling & i18n Leaks
+
+- [ ] Completing a cleaning task throws if the room is no longer in Cleaning (`TaskService.ts:33`) — guard the transition; `handleToggleTask` and the auto-task effect have no `catch` (`TodayView.tsx:93-104`).
+- [ ] Render Payment and Task context errors in `ErrorMessages` (`App.tsx:35`).
+- [ ] Auto-task titles are persisted in English (`TaskService.ts:61,76,91`) — store type + params, translate at render time.
+- [ ] Hardcoded `$` currency (`CalendarView.tsx:261-286`, `PaymentService.ts:36`, others) — add a currency setting and format with `Intl.NumberFormat`.
+- [ ] Hardcoded English strings — `window.confirm` in `PropertyContext.tsx:98`, "Loading..." (`App.tsx:79`), "Skip to content" (`App.tsx:115`), `Error: ${result.error}` (`SettingsView.tsx:110`), `CalendarRow.tsx:57` aria-label.
+- [ ] Domain/service errors shown raw in UI — throw typed error codes and translate in the UI.
+
+---
+
+## Phase 3 — Architecture
+
+### MS18: Structure & Enforcement
+
+- [ ] Single source of truth for types — derive from Zod (`z.infer`); remove duplicate interfaces in `client.ts` and `domain/*Data`.
+- [ ] Split `src/api/client.ts` (536 lines) into `db.ts` (open/migrations), `seed.ts`, `backup.ts`, `crud.ts`.
+- [ ] Remove the `PropertyContext` → `api/client` layer violation — route through a `PropertyService` / `BackupService`.
+- [ ] Decide the context pattern: contexts expose actions (per HLD) vs components calling services directly (current practice in `TodayView`, etc.). Implement one, update `HLD.md`.
+- [ ] Move balance/paid calculations out of components (`TodayView.tsx:57`, `CalendarView`, `ReportsView`) into domain/`PaymentService`.
+- [ ] Store money as integer cents (DB migration v6) to remove float rounding patches.
+- [ ] Add ESLint with `eslint-plugin-react-hooks` (would have caught the v1.1.24/25 production hooks crash) and an import-boundary rule (`eslint-plugin-boundaries` or dependency-cruiser) to enforce layering in CI instead of grep-based agents.
+- [ ] Targeted cross-tab refresh — broadcast which store changed instead of refreshing all 5 contexts on every write.
+
+---
+
+## Phase 4 — CI, PWA & Mobile
+
+### MS19: CI/CD
+
+- [ ] Deploy workflow must depend on CI passing; add `npm run typecheck` to deploy.
+- [ ] Restore an E2E smoke job in CI (Chromium, critical flows) — removed in `51ab0c4`.
+- [ ] Pin GitHub Actions by commit SHA; pin `aquasecurity/trivy-action` to a release (currently `@master`) and decide whether HIGH/CRITICAL should fail (`exit-code: 0`).
+- [ ] Raise `npm audit` level from `critical` to `high`.
+
+### MS20: PWA & Mobile Build
+
+- [ ] Service worker (`public/sw.js`): `/assets/` check never matches under the `/property-rental/` base; non-OK responses are cached; static `CACHE_NAME` never invalidates (unbounded growth, stale `index.html`); hashed bundles not precached. Migrate to `vite-plugin-pwa` (Workbox) with a generated precache manifest.
+- [ ] Manifest icons — `../icons/` resolves outside scope on GitHub Pages; `.webp` files contain PNG data; `index.html` links a non-existent `icons/icon.svg`.
+- [ ] Document the bundle-ID mismatch — Android `com.boyadboz.propertyrental` vs iOS/`capacitor.config.ts` `com.boyadboz.property-rental` (cannot change post-publish).
+- [ ] `scripts/build-mobile.sh` — bump versions only after a successful build; stop `echo` output polluting the captured version code.
+
+### MS21: Final Validation (run after each milestone)
+
+- [ ] `npm run typecheck` — clean.
+- [ ] `npm test` — zero failures, new regression tests included.
+- [ ] `npm run test:e2e` — zero failures.
+- [ ] `npm run build` and `npm audit --omit=dev` — clean.
+
+---
+
+## Progress Tracker — Round 2
+
+| Phase | Milestone | Tasks | Done | Status |
+|-------|-----------|-------|------|--------|
+| 0 | MS12 Claude Code Infrastructure | 14 | 0 | ⬜ Not started |
+| 0 | MS13 Repo Hygiene | 4 | 0 | ⬜ Not started |
+| 1 | MS14 Backup, Storage & Privacy | 7 | 0 | ⬜ Not started |
+| 1 | MS15 Transactional Integrity | 8 | 0 | ⬜ Not started |
+| 2 | MS16 Domain & Scheduling Bugs | 8 | 0 | ⬜ Not started |
+| 2 | MS17 Error Handling & i18n Leaks | 6 | 0 | ⬜ Not started |
+| 3 | MS18 Structure & Enforcement | 8 | 0 | ⬜ Not started |
+| 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
+| 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
+| — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
+| | **Total** | **67** | **0** | ⬜ 0% complete |
