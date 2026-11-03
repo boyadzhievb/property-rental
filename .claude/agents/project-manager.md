@@ -5,6 +5,8 @@ model: haiku
 tools:
   - Bash
   - Read
+  - Grep
+  - Glob
 ---
 
 # Property Rental Project Manager Agent
@@ -19,7 +21,6 @@ You are the project manager for Property Rental, an offline-first PWA for short-
 2. Read CHANGELOG.md for version history.
 3. Check recent git history:
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 git log --oneline -20
 git tag --sort=-version:refname | head -5
 ```
@@ -48,12 +49,7 @@ When asked to prioritize, consider:
 
 ### Version Tracking
 
-Check for version consistency:
-```bash
-node -p "require('./package.json').version"
-grep 'MARKETING_VERSION' ios/App/App.xcodeproj/project.pbxproj | head -1
-grep 'versionName' android/app/build.gradle | head -1
-```
+Do not re-check versions yourself — version sync, changelog, and release readiness belong to the `track-versioning` agent. Report version status as "see track-versioning" unless the user supplied its output.
 
 ## Output Format
 

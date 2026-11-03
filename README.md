@@ -13,7 +13,7 @@ A property management application for short-term rentals. An owner's daily opera
 - **Reports** — Revenue summary, occupancy rate, payment breakdown by method, outstanding balances, and recent payment history. Filterable by week or month with period navigation.
 - **Reservations** — Book rooms, check in/out guests, and cancel with automatic room status updates. Date conflict detection and capacity validation.
 - **Notifications** — Local push notifications on native devices for guest arrivals, departures, cleaning reminders, and outstanding payment alerts. Configurable via Settings toggle.
-- **Settings** — Property configuration, language selection (EN/BG/DE/EL/FR), appearance (light/dark/system), notifications toggle, data import/export, and reset.
+- **Settings** — Property configuration, language selection (EN/BG/DE/EL/FR/ES), appearance (light/dark/system), notifications toggle, data import/export, and reset.
 
 ## Privacy & Offline
 
@@ -40,7 +40,7 @@ UI (React Components)
 | Frontend | React 19, Vite 8, Tailwind CSS v4   |
 | Storage  | IndexedDB (browser-local)           |
 | Validation | Zod 4                             |
-| Tooling  | TypeScript 5.7, Vitest, Playwright  |
+| Tooling  | TypeScript 7, Vitest, Playwright  |
 | Icons    | Lucide React                        |
 | Dates    | date-fns                            |
 
@@ -111,7 +111,7 @@ src/
     settings/     App configuration
     layout/       Shared layout (PageHeader, TabBar)
     ui/           Reusable UI components (StatCard, ErrorBanner)
-  i18n/           Translations (en, bg, de, el, fr)
+  i18n/           Translations (en, bg, de, el, fr, es)
 e2e/              Playwright end-to-end tests
 ```
 
@@ -133,7 +133,9 @@ npx cap open android
 npx cap open ios
 ```
 
-App ID: `com.boyadboz.propertyrental`
+App IDs (fixed — both apps are published):
+- Android: `com.boyadboz.propertyrental`
+- iOS: `com.boyadboz.property-rental`
 
 ### App Icons
 

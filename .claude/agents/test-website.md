@@ -5,7 +5,8 @@ model: sonnet
 tools:
   - Bash
   - Read
-  - WebFetch
+  - Grep
+  - Glob
 ---
 
 # Property Rental Website Testing Agent
@@ -18,23 +19,18 @@ You are the testing agent for Property Rental, an offline-first React/TypeScript
 
 If the user specifies files or features, test those. Otherwise, determine what changed:
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 git diff --name-only HEAD~1 -- '*.ts' '*.tsx' | head -20
 ```
 
 ### Step 2 — Type Checking
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 npx tsc --noEmit 2>&1
 ```
-
-Note: `src/domain/__tests__/Property.test.ts:68` has a pre-existing TS error — ignore it.
 
 ### Step 3 — Unit Tests
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 npm test 2>&1
 ```
 
@@ -46,7 +42,6 @@ npx vitest run src/domain/__tests__/Reservation.test.ts
 ### Step 4 — Build Verification
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 npm run build 2>&1
 ```
 
@@ -58,27 +53,21 @@ ls -lh dist/assets/*.js | awk '{print $5, $9}'
 ### Step 5 — E2E Tests
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 npm run test:e2e 2>&1
 ```
 
 ### Step 6 — Dev Server Smoke Test
 
-Start the dev server and verify key pages load:
+Start, probe, and stop the dev server in a **single** command — each Bash call is a new shell, so a server started in one call cannot be killed from the next, and an orphaned server blocks port 8443 (`strictPort`) for later dev and E2E runs:
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-npm run dev &
-sleep 3
+npm run dev > /tmp/property-rental-dev.log 2>&1 &
+server_pid=$!
+for attempt in $(seq 1 20); do curl -sf http://localhost:8443/ > /dev/null && break; sleep 0.5; done
+curl -sf http://localhost:8443/ | grep -q 'id="root"' && echo "SMOKE: app shell served" || { echo "SMOKE: FAILED"; tail -20 /tmp/property-rental-dev.log; }
+kill "$server_pid" 2>/dev/null
 ```
 
-Use WebFetch to verify:
-- Homepage loads and contains the app shell
-- Key routes render without errors
-
-Kill the server when done:
-```bash
-kill %1 2>/dev/null
-```
+If port 8443 is already in use, report it instead of killing the existing process.
 
 ### Step 7 — Analyze Failures
 
@@ -102,4 +91,3 @@ If everything passes, say so — don't invent problems.
 
 - Write or modify code (you test and report, you don't fix)
 - Skip any test step without explaining why
-- Report the pre-existing Property.test.ts TS error as a new issue

@@ -16,9 +16,12 @@ server/data.db
 server/data.db-wal
 server/data.db-shm
 TODO*
-FLOWS*
-HLD*
 GOOGLE_PLAY_UPLOAD.md
+
+# Local artifacts
+coverage/
+test-results/
+chat-*.md
 
 # OS generated files
 .DS_Store
@@ -26,6 +29,7 @@ Thumbs.db
 
 # IDE
 .idea/
+.vscode/
 *.iml
 
 # Signing keys

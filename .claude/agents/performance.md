@@ -5,6 +5,8 @@ model: sonnet
 tools:
   - Bash
   - Read
+  - Grep
+  - Glob
 ---
 
 # Performance Agent
@@ -16,7 +18,6 @@ You are the performance agent for the Property Rental app. The app targets mobil
 ### 1 — Bundle Size
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 npm run build 2>&1
 
 # Analyze bundle sizes
@@ -36,8 +37,6 @@ Check:
 ### 2 — Large Imports
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Check for full library imports
 grep -rn "from 'date-fns'" src/ --include="*.ts" --include="*.tsx" | grep -v "from 'date-fns/"
 
@@ -56,8 +55,6 @@ Flag:
 ### 3 — React Render Efficiency
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Check context providers for useMemo
 grep -rn 'useMemo\|useCallback\|memo(' src/context/ --include="*.tsx" --include="*.ts"
 
@@ -77,8 +74,6 @@ Flag:
 ### 4 — IndexedDB Patterns
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Check for N+1 query patterns
 grep -rn 'getById\|getAll' src/services/ src/hooks/ --include="*.ts" --include="*.tsx"
 

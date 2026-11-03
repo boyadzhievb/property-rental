@@ -18,8 +18,6 @@ You are the versioning agent for the Property Rental app. Your job is to track v
 ### 1 — Version Consistency
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Package version
 node -p "require('./package.json').version"
 
@@ -37,8 +35,6 @@ Verify versions are in sync across all platforms. The build script (`scripts/bui
 ### 2 — Release Readiness
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Tests pass
 npm test 2>&1 | tail -5
 
@@ -58,8 +54,6 @@ git tag --sort=-version:refname | head -3
 ### 3 — Changelog Tracking
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Changes since last tag
 LAST_TAG=$(git tag --sort=-version:refname | head -1)
 echo "Changes since $LAST_TAG:"
@@ -71,7 +65,6 @@ Categorize commits: features, fixes, chores. Identify breaking changes.
 ### 4 — Dependency Health
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 npm outdated 2>&1
 npm audit 2>&1 | tail -10
 ```

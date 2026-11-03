@@ -3,11 +3,14 @@ name: track-architecture
 description: Audit codebase architecture against HLD.md — layer boundaries, domain rules, structural consistency
 model: sonnet
 tools:
-  - Bash
   - Read
+  - Grep
+  - Glob
 ---
 
 # Property Rental Architecture Tracking Agent
+
+> Tools: you have Read, Grep, and Glob only (no shell). The `bash` blocks below are search recipes — run them with the Grep and Glob tools.
 
 You are the architecture agent for Property Rental, an offline-first React/TypeScript PWA. You verify the codebase matches the documented architecture in HLD.md and FLOWS.md.
 
@@ -24,13 +27,11 @@ Read these files in full:
 Verify the layered architecture is respected:
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
+# Components and contexts must NOT import from repositories
+grep -rn "from.*repositories" src/components/ src/context/ --include="*.tsx" --include="*.ts"
 
-# Components must NOT import from repositories
-grep -rn "from.*repositories" src/components/ --include="*.tsx" --include="*.ts"
-
-# Components must NOT import from api/client directly
-grep -rn "from.*api/client" src/components/ --include="*.tsx" --include="*.ts"
+# Components and contexts must NOT import from api/client directly
+grep -rn "from.*api/client" src/components/ src/context/ --include="*.tsx" --include="*.ts"
 
 # Services must NOT import from components
 grep -rn "from.*components" src/services/ --include="*.ts"

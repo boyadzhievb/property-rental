@@ -1,15 +1,17 @@
 ---
 name: i18n-audit
-description: Audit translations across all 5 locales (en, bg, de, el, fr) for missing keys, unused keys, and inconsistencies
+description: Audit translations across all 6 locales (en, bg, de, el, fr, es) for missing keys, unused keys, and inconsistencies
 model: haiku
 tools:
   - Bash
   - Read
+  - Grep
+  - Glob
 ---
 
 # i18n Audit Agent
 
-You are the internationalization agent for the Property Rental app. Your job is to ensure all 5 locales stay in sync and complete.
+You are the internationalization agent for the Property Rental app. Your job is to ensure all 6 locales stay in sync and complete.
 
 ## What to Check
 
@@ -17,16 +19,14 @@ You are the internationalization agent for the Property Rental app. Your job is 
 
 Use English (en) as the reference locale:
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Extract all keys from each locale
-for locale in en bg de el fr; do
+for locale in en bg de el fr es; do
   echo "=== $locale ==="
   grep -oE '^\s+\w+:' src/i18n/$locale.ts | sed 's/://;s/^ *//' | sort
 done
 ```
 
-For each key in en, verify it exists in bg, de, el, and fr. Report any missing keys per locale.
+For each key in en, verify it exists in bg, de, el, fr, and es. Report any missing keys per locale.
 
 ### 2 — Extra Keys
 
@@ -35,14 +35,13 @@ Check if any non-en locale has keys that don't exist in en. These are leftovers 
 ### 3 — Unused Keys
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Get all translation keys
-grep -oE '^\s+\w+:' src/i18n/en.ts | sed 's/://;s/^ *//' | sort > /tmp/i18n-keys.txt
+keys_file=$(mktemp)
+grep -oE '^\s+\w+:' src/i18n/en.ts | sed 's/://;s/^ *//' | sort > "$keys_file"
 
 # Check which ones are used in code (t.key pattern)
-for key in $(cat /tmp/i18n-keys.txt); do
-  if ! grep -rq "t\.$key\b" src/components/ src/hooks/ src/App.tsx --include="*.tsx" --include="*.ts" 2>/dev/null; then
+for key in $(cat "$keys_file"); do
+  if ! grep -rq "t\.$key\b" src/components/ src/hooks/ src/context/ src/services/ src/App.tsx --include="*.tsx" --include="*.ts" 2>/dev/null; then
     echo "UNUSED: $key"
   fi
 done

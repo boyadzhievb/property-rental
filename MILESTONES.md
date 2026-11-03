@@ -104,25 +104,25 @@ Open items from the 2026-09-22 review (`chat-22sep.md`) that are still unresolve
 
 ### MS12: Claude Code Infrastructure
 
-- [ ] Commit `HLD.md` and `FLOWS.md` — `.gitignore:15-16` ignores `HLD*`/`FLOWS*`/`TODO*`, but `CLAUDE.md` imports them and agents (`code-reviewer`, `track-architecture`) read them. Worktrees, cloud sessions, CI and fresh clones get no architecture or state-machine context.
-- [ ] Rewrite `CLAUDE.md` as concise rules — move mandatory conventions (no `any`, long names, i18n in all locales, date-fns, Tailwind only, layer boundaries, no Co-Authored-By) out of `lead-developer.md` into `CLAUDE.md`. Drop the eager `@README.md` import; point to `FLOWS.md` as "read before changing transitions".
-- [ ] Fix stale docs — 6 locales not 5 (`es` exists) in README, HLD, `i18n-audit`, `code-reviewer`, `lead-developer`; TypeScript 7 not 5.7; README app ID; HLD says Capacitor "planned" (shipped).
-- [ ] Hooks: replace hardcoded `/Users/boyadboz/...` with `$CLAUDE_PROJECT_DIR` in `.claude/settings.json` and all 13 agents.
-- [ ] Hooks: convert the commit check from `PostToolUse` to a blocking `PreToolUse` on `git commit` (exit 2 on failure). Currently it runs after the commit, and `tsc | tail` + `|| true` masks failures.
-- [ ] Hooks: replace full-suite run on every Write/Edit with `vitest related <file>` and surface failures (non-zero exit) instead of `|| true`. Verify the `if:` field is honored by the installed Claude Code version.
-- [ ] Add `permissions.deny` — `Read(android/keystore.properties)`, `Read(**/*.jks)`, `Read(**/*.keystore)`, `Bash(git push --force*)`, `Bash(git push*)` without approval.
-- [ ] Restrict read-only agents (`a11y`, `code-reviewer`, `data-integrity`, `deploy`, `performance`, `project-manager`, `security-privacy`, `test-website`, `track-architecture`) to Read/Grep/Glob or scoped Bash — "never write code" is currently prompt-only.
-- [ ] `code-reviewer.md` — `git diff main...HEAD` → `master...HEAD`.
-- [ ] `i18n-audit.md` — add `es` to the locale loop; extend the unused-key scan to `src/services/` and `src/context/`.
-- [ ] `test-website.md` — remove the stale "ignore Property.test.ts:68 TS error" note (typecheck is clean); start/stop the dev server in a single command (`npm run dev &` + `kill %1` across separate shells orphans the server on strict port 8443).
-- [ ] `track-architecture.md` — include `src/context/` in the layer-boundary greps (misses `PropertyContext` → `api/client`).
-- [ ] `release.md` — replace `git add -A` with explicit paths; align commit format with history (`Release vX.Y.Z — …`); add CHANGELOG step.
-- [ ] Consolidate overlapping agents — `release` / `track-versioning` / `project-manager` version checks; `code-reviewer` vs built-in `/code-review`; `security-privacy` vs `/security-review`.
+- [x] Remove misleading `HLD*`/`FLOWS*` rules from `.gitignore` — both files were already tracked (the rule only affects untracked files), so the original "not available to clones" finding was wrong; the rule was still a trap for renamed/new docs.
+- [x] Rewrite `CLAUDE.md` as concise rules — move mandatory conventions (no `any`, long names, i18n in all locales, date-fns, Tailwind only, layer boundaries, no Co-Authored-By) out of `lead-developer.md` into `CLAUDE.md`. Drop the eager `@README.md` import; point to `FLOWS.md` as "read before changing transitions".
+- [x] Fix stale docs — 6 locales not 5 (`es` exists) in README, HLD, `i18n-audit`, `code-reviewer`, `lead-developer`; TypeScript 7 not 5.7; README app ID; HLD says Capacitor "planned" (shipped).
+- [x] Hooks: replace hardcoded `/Users/boyadboz/...` with `$CLAUDE_PROJECT_DIR` in `.claude/settings.json` and all 13 agents.
+- [x] Hooks: convert the commit check from `PostToolUse` to a blocking `PreToolUse` on `git commit` (exit 2 on failure). Currently it runs after the commit, and `tsc | tail` + `|| true` masks failures.
+- [x] Hooks: replace full-suite run on every Write/Edit with `vitest related <file>` and surface failures (exit 2) instead of `|| true`. Commit matching moved into the script, so the `if:` field is no longer needed. Scripts: `.claude/hooks/post-edit-tests.sh`, `.claude/hooks/pre-commit-check.sh`.
+- [x] Add `permissions.deny` — `Read(android/keystore.properties)`, `Read(**/*.jks)`, `Read(**/*.keystore)`, `Bash(git push --force*)`; `git push` moved to `ask`.
+- [x] Restrict read-only agents — `a11y`, `data-integrity`, `track-architecture` now Read/Grep/Glob only. `code-reviewer`, `deploy`, `i18n-audit`, `performance`, `project-manager`, `security-privacy`, `test-website` still need Bash (npm/git), so for them "never write code" remains prompt-enforced.
+- [x] `code-reviewer.md` — `git diff main...HEAD` → `master...HEAD`.
+- [x] `i18n-audit.md` — add `es` to the locale loop; extend the unused-key scan to `src/services/` and `src/context/`.
+- [x] `test-website.md` — remove the stale "ignore Property.test.ts:68 TS error" note (typecheck is clean); start/stop the dev server in a single command (`npm run dev &` + `kill %1` across separate shells orphans the server on strict port 8443).
+- [x] `track-architecture.md` — include `src/context/` in the layer-boundary greps (misses `PropertyContext` → `api/client`).
+- [x] `release.md` — replace `git add -A` with explicit paths; align commit format with history (`Release vX.Y.Z — …`); add CHANGELOG step.
+- [ ] Consolidate overlapping agents — `project-manager` now defers version checks to `track-versioning` (done). Still open: decide whether to keep `code-reviewer` vs built-in `/code-review` and `security-privacy` vs `/security-review` (project agents carry repo-specific rules).
 
 ### MS13: Repo Hygiene
 
-- [ ] Gitignore `coverage/`, `test-results/`, `chat-*.md`, `.vscode/`; remove tracked `chat-22sep.md` and `test-results/.last-run.json`.
-- [ ] `.gitattributes` declares Git LFS for images, but LFS is not in use (files are raw blobs) — remove the LFS rules or migrate properly.
+- [x] Gitignore `coverage/`, `test-results/`, `chat-*.md`, `.vscode/`; remove tracked `chat-22sep.md` and `test-results/.last-run.json`.
+- [x] `.gitattributes` declares Git LFS for images, but LFS is not in use (files are raw blobs) — remove the LFS rules or migrate properly.
 - [ ] Remove duplicate `screenshots/` (also in `public/screenshots/`) if not needed for store listings.
 - [ ] Commit or revert the dangling `versionCode`/`CURRENT_PROJECT_VERSION` bumps in `android/app/build.gradle` and `project.pbxproj`.
 
@@ -223,8 +223,8 @@ Each fix starts with a failing test.
 
 | Phase | Milestone | Tasks | Done | Status |
 |-------|-----------|-------|------|--------|
-| 0 | MS12 Claude Code Infrastructure | 14 | 0 | ⬜ Not started |
-| 0 | MS13 Repo Hygiene | 4 | 0 | ⬜ Not started |
+| 0 | MS12 Claude Code Infrastructure | 14 | 13 | 🟨 In progress |
+| 0 | MS13 Repo Hygiene | 4 | 2 | 🟨 In progress |
 | 1 | MS14 Backup, Storage & Privacy | 7 | 0 | ⬜ Not started |
 | 1 | MS15 Transactional Integrity | 8 | 0 | ⬜ Not started |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 0 | ⬜ Not started |
@@ -233,4 +233,4 @@ Each fix starts with a failing test.
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **67** | **0** | ⬜ 0% complete |
+| | **Total** | **67** | **15** | 🟨 22% complete |

@@ -5,6 +5,8 @@ model: sonnet
 tools:
   - Bash
   - Read
+  - Grep
+  - Glob
 ---
 
 # Security & Privacy Agent
@@ -16,8 +18,6 @@ You are the security and privacy agent for the Property Rental app. The app prom
 ### 1 — No External Network Calls
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Scan for fetch/XHR calls
 grep -rn 'fetch(\|XMLHttpRequest\|axios\|\$.ajax' src/ --include="*.ts" --include="*.tsx"
 
@@ -46,8 +46,6 @@ Verify:
 ### 3 — Data Storage Safety
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Check localStorage usage
 grep -rn 'localStorage' src/ --include="*.ts" --include="*.tsx"
 
@@ -67,8 +65,6 @@ Verify:
 ### 4 — Input Sanitization
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Check for dangerouslySetInnerHTML
 grep -rn 'dangerouslySetInnerHTML\|innerHTML\|__html' src/ --include="*.tsx" --include="*.ts"
 
@@ -85,7 +81,6 @@ Check for:
 ### 5 — Dependency Audit
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 npm audit 2>&1
 ```
 

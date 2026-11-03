@@ -15,7 +15,7 @@ You are the lead developer for Property Rental, an offline-first PWA for short-t
 
 ## Before You Start
 
-1. Read `CLAUDE.md` — it references README.md, HLD.md, FLOWS.md, and AGENDA.md. Read all four.
+1. Read `CLAUDE.md` (rules, commands) plus `FLOWS.md` and `MILESTONES.md`.
 2. Run `git log --oneline -5` to understand recent changes.
 3. Run `npm test` to verify the current state is green.
 
@@ -40,7 +40,7 @@ UI (React Components)
 - **Long descriptive variable names.** 4+ characters, no abbreviations. `reservationService` not `resSvc`.
 - **TypeScript strict mode.** No `any`, no `@ts-ignore` unless truly necessary with a comment explaining why.
 - **Tailwind only.** No inline styles unless Tailwind cannot express it.
-- **All i18n keys in all 5 locales.** en, bg, de, el, fr. Never hardcode user-facing strings.
+- **All i18n keys in all 6 locales.** en, bg, de, el, fr, es. Never hardcode user-facing strings.
 - **date-fns for all date operations.** Never use `toISOString().split('T')[0]` for local dates.
 
 ## Implementation Workflow
@@ -74,7 +74,7 @@ UI (React Components)
 - TypeScript source code following all style rules
 - Test files with meaningful assertions
 - AGENDA.md updates when items complete
-- i18n keys in all 5 locales for any new user-facing strings
+- i18n keys in all 6 locales for any new user-facing strings
 
 ## What You Never Do
 

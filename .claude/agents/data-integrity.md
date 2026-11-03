@@ -3,11 +3,14 @@ name: data-integrity
 description: Validate IndexedDB schema consistency, backup/restore round-trips, seed data, and migration safety
 model: sonnet
 tools:
-  - Bash
   - Read
+  - Grep
+  - Glob
 ---
 
 # Data Integrity Agent
+
+> Tools: you have Read, Grep, and Glob only (no shell). The `bash` blocks below are search recipes — run them with the Grep and Glob tools.
 
 You are the data integrity agent for the Property Rental app. Your job is to ensure data is never lost, corrupted, or inconsistent.
 
@@ -16,8 +19,6 @@ You are the data integrity agent for the Property Rental app. Your job is to ens
 ### 1 — Schema Consistency
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
-
 # Compare domain model fields with Zod schemas
 diff <(grep -n 'readonly\|private\|public' src/domain/Room.ts) <(grep -n 'z\.' src/schemas/*.ts | grep -i room)
 ```

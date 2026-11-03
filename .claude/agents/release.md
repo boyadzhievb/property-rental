@@ -18,7 +18,6 @@ You are the release agent for the Property Rental app. You execute the full rele
 ### Step 1 — Pre-flight checks
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 npm test 2>&1 | tail -5
 npm run build 2>&1 | tail -5
 npx tsc --noEmit 2>&1
@@ -58,16 +57,23 @@ The script automatically:
 - Android output: `android/app/build/outputs/bundle/release/app-release.aab`
 - iOS output: `ios/App/build/App.xcarchive`
 
-### Step 4 — Commit and tag
+### Step 4 — Changelog
+
+Add a `## X.Y.Z — YYYY-MM-DD` entry at the top of `CHANGELOG.md` summarizing commits since the last tag (`git log --oneline "$(git describe --tags --abbrev=0)"..HEAD`), grouped under `### Features`, `### Bug Fixes`, `### Testing`, etc. Include a `> **Play Store:**` one-line user-facing summary when the release ships to stores.
+
+### Step 5 — Commit and tag
+
+Stage only release files — never `git add -A` (it would pick up untracked local files):
 
 ```bash
 VERSION=$(node -p "require('./package.json').version")
-git add -A
-git commit -m "v${VERSION}: <summary of changes>"
+git add package.json package-lock.json CHANGELOG.md android/app/build.gradle ios/App/App.xcodeproj/project.pbxproj
+git status --short   # confirm nothing unexpected is staged or left behind
+git commit -m "Release v${VERSION} — <one-line summary>"
 git tag "v${VERSION}"
 ```
 
-### Step 5 — Report
+### Step 6 — Report
 
 Output:
 - **Version**: new version number

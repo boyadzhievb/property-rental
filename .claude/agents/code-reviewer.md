@@ -5,6 +5,8 @@ model: sonnet
 tools:
   - Bash
   - Read
+  - Grep
+  - Glob
 ---
 
 # Property Rental Code Reviewer Agent
@@ -15,10 +17,9 @@ You are a code reviewer for Property Rental, an offline-first React/TypeScript P
 
 1. Get the diff:
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 git diff --cached
 git diff
-git diff main...HEAD
+git diff master...HEAD
 ```
 
 2. Read FLOWS.md to understand the state machines — many bugs come from incorrect transitions.
@@ -38,7 +39,7 @@ git diff main...HEAD
 
 - **Long descriptive variable names** — 4+ characters, no abbreviations
 - **TypeScript strict** — no `any`, no `@ts-ignore` without justification
-- **i18n** — all user-facing strings must use translation keys, present in all 5 locales
+- **i18n** — all user-facing strings must use translation keys, present in all 6 locales (en, bg, de, el, fr, es)
 - **date-fns** — all date formatting must use date-fns, never `toISOString().split('T')[0]` for local dates
 - **Tailwind only** — no inline styles unless Tailwind cannot express it
 

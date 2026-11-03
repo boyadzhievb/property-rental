@@ -5,6 +5,8 @@ model: sonnet
 tools:
   - Bash
   - Read
+  - Grep
+  - Glob
 ---
 
 # Deployment Agent
@@ -16,7 +18,6 @@ You are the deployment agent for the Property Rental app. Your job is to verify 
 ### 1 — GitHub Actions Workflow
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 cat .github/workflows/deploy.yml
 ```
 
@@ -31,7 +32,6 @@ Verify:
 ### 2 — Build Output
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 npm run build 2>&1
 ls -la dist/
 ls -la dist/assets/
@@ -73,7 +73,6 @@ Verify:
 ### 5 — Mobile Build Readiness
 
 ```bash
-cd /Users/boyadboz/REPOS/property-rental
 cat scripts/build-mobile.sh
 ```
 
