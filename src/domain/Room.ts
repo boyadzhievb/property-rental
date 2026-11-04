@@ -1,3 +1,5 @@
+import { DomainError } from './errors';
+
 export enum RoomStatus {
   AVAILABLE = 'Available',
   OCCUPIED = 'Occupied',
@@ -40,35 +42,35 @@ export class Room {
 
   occupy(): void {
     if (this._status !== RoomStatus.AVAILABLE) {
-      throw new Error('Room can only be occupied from Available status');
+      throw new DomainError('roomNotAvailable');
     }
     this._status = RoomStatus.OCCUPIED;
   }
 
   vacate(): void {
     if (this._status !== RoomStatus.CLEANING) {
-      throw new Error('Room can only be marked available from Cleaning status');
+      throw new DomainError('roomNotInCleaning');
     }
     this._status = RoomStatus.AVAILABLE;
   }
 
   markCleaning(): void {
     if (this._status !== RoomStatus.OCCUPIED) {
-      throw new Error('Room can only be marked for cleaning from Occupied status');
+      throw new DomainError('roomNotOccupied');
     }
     this._status = RoomStatus.CLEANING;
   }
 
   markMaintenance(): void {
     if (this._status === RoomStatus.OCCUPIED) {
-      throw new Error('An occupied room cannot be marked for maintenance');
+      throw new DomainError('roomOccupiedNoMaintenance');
     }
     this._status = RoomStatus.MAINTENANCE;
   }
 
   markAvailable(): void {
     if (this._status !== RoomStatus.MAINTENANCE) {
-      throw new Error('Only a maintenance room can be marked available this way');
+      throw new DomainError('roomNotInMaintenance');
     }
     this._status = RoomStatus.AVAILABLE;
   }

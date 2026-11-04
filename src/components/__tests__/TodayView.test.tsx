@@ -43,6 +43,7 @@ vi.mock('../../hooks/useToday', () => ({
 vi.mock('../../context/PropertyContext', () => ({
   usePropertyContext: () => ({
     propertyName: 'Test Property',
+    currency: 'USD',
     isConfigured: true,
     loading: false,
     error: null,
@@ -103,7 +104,7 @@ vi.mock('../../services/TaskService', () => ({
 }))
 
 vi.mock('../../services/NotificationService', () => ({
-  notificationService: { scheduleDailyNotifications: vi.fn() },
+  notificationService: { scheduleDailyNotifications: vi.fn().mockResolvedValue(undefined) },
 }))
 
 vi.mock('../../context/LocaleContext', async () => {
@@ -121,6 +122,7 @@ import TodayView from '../today/TodayView'
 import { taskService } from '../../services/TaskService'
 import { reservationService } from '../../services/ReservationService'
 import { waitFor } from '@testing-library/react'
+import { DomainError } from '../../domain/errors'
 
 function LoadingToggle({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
@@ -186,6 +188,17 @@ describe('TodayView', () => {
 
       await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong. Please try again.'))
       expect(screen.getByRole('alert')).not.toHaveTextContent('Available status')
+    })
+
+    it('shows the translated reason for a business-rule error', async () => {
+      const user = userEvent.setup()
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      vi.mocked(reservationService.checkIn).mockRejectedValueOnce(new DomainError('roomNotAvailable'))
+      render(<LoadingCtx.Provider value={false}><TodayView /></LoadingCtx.Provider>)
+
+      await user.click(screen.getAllByRole('button', { name: /check in/i })[0])
+
+      await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('This room is not available, so the guest cannot be checked in.'))
     })
   })
 })

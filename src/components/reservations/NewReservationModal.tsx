@@ -13,6 +13,7 @@ import { GuestSchema } from '../../schemas/GuestSchema';
 import { ReservationSchema } from '../../schemas/ReservationSchema';
 import GuestInfoStep from './GuestInfoStep';
 import StayDetailsStep from './StayDetailsStep';
+import { errorMessage } from '../../i18n/errorMessage';
 
 interface FormData {
   guestId: string;
@@ -240,7 +241,9 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
         }
         setErrors(zodErrors);
       } else {
-        setErrors({ price: e instanceof Error ? e.message : 'Unknown error' });
+        console.error('Creating reservation failed:', e);
+        // Booking errors carry no money parameters, so a plain number formatter is enough here.
+        setErrors({ price: errorMessage(e, t, amount => String(amount)) });
       }
     } finally {
       setSubmitting(false);

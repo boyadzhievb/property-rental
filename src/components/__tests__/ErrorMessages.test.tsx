@@ -38,7 +38,9 @@ describe('ErrorMessages', () => {
     const user = userEvent.setup()
 
     render(<ErrorMessages />)
-    expect(screen.getByRole('alert')).toHaveTextContent(`${name} failed to load`)
+    // Property errors are shown as stored (already translated); load errors get a translated summary.
+    const expected = name === 'property' ? `${name} failed to load` : 'Some data could not be loaded. Restart the app and try again.'
+    expect(screen.getByRole('alert')).toHaveTextContent(expected)
 
     await user.click(screen.getByRole('button', { name: 'Dismiss' }))
     expect(clearFunctions[name]).toHaveBeenCalled()

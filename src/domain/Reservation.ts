@@ -1,4 +1,5 @@
 import { addDays, addMonths, addWeeks, addYears, differenceInCalendarDays, format, parseISO } from 'date-fns';
+import { DomainError } from './errors';
 
 export type ReservationStatus = 'Confirmed' | 'Checked In' | 'Checked Out' | 'Cancelled';
 export type RecurrencePattern = 'weekly' | 'biweekly' | 'monthly';
@@ -55,21 +56,21 @@ export class Reservation {
 
   cancel(): void {
     if (this._status !== 'Confirmed' && this._status !== 'Checked In') {
-      throw new Error(`Cannot cancel a reservation that is ${this._status}`);
+      throw new DomainError('reservationNotCancellable', { status: this._status });
     }
     this._status = 'Cancelled';
   }
 
   checkIn(): void {
     if (this._status !== 'Confirmed') {
-      throw new Error(`Can only check in a Confirmed reservation, current status is ${this._status}`);
+      throw new DomainError('reservationNotConfirmed', { status: this._status });
     }
     this._status = 'Checked In';
   }
 
   checkOut(): void {
     if (this._status !== 'Checked In') {
-      throw new Error(`Can only check out a Checked In reservation, current status is ${this._status}`);
+      throw new DomainError('reservationNotCheckedIn', { status: this._status });
     }
     this._status = 'Checked Out';
   }
@@ -136,7 +137,7 @@ export class Reservation {
     const seriesId = `series-${crypto.randomUUID()}`;
 
     if (seriesEnd > addYears(anchor, Reservation.MAX_SERIES_YEARS)) {
-      throw new Error(`A recurring series can last at most ${Reservation.MAX_SERIES_YEARS} years`);
+      throw new DomainError('seriesTooLong', { years: Reservation.MAX_SERIES_YEARS });
     }
 
     const arrivalAt = (index: number): Date => {
@@ -157,10 +158,10 @@ export class Reservation {
       if (departure > seriesEnd) break;
 
       if (index > 0 && arrival < parseISO(occurrences[index - 1].departureDate)) {
-        throw new Error('The stay is longer than the repeat interval, so occurrences would overlap');
+        throw new DomainError('seriesStayTooLong');
       }
       if (occurrences.length === Reservation.MAX_SERIES_OCCURRENCES) {
-        throw new Error(`A recurring series can have at most ${Reservation.MAX_SERIES_OCCURRENCES} occurrences`);
+        throw new DomainError('seriesTooManyOccurrences', { max: Reservation.MAX_SERIES_OCCURRENCES });
       }
 
       occurrences.push({

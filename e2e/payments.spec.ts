@@ -80,6 +80,6 @@ test.describe('Payment Recording', () => {
     await page.getByRole('button', { name: /record payment/i }).click();
 
     // Should show error message
-    await expect(page.getByText(/exceeds remaining balance/i)).toBeVisible();
+    await expect(page.getByText(/more than the remaining balance of \$/i)).toBeVisible();
   });
 });

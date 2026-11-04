@@ -29,6 +29,7 @@ export function createEntityContext<T>(
         if (postProcess) result = postProcess(result);
         setData(result);
       } catch (e: unknown) {
+        console.error('Loading data failed:', e);
         setError(e instanceof Error ? e.message : 'Unknown error');
       } finally {
         setLoading(false);

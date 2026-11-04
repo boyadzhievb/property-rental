@@ -11,6 +11,7 @@ import { paymentService } from '../../services/PaymentService';
 import { type Guest } from '../../domain/Guest';
 import { type Reservation } from '../../domain/Reservation';
 import PageHeader from '../layout/PageHeader';
+import { errorMessage } from '../../i18n/errorMessage';
 
 export default memo(function GuestsView() {
   const { guests, loading } = useGuests();
@@ -131,7 +132,8 @@ export default memo(function GuestsView() {
       setPaymentMethod('cash');
       setPaymentNote('');
     } catch (e) {
-      setError(e instanceof Error ? e.message : t.paymentFailed);
+      console.error('Recording payment failed:', e);
+      setError(errorMessage(e, t, formatMoney));
     } finally {
       setSaving(false);
     }

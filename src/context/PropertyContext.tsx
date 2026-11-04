@@ -4,6 +4,7 @@ import { backupService, type BackupData } from '../services/BackupService';
 import { useLocale } from './LocaleContext';
 import { settingsService } from '../services/SettingsService';
 import type { CurrencyCode } from '../domain/currency';
+import { errorMessage } from '../i18n/errorMessage';
 
 interface PropertyContextValue {
   propertyName: string;
@@ -42,7 +43,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       setCurrency(settings.currency);
       setLoading(false);
     }).catch((e: unknown) => {
-      setError(e instanceof Error ? e.message : 'Failed to load property settings');
+      console.error(e);
+      setError(errorMessage(e, t, String));
       setLoading(false);
     });
   }, []);
@@ -52,18 +54,20 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       await settingsService.saveName(name);
       setPropertyName(name);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to update property name');
+      console.error(e);
+      setError(errorMessage(e, t, String));
     }
-  }, []);
+  }, [t]);
 
   const updateCurrency = useCallback(async (nextCurrency: CurrencyCode) => {
     try {
       await settingsService.saveCurrency(nextCurrency);
       setCurrency(nextCurrency);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to update currency');
+      console.error(e);
+      setError(errorMessage(e, t, String));
     }
-  }, []);
+  }, [t]);
 
   /** Reload name and currency from storage, e.g. after a restore. Saves a currency guess if none is stored. */
   const refreshSettings = useCallback(async () => {
@@ -79,9 +83,10 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       setPropertyName(name || 'My Property');
       setIsConfigured(true);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to configure property');
+      console.error(e);
+      setError(errorMessage(e, t, String));
     }
-  }, []);
+  }, [t]);
 
   const seedData = useCallback(async () => {
     try {
@@ -89,9 +94,10 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       setIsConfigured(true);
       await refreshSettings();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to seed demo data');
+      console.error(e);
+      setError(errorMessage(e, t, String));
     }
-  }, [refreshSettings]);
+  }, [refreshSettings, t]);
 
   const importData = useCallback(async (data: BackupData) => {
     try {
@@ -100,9 +106,10 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       setIsConfigured(true);
       await refreshSettings();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to import backup');
+      console.error(e);
+      setError(errorMessage(e, t, String));
     }
-  }, [refreshSettings]);
+  }, [refreshSettings, t]);
 
   const resetData = useCallback(async () => {
     let backup: BackupData;
@@ -133,7 +140,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       setCurrency(settingsService.detectCurrency());
       setIsConfigured(false);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Failed to reset data');
+      console.error(e);
+      setError(errorMessage(e, t, String));
     }
   }, [t]);
 

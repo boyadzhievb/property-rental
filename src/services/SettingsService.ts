@@ -1,5 +1,6 @@
 import { settingsRepository } from '../repositories/SettingsRepository';
 import { detectCurrency, isSupportedCurrency, type CurrencyCode } from '../domain/currency';
+import { DomainError } from '../domain/errors';
 
 export interface PropertySettingsView {
   name: string;
@@ -41,7 +42,7 @@ export class SettingsService {
 
   /** Change the display currency. Existing amounts are not converted. */
   async saveCurrency(currency: string): Promise<void> {
-    if (!isSupportedCurrency(currency)) throw new Error(`Unsupported currency: ${currency}`);
+    if (!isSupportedCurrency(currency)) throw new DomainError('unsupportedCurrency', { currency });
     await settingsRepository.saveProperty({ currency });
   }
 }

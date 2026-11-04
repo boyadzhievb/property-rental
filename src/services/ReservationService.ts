@@ -6,6 +6,7 @@ import { Room, type RoomData } from '../domain/Room';
 import type { PaymentData } from '../domain/Payment';
 import type { TaskData } from '../domain/Task';
 import { atomicReadWrite, type StoreAccessor } from '../api/client';
+import { DomainError } from '../domain/errors';
 
 export class ReservationService {
   async getAllReservations(): Promise<Reservation[]> {
@@ -46,9 +47,7 @@ export class ReservationService {
       const existing = await stores.reservations.getAllByIndex<ReservationData>('roomId', room.id);
       const conflict = findConflict(existing, reservation);
       if (conflict) {
-        throw new Error(
-          `Room is already booked from ${conflict.arrivalDate} to ${conflict.departureDate}`
-        );
+        throw new DomainError('bookingConflict', { from: conflict.arrivalDate, to: conflict.departureDate });
       }
 
       stores.reservations.put(reservation.toData());
@@ -60,7 +59,7 @@ export class ReservationService {
     const occurrences = Reservation.generateOccurrences(data, recurrence);
 
     if (occurrences.length === 0) {
-      throw new Error('No occurrences generated — check dates and recurrence pattern');
+      throw new DomainError('seriesEmpty');
     }
 
     return atomicReadWrite(['rooms', 'guests', 'reservations'], async (stores) => {
@@ -69,9 +68,7 @@ export class ReservationService {
       for (const occurrence of occurrences) {
         const conflict = findConflict(existing, new Reservation(occurrence));
         if (conflict) {
-          throw new Error(
-            `Recurring reservation conflicts with existing booking from ${conflict.arrivalDate} to ${conflict.departureDate}`
-          );
+          throw new DomainError('seriesConflict', { from: conflict.arrivalDate, to: conflict.departureDate });
         }
       }
 
@@ -84,19 +81,17 @@ export class ReservationService {
   private async requireBookableRoom(stores: Record<string, StoreAccessor>, data: ReservationData): Promise<Room> {
     const roomData = await stores.rooms.get<RoomData>(data.roomId);
     if (!roomData) {
-      throw new Error('Room not found');
+      throw new DomainError('roomNotFound');
     }
 
     const guest = await stores.guests.get(data.guestId);
     if (!guest) {
-      throw new Error('Guest not found');
+      throw new DomainError('guestNotFound');
     }
 
     const room = new Room(roomData);
     if (data.guestsCount > room.maxGuests) {
-      throw new Error(
-        `Guest count (${data.guestsCount}) exceeds room capacity (${room.maxGuests})`
-      );
+      throw new DomainError('capacityExceeded', { guests: data.guestsCount, max: room.maxGuests });
     }
     return room;
   }
@@ -104,7 +99,7 @@ export class ReservationService {
   async checkIn(id: string): Promise<Reservation | null> {
     return this.transitionWithRoom(id, (reservation, room) => {
       // Checking in marks the room Occupied; without a room that invariant cannot hold.
-      if (!room) throw new Error('Room not found');
+      if (!room) throw new DomainError('roomNotFound');
       reservation.checkIn();
       room.occupy();
       return room;

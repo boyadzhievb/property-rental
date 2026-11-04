@@ -4,6 +4,7 @@ import { roundToCents } from '../domain/money';
 import { paymentRepository } from '../repositories/PaymentRepository';
 import { atomicReadWrite } from '../api/client';
 import type { Reservation as ReservationRecord, Payment as PaymentRecord } from '../api/client';
+import { DomainError } from '../domain/errors';
 
 export class PaymentService {
   async getAllPayments(): Promise<Payment[]> {
@@ -24,10 +25,10 @@ export class PaymentService {
       async (stores) => {
         const reservation = await stores.reservations.get<ReservationRecord>(validated.reservationId);
         if (!reservation) {
-          throw new Error('Reservation not found');
+          throw new DomainError('reservationNotFound');
         }
         if (reservation.status === 'Cancelled') {
-          throw new Error('Cannot record payment for a cancelled reservation');
+          throw new DomainError('paymentOnCancelled');
         }
 
         const existing = await stores.payments.getAllByIndex<PaymentRecord>(
@@ -36,7 +37,7 @@ export class PaymentService {
         const totalPaid = Math.round(existing.reduce((sum, record) => sum + record.amount, 0) * 100) / 100;
         const remaining = Math.round((reservation.price - totalPaid) * 100) / 100;
         if (Math.round((totalPaid + validated.amount) * 100) / 100 > reservation.price) {
-          throw new Error(`Payment exceeds remaining balance of ${remaining}`);
+          throw new DomainError('paymentExceedsBalance', { remaining });
         }
 
         const newPayment = new Payment(validated);

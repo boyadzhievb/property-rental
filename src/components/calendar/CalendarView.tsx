@@ -15,6 +15,8 @@ import { type Room } from '../../domain/Room';
 import { type Guest } from '../../domain/Guest';
 import PageHeader from '../layout/PageHeader';
 import CalendarRow from './CalendarRow';
+import { errorMessage } from '../../i18n/errorMessage';
+import ErrorBanner from '../ui/ErrorBanner';
 
 export default memo(function CalendarView() {
   const today = new Date();
@@ -25,6 +27,7 @@ export default memo(function CalendarView() {
   const { payments, refresh: refreshPayments } = usePaymentContext();
   const { t } = useLocale();
   const formatMoney = useMoney();
+  const [actionError, setActionError] = useState<string | null>(null);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -43,6 +46,9 @@ export default memo(function CalendarView() {
       await reservationService.checkIn(selectedReservation.id);
       await refreshAll();
       setSelectedReservation(null);
+    } catch (error: unknown) {
+      console.error('Reservation action failed:', error);
+      setActionError(errorMessage(error, t, formatMoney));
     } finally {
       setActionLoading(false);
     }
@@ -56,6 +62,9 @@ export default memo(function CalendarView() {
       await reservationService.checkOut(selectedReservation.id);
       await refreshAll();
       setSelectedReservation(null);
+    } catch (error: unknown) {
+      console.error('Reservation action failed:', error);
+      setActionError(errorMessage(error, t, formatMoney));
     } finally {
       setActionLoading(false);
     }
@@ -69,6 +78,9 @@ export default memo(function CalendarView() {
       await reservationService.cancel(selectedReservation.id);
       await refreshAll();
       setSelectedReservation(null);
+    } catch (error: unknown) {
+      console.error('Reservation action failed:', error);
+      setActionError(errorMessage(error, t, formatMoney));
     } finally {
       setActionLoading(false);
     }
@@ -97,7 +109,8 @@ export default memo(function CalendarView() {
       setPaymentMethod('cash');
       setPaymentNote('');
     } catch (e) {
-      setPaymentError(e instanceof Error ? e.message : t.paymentFailed);
+      console.error('Recording payment failed:', e);
+      setPaymentError(errorMessage(e, t, formatMoney));
     } finally {
       setActionLoading(false);
     }
@@ -161,6 +174,7 @@ export default memo(function CalendarView() {
           </div>
         }
       />
+      {actionError && <ErrorBanner message={actionError} onDismiss={() => setActionError(null)} />}
 
       <div className="px-5">
         <div className="bg-ios-card rounded-3xl shadow-sm border border-black/[0.04] overflow-hidden">

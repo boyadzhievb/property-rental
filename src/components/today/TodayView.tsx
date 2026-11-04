@@ -17,6 +17,8 @@ import { type Task, type TaskCategory } from '../../domain/Task';
 import PageHeader from '../layout/PageHeader';
 import StatCard from '../ui/StatCard';
 import ErrorBanner from '../ui/ErrorBanner';
+import { errorMessage } from '../../i18n/errorMessage';
+import { useMoney } from '../../hooks/useMoney';
 
 export default memo(function TodayView() {
   const { data, loading } = useToday();
@@ -32,10 +34,11 @@ export default memo(function TodayView() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   /** Report a failed action to the user without leaking raw (English) domain messages. */
+  const formatMoney = useMoney();
   const reportFailure = useCallback((error: unknown) => {
     console.error('Today action failed:', error);
-    setActionError(t.actionFailed);
-  }, [t]);
+    setActionError(errorMessage(error, t, formatMoney));
+  }, [t, formatMoney]);
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('custom');

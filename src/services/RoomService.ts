@@ -1,6 +1,7 @@
 import { Room, type RoomData, type RoomStatusAction } from '../domain/Room';
 import { RoomSchema } from '../schemas/RoomSchema';
 import { roomRepository } from '../repositories/RoomRepository';
+import { DomainError } from '../domain/errors';
 
 export class RoomService {
   async getRooms(): Promise<Room[]> {
@@ -28,7 +29,7 @@ export class RoomService {
 
   async updateRoomStatus(id: string, action: RoomStatusAction): Promise<Room> {
     const room = await roomRepository.getById(id);
-    if (!room) throw new Error('Room not found');
+    if (!room) throw new DomainError('roomNotFound');
 
     switch (action) {
       case 'clean': room.vacate(); break;
