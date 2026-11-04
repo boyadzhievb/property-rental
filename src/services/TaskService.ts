@@ -63,58 +63,49 @@ export class TaskService {
   }): Promise<Task[]> {
     const today = format(new Date(), 'yyyy-MM-dd');
     const existing = await taskRepository.getByDate(today);
-    const existingAutoIds = new Set(existing.filter(t => t.auto).map(t => t.id));
+    const existingAutoTasks = new Map(existing.filter(task => task.auto).map(task => [task.id, task]));
 
-    const needed: TaskData[] = [];
+    const wanted: TaskData[] = [
+      ...params.cleaningRoomIds.map((room): TaskData => ({
+        id: `auto-clean-${room.id}-${today}`,
+        title: `Clean ${room.name}`,
+        template: { kind: 'clean', roomName: room.name },
+        category: 'cleaning',
+        completed: false,
+        date: today,
+        linkedRoomId: room.id,
+        auto: true,
+      })),
+      ...params.preparationRoomIds.map((room): TaskData => ({
+        id: `auto-prep-${room.id}-${today}`,
+        title: `Prepare ${room.name} for ${room.guestName}`,
+        template: { kind: 'prepare', roomName: room.name, guestName: room.guestName },
+        category: 'preparation',
+        completed: false,
+        date: today,
+        linkedRoomId: room.id,
+        auto: true,
+      })),
+      ...params.pendingPayments.map((payment): TaskData => ({
+        id: `auto-pay-${payment.reservationId}-${today}`,
+        title: `Check payment from ${payment.guestName}`,
+        template: { kind: 'checkPayment', guestName: payment.guestName },
+        category: 'payment',
+        completed: false,
+        date: today,
+        linkedReservationId: payment.reservationId,
+        auto: true,
+      })),
+    ];
 
-    for (const room of params.cleaningRoomIds) {
-      const id = `auto-clean-${room.id}-${today}`;
-      if (!existingAutoIds.has(id)) {
-        needed.push({
-          id,
-          title: `Clean ${room.name}`,
-          category: 'cleaning',
-          completed: false,
-          date: today,
-          linkedRoomId: room.id,
-          auto: true,
-        });
+    for (const data of wanted) {
+      const current = existingAutoTasks.get(data.id);
+      if (!current) {
+        await taskRepository.save(new Task(data));
+      } else if (!current.template) {
+        // Created by an older version with an English-only title: add the template, keep its state.
+        await taskRepository.save(new Task({ ...current.toData(), template: data.template }));
       }
-    }
-
-    for (const room of params.preparationRoomIds) {
-      const id = `auto-prep-${room.id}-${today}`;
-      if (!existingAutoIds.has(id)) {
-        needed.push({
-          id,
-          title: `Prepare ${room.name} for ${room.guestName}`,
-          category: 'preparation',
-          completed: false,
-          date: today,
-          linkedRoomId: room.id,
-          auto: true,
-        });
-      }
-    }
-
-    for (const payment of params.pendingPayments) {
-      const id = `auto-pay-${payment.reservationId}-${today}`;
-      if (!existingAutoIds.has(id)) {
-        needed.push({
-          id,
-          title: `Check payment from ${payment.guestName}`,
-          category: 'payment',
-          completed: false,
-          date: today,
-          linkedReservationId: payment.reservationId,
-          auto: true,
-        });
-      }
-    }
-
-    for (const data of needed) {
-      const task = new Task(data);
-      await taskRepository.save(task);
     }
 
     return taskRepository.getByDate(today);

@@ -1,5 +1,15 @@
 export type TaskCategory = 'cleaning' | 'preparation' | 'payment' | 'communication' | 'custom';
 
+/**
+ * What an automatic task says, stored as data so its title can be translated when shown
+ * (see i18n/taskTitle). `title` keeps an English copy for older app versions.
+ */
+export interface TaskTemplate {
+  kind: 'clean' | 'prepare' | 'checkPayment';
+  roomName?: string;
+  guestName?: string;
+}
+
 export interface TaskData {
   id: string;
   title: string;
@@ -10,6 +20,7 @@ export interface TaskData {
   linkedReservationId?: string;
   linkedGuestId?: string;
   auto: boolean;
+  template?: TaskTemplate;
 }
 
 export class Task {
@@ -22,6 +33,7 @@ export class Task {
   readonly linkedReservationId?: string;
   readonly linkedGuestId?: string;
   readonly auto: boolean;
+  readonly template?: TaskTemplate;
 
   constructor(data: TaskData) {
     this.id = data.id;
@@ -33,6 +45,7 @@ export class Task {
     this.linkedReservationId = data.linkedReservationId;
     this.linkedGuestId = data.linkedGuestId;
     this.auto = data.auto;
+    this.template = data.template;
   }
 
   get completed(): boolean {
@@ -58,6 +71,7 @@ export class Task {
       linkedReservationId: this.linkedReservationId,
       linkedGuestId: this.linkedGuestId,
       auto: this.auto,
+      ...(this.template ? { template: this.template } : {}),
     };
   }
 }

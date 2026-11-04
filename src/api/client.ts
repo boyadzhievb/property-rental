@@ -54,6 +54,7 @@ export interface Task {
   linkedReservationId?: string;
   linkedGuestId?: string;
   auto: boolean;
+  template?: { kind: 'clean' | 'prepare' | 'checkPayment'; roomName?: string; guestName?: string };
 }
 
 export interface PropertySettings {

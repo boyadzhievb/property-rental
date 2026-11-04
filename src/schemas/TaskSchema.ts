@@ -11,6 +11,11 @@ export const TaskSchema = z.object({
   linkedReservationId: z.string().optional(),
   linkedGuestId: z.string().optional(),
   auto: z.boolean(),
+  template: z.object({
+    kind: z.enum(['clean', 'prepare', 'checkPayment']),
+    roomName: z.string().optional(),
+    guestName: z.string().optional(),
+  }).optional(),
 });
 
 export type TaskInput = z.infer<typeof TaskSchema>;

@@ -8,6 +8,7 @@ import { useRoomContext } from '../../context/RoomContext';
 import { usePaymentContext } from '../../context/PaymentContext';
 import { useTaskContext } from '../../context/TaskContext';
 import { useLocale } from '../../context/LocaleContext';
+import { taskTitle } from '../../i18n/taskTitle';
 import { reservationService } from '../../services/ReservationService';
 import { taskService } from '../../services/TaskService';
 import { notificationService } from '../../services/NotificationService';
@@ -407,7 +408,7 @@ export default memo(function TodayView() {
                     <button
                       onClick={() => handleToggleTask(task)}
                       disabled={loadingId === task.id}
-                      aria-label={`${t.complete}: ${task.title}`}
+                      aria-label={`${t.complete}: ${taskTitle(task, t)}`}
                       className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-ios-border flex items-center justify-center transition-colors hover:border-ios-blue disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
                     >
                     </button>
@@ -415,7 +416,7 @@ export default memo(function TodayView() {
                       {categoryIcon(task.category)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-ios-text text-sm truncate">{task.title}</div>
+                      <div className="font-medium text-ios-text text-sm truncate">{taskTitle(task, t)}</div>
                     </div>
                   </div>
                 ))}
@@ -431,7 +432,7 @@ export default memo(function TodayView() {
                     <button
                       onClick={() => handleToggleTask(task)}
                       disabled={loadingId === task.id}
-                      aria-label={`${t.reopen}: ${task.title}`}
+                      aria-label={`${t.reopen}: ${taskTitle(task, t)}`}
                       className="flex-shrink-0 w-6 h-6 rounded-full bg-ios-green border-2 border-ios-green flex items-center justify-center transition-colors disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none"
                     >
                       <CheckCircle2 size={14} className="text-white" />
@@ -440,7 +441,7 @@ export default memo(function TodayView() {
                       {categoryIcon(task.category)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-ios-text text-sm truncate line-through">{task.title}</div>
+                      <div className="font-medium text-ios-text text-sm truncate line-through">{taskTitle(task, t)}</div>
                     </div>
                   </div>
                 ))}

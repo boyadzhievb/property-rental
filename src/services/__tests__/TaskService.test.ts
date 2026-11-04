@@ -203,6 +203,26 @@ describe('TaskService', () => {
   })
 
   describe('ensureAutoTasks', () => {
+    it('stores a translatable template with each automatic task', async () => {
+      const tasks = await service.ensureAutoTasks({
+        cleaningRoomIds: [{ id: 'room-1', name: 'Suite 1' }],
+        preparationRoomIds: [{ id: 'room-2', name: 'Suite 2', guestName: 'Ana' }],
+        pendingPayments: [{ reservationId: 'res-1', guestName: 'Ben' }],
+      })
+      const templates = Object.fromEntries(tasks.map(task => [task.id, task.template]))
+      expect(templates[`auto-clean-room-1-${today}`]).toEqual({ kind: 'clean', roomName: 'Suite 1' })
+      expect(templates[`auto-prep-room-2-${today}`]).toEqual({ kind: 'prepare', roomName: 'Suite 2', guestName: 'Ana' })
+      expect(templates[`auto-pay-res-1-${today}`]).toEqual({ kind: 'checkPayment', guestName: 'Ben' })
+    })
+
+    it('adds the template to an existing automatic task from an older version, keeping it completed', async () => {
+      seedTask({ id: `auto-clean-room-1-${today}`, title: 'Clean Suite 1', category: 'cleaning', completed: true, date: today, linkedRoomId: 'room-1', auto: true })
+
+      await service.ensureAutoTasks({ cleaningRoomIds: [{ id: 'room-1', name: 'Suite 1' }], preparationRoomIds: [], pendingPayments: [] })
+
+      expect(taskStore.get(`auto-clean-room-1-${today}`)).toMatchObject({ completed: true, template: { kind: 'clean', roomName: 'Suite 1' } })
+    })
+
     it('creates cleaning tasks for rooms in Cleaning status', async () => {
       const tasks = await service.ensureAutoTasks({
         cleaningRoomIds: [{ id: 'room-1', name: 'Suite 1' }],
