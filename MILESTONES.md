@@ -125,7 +125,7 @@ Open items from the 2026-09-22 review (`chat-22sep.md`) that are still unresolve
 - [x] `.gitattributes` declares Git LFS for images, but LFS is not in use (files are raw blobs) — remove the LFS rules or migrate properly.
 - [x] Remove duplicate `screenshots/` (also in `public/screenshots/`) if not needed for store listings.
   - Done 2026-11-04: it is the output of `e2e/visual-sweep.spec.ts`, so it is now gitignored and untracked (files stay on disk) instead of deleted.
-- [ ] Commit or revert the dangling `versionCode`/`CURRENT_PROJECT_VERSION` bumps in `android/app/build.gradle` and `project.pbxproj`.
+- [x] Commit or revert the dangling `versionCode`/`CURRENT_PROJECT_VERSION` bumps in `android/app/build.gradle` and `project.pbxproj`. — reverted 2026-11-04 (back to 26; the next release bumps it).
 
 ---
 
@@ -232,7 +232,7 @@ Each fix starts with a failing test.
 | Phase | Milestone | Tasks | Done | Status |
 |-------|-----------|-------|------|--------|
 | 0 | MS12 Claude Code Infrastructure | 14 | 14 | ✅ Complete |
-| 0 | MS13 Repo Hygiene | 4 | 3 | 🟨 In progress |
+| 0 | MS13 Repo Hygiene | 4 | 4 | ✅ Complete |
 | 1 | MS14 Backup, Storage & Privacy | 7 | 7 | ✅ Complete |
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 0 | ⬜ Not started |
@@ -241,4 +241,4 @@ Each fix starts with a failing test.
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **67** | **32** | 🟨 48% complete |
+| | **Total** | **67** | **33** | 🟨 49% complete |
