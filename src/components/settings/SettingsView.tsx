@@ -155,7 +155,9 @@ export default function SettingsView() {
         setRestoreStatus(t.backupRestored);
       }
     } catch (error: unknown) {
-      setRestoreStatus(error instanceof BackupImportError && error.code === 'wouldEraseData' ? t.importWouldEraseData : t.failedToRestore);
+      if (error instanceof BackupImportError && error.code === 'wouldEraseData') setRestoreStatus(t.importWouldEraseData);
+      else if (error instanceof BackupImportError && error.code === 'invalidFormat') setRestoreStatus(t.invalidBackupFormat);
+      else setRestoreStatus(t.failedToRestore);
     }
 
     e.target.value = '';

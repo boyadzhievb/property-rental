@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { BackupData, ImportReport } from '../api/client'
+import type { BackupData } from '../api/client'
 
 const mockExportBackup = vi.fn()
 const mockImportBackup = vi.fn()
@@ -75,50 +75,13 @@ describe('BackupRepository', () => {
         payments: [],
         tasks: [],
       }
-      const importReport: ImportReport = {
-        skipped: { rooms: 0, guests: 0, reservations: 0, payments: 0, tasks: 0 },
-        skippedDetails: { rooms: [], guests: [], reservations: [], payments: [], tasks: [] },
-        total: 1,
-      }
-      mockImportBackup.mockResolvedValue(importReport)
+      mockImportBackup.mockResolvedValue(undefined)
 
       const repository = new BackupRepository()
-      const result = await repository.importAll(backupData)
+      await repository.importAll(backupData)
 
       expect(mockImportBackup).toHaveBeenCalledTimes(1)
       expect(mockImportBackup).toHaveBeenCalledWith(backupData)
-      expect(result).toBe(importReport)
-    })
-
-    it('returns the import report with skipped counts', async () => {
-      const backupData: BackupData = {
-        rooms: [
-          { id: 'room-1', name: 'Valid Room', status: 'Available', pricePerNight: 100, maxGuests: 2 },
-        ],
-        guests: [],
-        reservations: [],
-        payments: [],
-        tasks: [],
-      }
-      const importReport: ImportReport = {
-        skipped: { rooms: 1, guests: 0, reservations: 0, payments: 0, tasks: 0 },
-        skippedDetails: {
-          rooms: [{ index: 0, id: 'room-bad', error: 'Validation failed' }],
-          guests: [],
-          reservations: [],
-          payments: [],
-          tasks: [],
-        },
-        total: 1,
-      }
-      mockImportBackup.mockResolvedValue(importReport)
-
-      const repository = new BackupRepository()
-      const result = await repository.importAll(backupData)
-
-      expect(result.skipped.rooms).toBe(1)
-      expect(result.skippedDetails.rooms).toHaveLength(1)
-      expect(result.total).toBe(1)
     })
 
     it('propagates errors from importBackup', async () => {
@@ -147,17 +110,11 @@ describe('BackupRepository', () => {
 
     it('singleton delegates importAll to api/client', async () => {
       const backupData: BackupData = { rooms: [], guests: [], reservations: [], payments: [], tasks: [] }
-      const importReport: ImportReport = {
-        skipped: { rooms: 0, guests: 0, reservations: 0, payments: 0, tasks: 0 },
-        skippedDetails: { rooms: [], guests: [], reservations: [], payments: [], tasks: [] },
-        total: 0,
-      }
-      mockImportBackup.mockResolvedValue(importReport)
+      mockImportBackup.mockResolvedValue(undefined)
 
-      const result = await backupRepository.importAll(backupData)
+      await backupRepository.importAll(backupData)
 
       expect(mockImportBackup).toHaveBeenCalledWith(backupData)
-      expect(result).toBe(importReport)
     })
   })
 })

@@ -67,6 +67,7 @@ const DB_VERSION = 5;
 
 import { format as fmtDate, addDays, subDays } from 'date-fns';
 import { notifyOtherTabs } from './sync';
+import { BACKUP_SCHEMA_VERSION } from '../schemas/BackupSchema';
 
 const fmt = (d: Date) => fmtDate(d, 'yyyy-MM-dd');
 
@@ -190,7 +191,8 @@ export interface BackupPreferences {
 }
 
 export interface BackupData {
-  settings?: PropertySettings;
+  schemaVersion?: number;
+  settings?: Partial<Pick<PropertySettings, 'name'>>;
   rooms?: Room[];
   guests?: Guest[];
   reservations?: Reservation[];
@@ -209,7 +211,7 @@ export async function exportBackup(): Promise<BackupData> {
     new Promise<Reservation[]>((resolve) => { const r = tx.objectStore('reservations').getAll(); r.onsuccess = () => resolve(r.result); }),
     new Promise<Payment[]>((resolve) => { const r = tx.objectStore('payments').getAll(); r.onsuccess = () => resolve(r.result); }),
     new Promise<Task[]>((resolve) => { const r = tx.objectStore('tasks').getAll(); r.onsuccess = () => resolve(r.result); }),
-    new Promise<PropertySettings>((resolve) => { const r = tx.objectStore('settings').get('property'); r.onsuccess = () => resolve(r.result); }),
+    new Promise<PropertySettings | undefined>((resolve) => { const r = tx.objectStore('settings').get('property'); r.onsuccess = () => resolve(r.result); }),
   ]);
 
   const preferences: BackupPreferences = {
@@ -218,76 +220,18 @@ export async function exportBackup(): Promise<BackupData> {
     notificationsEnabled: localStorage.getItem('notifications-enabled') === 'true',
   };
 
-  return { settings, rooms, guests, reservations, payments, tasks, preferences };
+  return {
+    schemaVersion: BACKUP_SCHEMA_VERSION,
+    settings: settings ? { name: settings.name } : undefined,
+    rooms, guests, reservations, payments, tasks, preferences,
+  };
 }
 
-export interface SkippedRecord {
-  index: number;
-  id?: string;
-  error: string;
-}
-
-export interface ImportReport {
-  skipped: {
-    rooms: number;
-    guests: number;
-    reservations: number;
-    payments: number;
-    tasks: number;
-  };
-  skippedDetails: {
-    rooms: SkippedRecord[];
-    guests: SkippedRecord[];
-    reservations: SkippedRecord[];
-    payments: SkippedRecord[];
-    tasks: SkippedRecord[];
-  };
-  total: number;
-}
-
-export async function importBackup(data: BackupData): Promise<ImportReport> {
-  const allRooms = data.rooms ?? [];
-  const allGuests = data.guests ?? [];
-  const allReservations = data.reservations ?? [];
-  const allPayments = data.payments ?? [];
-  const allTasks = data.tasks ?? [];
-
-  function validateRecords<T extends { id?: string }>(items: T[], schema: { safeParse: (v: unknown) => { success: boolean; error?: { message: string } } }) {
-    const valid: T[] = [];
-    const failures: SkippedRecord[] = [];
-    for (let i = 0; i < items.length; i++) {
-      const result = schema.safeParse(items[i]);
-      if (result.success) {
-        valid.push(items[i]);
-      } else {
-        failures.push({ index: i, id: items[i]?.id, error: result.error?.message ?? 'Validation failed' });
-      }
-    }
-    return { valid, failures };
-  }
-
-  const rooms = validateRecords(allRooms, RoomSchema);
-  const guests = validateRecords(allGuests, GuestSchema);
-  const reservations = validateRecords(allReservations, ReservationSchema);
-  const payments = validateRecords(allPayments, PaymentSchema);
-  const tasks = validateRecords(allTasks, TaskSchema);
-
-  const skipped = {
-    rooms: rooms.failures.length,
-    guests: guests.failures.length,
-    reservations: reservations.failures.length,
-    payments: payments.failures.length,
-    tasks: tasks.failures.length,
-  };
-  const skippedDetails = {
-    rooms: rooms.failures,
-    guests: guests.failures,
-    reservations: reservations.failures,
-    payments: payments.failures,
-    tasks: tasks.failures,
-  };
-  const totalSkipped = rooms.failures.length + guests.failures.length + reservations.failures.length + payments.failures.length + tasks.failures.length;
-
+/**
+ * Replace all stored records with `data` in one transaction. Callers must pass records that
+ * were already validated and parsed (see BackupService.import); nothing is validated here.
+ */
+export async function importBackup(data: BackupData): Promise<void> {
   const db = await getDB();
   const tx = db.transaction(['rooms', 'guests', 'reservations', 'payments', 'tasks', 'settings'], 'readwrite');
 
@@ -297,13 +241,12 @@ export async function importBackup(data: BackupData): Promise<ImportReport> {
   tx.objectStore('payments').clear();
   tx.objectStore('tasks').clear();
 
-  for (const room of rooms.valid) tx.objectStore('rooms').put(room);
-  for (const guest of guests.valid) tx.objectStore('guests').put(guest);
-  for (const res of reservations.valid) tx.objectStore('reservations').put(res);
-  for (const payment of payments.valid) tx.objectStore('payments').put(payment);
-  for (const task of tasks.valid) tx.objectStore('tasks').put(task);
-  if (data.settings) tx.objectStore('settings').put({ ...data.settings, id: 'property', isConfigured: true });
-  else tx.objectStore('settings').put({ id: 'property', name: 'My Property', isConfigured: true });
+  for (const room of data.rooms ?? []) tx.objectStore('rooms').put(room);
+  for (const guest of data.guests ?? []) tx.objectStore('guests').put(guest);
+  for (const reservation of data.reservations ?? []) tx.objectStore('reservations').put(reservation);
+  for (const payment of data.payments ?? []) tx.objectStore('payments').put(payment);
+  for (const task of data.tasks ?? []) tx.objectStore('tasks').put(task);
+  tx.objectStore('settings').put({ id: 'property', name: data.settings?.name ?? 'My Property', isConfigured: true });
 
   await new Promise<void>((resolve, reject) => {
     tx.oncomplete = () => resolve();
@@ -317,8 +260,6 @@ export async function importBackup(data: BackupData): Promise<ImportReport> {
       localStorage.setItem('notifications-enabled', String(data.preferences.notificationsEnabled));
     }
   }
-
-  return { skipped, skippedDetails, total: totalSkipped };
 }
 
 export async function resetData() {

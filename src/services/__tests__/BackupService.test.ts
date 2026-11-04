@@ -32,17 +32,16 @@ describe('BackupService', () => {
   })
 
   describe('import', () => {
-    it('delegates to backupRepository.importAll', async () => {
+    it('passes the parsed backup to backupRepository.importAll and returns a report', async () => {
       const fakeData = { rooms: [{ id: 'r1', name: 'Suite', status: 'Available', pricePerNight: 100, maxGuests: 2 }] }
-      const fakeReport = { imported: { rooms: 1, guests: 0, reservations: 0 }, errors: [] }
       mockExportAll.mockResolvedValue({})
-      mockImportAll.mockResolvedValue(fakeReport)
+      mockImportAll.mockResolvedValue(undefined)
 
-      const result = await service.import(fakeData as unknown as import('../../api/client').BackupData)
+      const result = await service.import(fakeData)
 
       expect(mockImportAll).toHaveBeenCalledOnce()
-      expect(mockImportAll).toHaveBeenCalledWith(fakeData)
-      expect(result).toBe(fakeReport)
+      expect(mockImportAll).toHaveBeenCalledWith(expect.objectContaining({ schemaVersion: 1, rooms: fakeData.rooms, guests: [] }))
+      expect(result.total).toBe(0)
     })
   })
 
@@ -111,21 +110,21 @@ describe('BackupService', () => {
       const data = { rooms: [{ id: 'r1', name: 'Room 1' }] }
       const result = service.validate(data)
       expect(result.valid).toBe(true)
-      expect(result.data).toBe(data)
+      expect(result.data).toEqual(data)
     })
 
     it('accepts valid backup with guests only', () => {
       const data = { guests: [{ id: 'g1', name: 'Guest 1' }] }
       const result = service.validate(data)
       expect(result.valid).toBe(true)
-      expect(result.data).toBe(data)
+      expect(result.data).toEqual(data)
     })
 
     it('accepts valid backup with settings only', () => {
-      const data = { settings: { propertyName: 'My Hotel' } }
+      const data = { settings: { name: 'My Hotel', propertyName: 'stripped' } }
       const result = service.validate(data)
       expect(result.valid).toBe(true)
-      expect(result.data).toBe(data)
+      expect(result.data).toEqual({ settings: { name: 'My Hotel' } })
     })
 
     it('accepts valid backup with all fields', () => {
@@ -133,11 +132,11 @@ describe('BackupService', () => {
         rooms: [{ id: 'r1' }],
         guests: [{ id: 'g1' }],
         reservations: [{ id: 'res1' }],
-        settings: { propertyName: 'My Hotel' },
+        settings: { name: 'My Hotel' },
       }
       const result = service.validate(data)
       expect(result.valid).toBe(true)
-      expect(result.data).toBe(data)
+      expect(result.data).toEqual(data)
     })
   })
 })

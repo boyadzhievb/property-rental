@@ -1,11 +1,12 @@
-import { exportBackup, importBackup, type BackupData, type ImportReport } from '../api/client';
+import { exportBackup, importBackup, type BackupData } from '../api/client';
 
 export class BackupRepository {
   async exportAll(): Promise<BackupData> {
     return exportBackup();
   }
 
-  async importAll(data: BackupData): Promise<ImportReport> {
+  /** Replace all data with already-validated records. */
+  async importAll(data: BackupData): Promise<void> {
     return importBackup(data);
   }
 }

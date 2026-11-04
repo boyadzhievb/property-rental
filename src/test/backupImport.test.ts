@@ -71,3 +71,72 @@ describe('BackupService.import safety', () => {
     expect((await client.api.rooms.getAll()).map(room => room.id)).toEqual(['room-1'])
   })
 })
+
+describe('backup format validation', () => {
+  beforeEach(() => {
+    globalThis.indexedDB = new IDBFactory()
+    vi.resetModules()
+    localStorage.clear()
+  })
+
+  it('export stamps the current schemaVersion', async () => {
+    const { backupService, BACKUP_SCHEMA_VERSION } = await import('../services/BackupService')
+    const backup = await backupService.export()
+    expect(BACKUP_SCHEMA_VERSION).toBe(1)
+    expect(backup.schemaVersion).toBe(BACKUP_SCHEMA_VERSION)
+  })
+
+  it('rejects a backup from a newer schemaVersion', async () => {
+    const { backupService } = await import('../services/BackupService')
+    const result = backupService.validate({ schemaVersion: 99, rooms: [] })
+    expect(result.valid).toBe(false)
+    expect(result.error).toContain('newer version')
+  })
+
+  it('accepts a legacy backup without schemaVersion', async () => {
+    const { backupService } = await import('../services/BackupService')
+    expect(backupService.validate({ rooms: [] }).valid).toBe(true)
+  })
+
+  it.each(['payments', 'tasks'])('rejects %s as non-array', async (key) => {
+    const { backupService } = await import('../services/BackupService')
+    const result = backupService.validate({ rooms: [], [key]: 'nope' })
+    expect(result.valid).toBe(false)
+    expect(result.error).toContain(`"${key}" must be an array`)
+  })
+
+  it('import rejects a malformed envelope even without a prior validate call', async () => {
+    const { backupService } = await import('../services/BackupService')
+    await expect(backupService.import({ rooms: 'nope' } as never)).rejects.toMatchObject({ code: 'invalidFormat' })
+  })
+
+  it('persists parsed records, stripping unknown fields', async () => {
+    const client = await import('../api/client')
+    const { backupService } = await import('../services/BackupService')
+
+    await backupService.import({ rooms: [{ ...existingRoom, injected: '<script>' } as never] })
+
+    const [storedRoom] = await client.api.rooms.getAll()
+    expect(storedRoom).toEqual(existingRoom)
+    expect(storedRoom).not.toHaveProperty('injected')
+  })
+
+  it('stores only the validated property name from settings', async () => {
+    const client = await import('../api/client')
+    const { backupService } = await import('../services/BackupService')
+
+    await backupService.import({ rooms: [existingRoom as never], settings: { id: 'evil', name: 'Villa', isConfigured: false, extra: 1 } as never })
+
+    expect(await client.api.settings.getProperty()).toEqual({ id: 'property', name: 'Villa', isConfigured: true })
+  })
+
+  it('writes only valid preferences to localStorage', async () => {
+    const { backupService } = await import('../services/BackupService')
+
+    await backupService.import({ rooms: [existingRoom as never], preferences: { locale: 'xx', theme: 'dark', notificationsEnabled: 'yes' } as never })
+
+    expect(localStorage.getItem('app-locale')).toBeNull()
+    expect(localStorage.getItem('theme-mode')).toBe('dark')
+    expect(localStorage.getItem('notifications-enabled')).toBeNull()
+  })
+})
