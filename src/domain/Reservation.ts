@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, parseISO } from 'date-fns';
+import { addDays, addMonths, addWeeks, addYears, differenceInCalendarDays, format, parseISO } from 'date-fns';
 
 export type ReservationStatus = 'Confirmed' | 'Checked In' | 'Checked Out' | 'Cancelled';
 export type RecurrencePattern = 'weekly' | 'biweekly' | 'monthly';
@@ -114,48 +114,64 @@ export class Reservation {
     };
   }
 
+  /** Upper bound on the number of reservations one recurring series may create. */
+  static readonly MAX_SERIES_OCCURRENCES = 104;
+  /** A series may not end more than this many years after its first arrival. */
+  static readonly MAX_SERIES_YEARS = 2;
+
+  /**
+   * Expand a recurring booking into its individual reservations. Each arrival is computed from
+   * the original anchor date (not from the previous occurrence), so monthly series anchored on
+   * the 29th–31st clamp to shorter months without drifting. Throws when the stay is longer than
+   * the repeat interval (occurrences would overlap each other), when the series ends more than
+   * MAX_SERIES_YEARS after the first arrival, or when it exceeds MAX_SERIES_OCCURRENCES.
+   */
   static generateOccurrences(
     baseData: ReservationData,
     recurrence: RecurrenceRule,
   ): ReservationData[] {
     const stayDuration = new Reservation(baseData).duration();
-    const occurrences: ReservationData[] = [];
-    let currentArrival = parseISO(baseData.arrivalDate);
+    const anchor = parseISO(baseData.arrivalDate);
     const seriesEnd = parseISO(recurrence.endDate);
     const seriesId = `series-${crypto.randomUUID()}`;
 
-    while (currentArrival <= seriesEnd) {
-      const currentDeparture = new Date(currentArrival);
-      currentDeparture.setDate(currentDeparture.getDate() + stayDuration);
+    if (seriesEnd > addYears(anchor, Reservation.MAX_SERIES_YEARS)) {
+      throw new Error(`A recurring series can last at most ${Reservation.MAX_SERIES_YEARS} years`);
+    }
 
-      if (currentDeparture > seriesEnd) {
-        break;
+    const arrivalAt = (index: number): Date => {
+      switch (recurrence.pattern) {
+        case 'weekly':
+          return addWeeks(anchor, index);
+        case 'biweekly':
+          return addWeeks(anchor, index * 2);
+        case 'monthly':
+          return addMonths(anchor, index);
       }
+    };
 
-      const formatDate = (date: Date) =>
-        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    const occurrences: ReservationData[] = [];
+    for (let index = 0; ; index++) {
+      const arrival = arrivalAt(index);
+      const departure = addDays(arrival, stayDuration);
+      if (departure > seriesEnd) break;
+
+      if (index > 0 && arrival < parseISO(occurrences[index - 1].departureDate)) {
+        throw new Error('The stay is longer than the repeat interval, so occurrences would overlap');
+      }
+      if (occurrences.length === Reservation.MAX_SERIES_OCCURRENCES) {
+        throw new Error(`A recurring series can have at most ${Reservation.MAX_SERIES_OCCURRENCES} occurrences`);
+      }
 
       occurrences.push({
         ...baseData,
-        id: occurrences.length === 0 ? baseData.id : `${baseData.id}-${occurrences.length}`,
-        arrivalDate: formatDate(currentArrival),
-        departureDate: formatDate(currentDeparture),
+        id: index === 0 ? baseData.id : `${baseData.id}-${index}`,
+        arrivalDate: format(arrival, 'yyyy-MM-dd'),
+        departureDate: format(departure, 'yyyy-MM-dd'),
         status: 'Confirmed',
-        recurrence: occurrences.length === 0 ? recurrence : undefined,
+        recurrence: index === 0 ? recurrence : undefined,
         seriesId,
       });
-
-      switch (recurrence.pattern) {
-        case 'weekly':
-          currentArrival.setDate(currentArrival.getDate() + 7);
-          break;
-        case 'biweekly':
-          currentArrival.setDate(currentArrival.getDate() + 14);
-          break;
-        case 'monthly':
-          currentArrival.setMonth(currentArrival.getMonth() + 1);
-          break;
-      }
     }
 
     return occurrences;

@@ -167,9 +167,10 @@ Each fix starts with a failing test.
 
 ### MS16: Domain & Scheduling Bugs
 
-- [ ] Monthly recurrence drift — `setMonth(+1)` turns Jan 31 into Mar 3 (`Reservation.ts:156`). Use `addMonths` from the original anchor date.
-- [ ] Weekly/biweekly series with stay longer than the interval overlaps itself → double booking (`ReservationService.ts:96`). Reject or check occurrences against each other.
-- [ ] Cap the number of generated occurrences (e.g. 104) and series end date.
+- [x] Monthly recurrence drift — `setMonth(+1)` turns Jan 31 into Mar 3 (`Reservation.ts:156`). Use `addMonths` from the original anchor date.
+- [x] Weekly/biweekly series with stay longer than the interval overlaps itself → double booking (`ReservationService.ts:96`). Reject or check occurrences against each other.
+- [x] Cap the number of generated occurrences (e.g. 104) and series end date.
+  - Done 2026-11-04: `Reservation.generateOccurrences()` computes each arrival from the anchor with `addWeeks`/`addMonths`, rejects self-overlapping series (any pattern, incl. monthly stays > 28 days), caps at `MAX_SERIES_OCCURRENCES = 104` and `MAX_SERIES_YEARS = 2`.
 - [ ] Notification time bug — when the slot has passed, `setMinutes(now.getMinutes() + 1)` is applied to the 08:00 date, still in the past (`NotificationService.ts:71`, also lines 86, 101, 115). Use `now + 1 min`.
 - [ ] Reschedule notifications when today's data changes — the once-per-day localStorage flag suppresses later arrivals; clean up old `notifications-scheduled-*` keys.
 - [ ] Check-in proceeds silently when the room is missing (`ReservationService.ts:122`) — throw `Room not found`.
@@ -235,10 +236,10 @@ Each fix starts with a failing test.
 | 0 | MS13 Repo Hygiene | 4 | 4 | ✅ Complete |
 | 1 | MS14 Backup, Storage & Privacy | 7 | 7 | ✅ Complete |
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
-| 2 | MS16 Domain & Scheduling Bugs | 8 | 0 | ⬜ Not started |
+| 2 | MS16 Domain & Scheduling Bugs | 8 | 3 | 🟨 In progress |
 | 2 | MS17 Error Handling & i18n Leaks | 6 | 0 | ⬜ Not started |
 | 3 | MS18 Structure & Enforcement | 8 | 0 | ⬜ Not started |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **67** | **33** | 🟨 49% complete |
+| | **Total** | **67** | **36** | 🟨 54% complete |

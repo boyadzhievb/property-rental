@@ -221,6 +221,44 @@ describe('Reservation', () => {
       expect(occurrences[2].arrivalDate).toBe('2025-08-01')
     })
 
+    it('keeps a month-end anchor instead of drifting (Jan 31 → Feb 28 → Mar 31)', () => {
+      const occurrences = Reservation.generateOccurrences(
+        { ...baseData, arrivalDate: '2027-01-31', departureDate: '2027-02-01' },
+        { pattern: 'monthly', endDate: '2027-05-15' },
+      )
+      expect(occurrences.map(occurrence => occurrence.arrivalDate)).toEqual(['2027-01-31', '2027-02-28', '2027-03-31', '2027-04-30'])
+      expect(occurrences.map(occurrence => occurrence.departureDate)).toEqual(['2027-02-01', '2027-03-01', '2027-04-01', '2027-05-01'])
+    })
+
+    it.each([
+      ['weekly', '2025-06-01', '2025-06-09'],
+      ['biweekly', '2025-06-01', '2025-06-16'],
+    ] as const)('rejects a %s series whose stay is longer than the interval', (pattern, arrivalDate, departureDate) => {
+      expect(() => Reservation.generateOccurrences(
+        { ...baseData, arrivalDate, departureDate },
+        { pattern, endDate: '2025-08-01' },
+      )).toThrow(/longer than the repeat interval/)
+    })
+
+    it('allows back-to-back occurrences where checkout day is the next arrival', () => {
+      const occurrences = Reservation.generateOccurrences(
+        { ...baseData, arrivalDate: '2025-06-01', departureDate: '2025-06-08' },
+        { pattern: 'weekly', endDate: '2025-06-22' },
+      )
+      expect(occurrences.map(occurrence => occurrence.arrivalDate)).toEqual(['2025-06-01', '2025-06-08', '2025-06-15'])
+    })
+
+    it('rejects a series that ends more than 2 years after the first arrival', () => {
+      expect(() => Reservation.generateOccurrences(baseData, { pattern: 'monthly', endDate: '2027-06-02' }))
+        .toThrow(/2 years/)
+    })
+
+    it('caps a series at 104 occurrences', () => {
+      expect(() => Reservation.generateOccurrences(baseData, { pattern: 'weekly', endDate: '2027-06-01' }))
+        .toThrow(/104/)
+      expect(Reservation.generateOccurrences(baseData, { pattern: 'weekly', endDate: '2027-05-25' })).toHaveLength(104)
+    })
+
     it('all occurrences share the same seriesId', () => {
       const occurrences = Reservation.generateOccurrences(baseData, {
         pattern: 'weekly',
