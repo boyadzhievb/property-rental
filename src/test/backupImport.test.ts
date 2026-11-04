@@ -140,3 +140,59 @@ describe('backup format validation', () => {
     expect(localStorage.getItem('notifications-enabled')).toBeNull()
   })
 })
+
+describe('referential checks on import', () => {
+  beforeEach(() => {
+    globalThis.indexedDB = new IDBFactory()
+    vi.resetModules()
+  })
+
+  const reservation = (id: string, roomId: string, guestId: string) => ({
+    id, roomId, guestId, arrivalDate: '2026-11-10', departureDate: '2026-11-12', guestsCount: 1, status: 'Confirmed', price: 200,
+  })
+  const payment = (id: string, reservationId: string) => ({ id, reservationId, amount: 50, date: '2026-11-10', method: 'cash', note: '' })
+  const task = (id: string, links: Record<string, string>) => ({ id, title: 'Clean', category: 'cleaning', completed: false, date: '2026-11-10', auto: false, ...links })
+
+  const backup = {
+    rooms: [existingRoom],
+    guests: [existingGuest],
+    reservations: [
+      reservation('res-ok', 'room-1', 'guest-1'),
+      reservation('res-no-room', 'room-missing', 'guest-1'),
+      reservation('res-no-guest', 'room-1', 'guest-missing'),
+    ],
+    payments: [payment('pay-ok', 'res-ok'), payment('pay-orphan', 'res-no-room')],
+    tasks: [
+      task('task-ok', { linkedRoomId: 'room-1', linkedReservationId: 'res-ok', linkedGuestId: 'guest-1' }),
+      task('task-unlinked', {}),
+      task('task-no-room', { linkedRoomId: 'room-missing' }),
+      task('task-no-reservation', { linkedReservationId: 'res-no-guest' }),
+    ],
+  }
+
+  it('counts records that reference missing entities as skipped', async () => {
+    const { backupService } = await import('../services/BackupService')
+
+    const plan = await backupService.analyze(backup)
+
+    expect(plan.incoming).toEqual({ rooms: 1, guests: 1, reservations: 1, payments: 1, tasks: 2 })
+    expect(plan.skipped).toBe(5)
+  })
+
+  it('refuses orphaned records by default and imports only consistent records when partial import is allowed', async () => {
+    const client = await import('../api/client')
+    const { backupService } = await import('../services/BackupService')
+
+    await expect(backupService.import(backup)).rejects.toMatchObject({ code: 'invalidRecords' })
+
+    const report = await backupService.import(backup, { allowPartial: true })
+
+    expect((await client.api.reservations.getAll()).map(item => item.id)).toEqual(['res-ok'])
+    expect((await client.api.payments.getAll()).map(item => item.id)).toEqual(['pay-ok'])
+    expect((await client.api.tasks.getAll()).map(item => item.id).sort()).toEqual(['task-ok', 'task-unlinked'])
+    expect(report.skippedDetails.reservations.map(item => item.id)).toEqual(['res-no-room', 'res-no-guest'])
+    expect(report.skippedDetails.reservations[0].error).toContain('room-missing')
+    expect(report.skippedDetails.payments[0]).toMatchObject({ id: 'pay-orphan', index: 1 })
+    expect(report.total).toBe(5)
+  })
+})

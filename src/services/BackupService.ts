@@ -79,20 +79,53 @@ interface ParsedBackup {
   skippedDetails: ImportReport['skippedDetails'];
 }
 
-function parseRecords<Schema extends z.ZodType>(records: unknown[] | undefined, schema: Schema) {
-  const valid: z.output<Schema>[] = [];
+interface ParsedRecords<Value> {
+  /** Parsed records with their position in the backup file, for error reporting. */
+  valid: { index: number; value: Value }[];
+  failures: SkippedRecord[];
+}
+
+function parseRecords<Schema extends z.ZodType>(records: unknown[] | undefined, schema: Schema): ParsedRecords<z.output<Schema>> {
+  const valid: ParsedRecords<z.output<Schema>>['valid'] = [];
   const failures: SkippedRecord[] = [];
   (records ?? []).forEach((record, index) => {
     const result = schema.safeParse(record);
     if (result.success) {
       // Persist Zod's output, not the raw input, so unknown fields never reach the database.
-      valid.push(result.data);
+      valid.push({ index, value: result.data });
     } else {
       const id = typeof record === 'object' && record !== null && 'id' in record && typeof record.id === 'string' ? record.id : undefined;
       failures.push({ index, id, error: result.error.message });
     }
   });
   return { valid, failures };
+}
+
+/**
+ * Move records whose references point at entities missing from the backup into `failures`.
+ * `findMissingReference` returns a description of the first broken reference, or undefined.
+ */
+function dropOrphans<Value extends { id: string }>(
+  records: ParsedRecords<Value>,
+  findMissingReference: (value: Value) => string | undefined,
+): ParsedRecords<Value> {
+  const valid: ParsedRecords<Value>['valid'] = [];
+  const failures = [...records.failures];
+  for (const entry of records.valid) {
+    const missing = findMissingReference(entry.value);
+    if (missing) failures.push({ index: entry.index, id: entry.value.id, error: `References missing ${missing}` });
+    else valid.push(entry);
+  }
+  failures.sort((first, second) => first.index - second.index);
+  return { valid, failures };
+}
+
+function idsOf(records: ParsedRecords<{ id: string }>): Set<string> {
+  return new Set(records.valid.map(entry => entry.value.id));
+}
+
+function missingLink(kind: string, id: string | undefined, knownIds: Set<string>): string | undefined {
+  return id !== undefined && !knownIds.has(id) ? `${kind} "${id}"` : undefined;
 }
 
 function describeFormatError(error: z.ZodError): string {
@@ -131,20 +164,32 @@ function parseBackup(data: unknown): ParsedBackup {
 
   const rooms = parseRecords(backup.rooms, RoomSchema);
   const guests = parseRecords(backup.guests, GuestSchema);
-  const reservations = parseRecords(backup.reservations, ReservationSchema);
-  const payments = parseRecords(backup.payments, PaymentSchema);
-  const tasks = parseRecords(backup.tasks, TaskSchema);
+  const roomIds = idsOf(rooms);
+  const guestIds = idsOf(guests);
+
+  // Order matters: payments and tasks are checked against the reservations that survived.
+  const reservations = dropOrphans(parseRecords(backup.reservations, ReservationSchema), reservation =>
+    missingLink('room', reservation.roomId, roomIds) ?? missingLink('guest', reservation.guestId, guestIds));
+  const reservationIds = idsOf(reservations);
+  const payments = dropOrphans(parseRecords(backup.payments, PaymentSchema), payment =>
+    missingLink('reservation', payment.reservationId, reservationIds));
+  const tasks = dropOrphans(parseRecords(backup.tasks, TaskSchema), task =>
+    missingLink('room', task.linkedRoomId, roomIds)
+      ?? missingLink('reservation', task.linkedReservationId, reservationIds)
+      ?? missingLink('guest', task.linkedGuestId, guestIds));
+
+  const values = <Value,>(records: ParsedRecords<Value>) => records.valid.map(entry => entry.value);
 
   return {
     data: {
       schemaVersion: backup.schemaVersion ?? 1,
       settings: backup.settings,
       preferences: backup.preferences,
-      rooms: rooms.valid,
-      guests: guests.valid,
-      reservations: reservations.valid,
-      payments: payments.valid,
-      tasks: tasks.valid,
+      rooms: values(rooms),
+      guests: values(guests),
+      reservations: values(reservations),
+      payments: values(payments),
+      tasks: values(tasks),
     },
     skippedDetails: {
       rooms: rooms.failures,

@@ -137,7 +137,8 @@ Open items from the 2026-09-22 review (`chat-22sep.md`) that are still unresolve
 - [x] Add `schemaVersion` to the backup format; validate `payments`/`tasks` are arrays; validate `settings` and `preferences` (locale/theme are written to localStorage unchecked).
 - [x] Persist parsed Zod output instead of raw input in import (unknown fields are currently stored).
   - Done 2026-11-04: `src/schemas/BackupSchema.ts` (`BACKUP_SCHEMA_VERSION = 1`; legacy files without it = v1; newer versions rejected). All five record arrays checked; settings reduced to `name`; invalid preference values dropped. Per-record parsing moved from `client.ts` into `BackupService`, which hands only parsed records to `importBackup()`.
-- [ ] Referential checks on import — reservations → rooms/guests, payments → reservations.
+- [x] Referential checks on import — reservations → rooms/guests, payments → reservations.
+  - Done 2026-11-04: also tasks → linked room/reservation/guest. Orphans are reported as skipped records (`References missing room "…"`), so they fall under the same refuse-unless-`allowPartial` rule and the restore confirmation count.
 - [ ] Call `navigator.storage.persist()` on startup — IndexedDB is evictable (Safari especially) for PWA users.
 - [ ] Add `onblocked` / `onversionchange` handlers in `openDB()` (`client.ts:93`) so upgrades don't hang with another tab open.
 - [x] **Privacy claim mismatch** — `android:allowBackup="true"` (`AndroidManifest.xml:4`) uploads guest PII to Google Drive; iOS backs up the app container to iCloud. Either disable (`allowBackup=false` + `dataExtractionRules`, iOS exclude-from-backup) or update README, privacy policy, and Play Data Safety form.
@@ -228,7 +229,7 @@ Each fix starts with a failing test.
 |-------|-----------|-------|------|--------|
 | 0 | MS12 Claude Code Infrastructure | 14 | 14 | ✅ Complete |
 | 0 | MS13 Repo Hygiene | 4 | 2 | 🟨 In progress |
-| 1 | MS14 Backup, Storage & Privacy | 7 | 4 | 🟨 In progress |
+| 1 | MS14 Backup, Storage & Privacy | 7 | 5 | 🟨 In progress |
 | 1 | MS15 Transactional Integrity | 8 | 0 | ⬜ Not started |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 0 | ⬜ Not started |
 | 2 | MS17 Error Handling & i18n Leaks | 6 | 0 | ⬜ Not started |
@@ -236,4 +237,4 @@ Each fix starts with a failing test.
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **67** | **20** | 🟨 30% complete |
+| | **Total** | **67** | **21** | 🟨 31% complete |
