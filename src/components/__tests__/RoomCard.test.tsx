@@ -14,6 +14,11 @@ vi.mock('../../services/RoomService', () => ({
   },
 }))
 
+const propertyCurrency = vi.hoisted(() => ({ value: 'USD' as 'USD' | 'EUR' }))
+vi.mock('../../context/PropertyContext', () => ({
+  usePropertyContext: () => ({ currency: propertyCurrency.value }),
+}))
+
 vi.mock('../../context/LocaleContext', async () => {
   const englishTranslations = (await import('../../i18n/en')).default
   return {
@@ -42,6 +47,16 @@ describe('RoomCard', () => {
       expect(screen.getByText('Ocean Suite')).toBeInTheDocument()
       expect(screen.getByText('$150')).toBeInTheDocument()
       expect(screen.getByText('3 guests max')).toBeInTheDocument()
+    })
+
+    it('shows the price in the property currency', () => {
+      propertyCurrency.value = 'EUR'
+      try {
+        render(<RoomCard room={makeRoom({ pricePerNight: 150 })} onUpdated={onUpdated} />)
+        expect(screen.getByText('€150')).toBeInTheDocument()
+      } finally {
+        propertyCurrency.value = 'USD'
+      }
     })
 
     it('shows "Mark as Available" badge for an available room', () => {

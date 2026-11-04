@@ -162,6 +162,8 @@ const es = {
   setupDescription: 'Configuremos su propiedad.',
   propertyName: 'Nombre de la propiedad',
   numberOfRooms: 'Número de habitaciones',
+  currency: 'Moneda',
+  currencyChangeConfirm: 'Cambiar la moneda solo cambia el símbolo. Los importes existentes no se convierten. ¿Continuar?',
   configureApp: 'Configurar aplicación',
   or: 'O',
   importBackup: 'Importar copia de seguridad',

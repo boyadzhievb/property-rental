@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Locale } from '../i18n';
+import { SUPPORTED_CURRENCIES } from '../domain/currency';
 
 /**
  * Version of the backup file format written by `exportBackup()`.
@@ -11,9 +12,10 @@ export const BACKUP_SCHEMA_VERSION = 1;
 const SUPPORTED_LOCALES = ['en', 'bg', 'de', 'el', 'fr', 'es'] as const satisfies readonly Locale[];
 const SUPPORTED_THEMES = ['light', 'dark', 'system'] as const;
 
-/** Only the property name is restored; `id` and `isConfigured` are set by the importer. */
+/** Only the property name and currency are restored; `id` and `isConfigured` are set by the importer. */
 export const BackupSettingsSchema = z.object({
   name: z.string().trim().min(1).max(100).optional().catch(undefined),
+  currency: z.enum(SUPPORTED_CURRENCIES).optional().catch(undefined),
 });
 
 /** Invalid preference values are dropped instead of rejecting the whole backup. */

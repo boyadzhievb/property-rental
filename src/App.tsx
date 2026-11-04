@@ -35,7 +35,7 @@ function Loading({ t }: { t: { loading: string } }) {
 }
 
 function AppContent() {
-  const { isConfigured, loading, configureApp, seedData, importData } = usePropertyContext();
+  const { isConfigured, loading, currency, configureApp, seedData, importData } = usePropertyContext();
   const { t } = useLocale();
   const [activeTab, setActiveTab] = useState<Tab>('today');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,7 +61,7 @@ function AppContent() {
     return (
       <div className="min-h-screen bg-ios-bg flex justify-center w-full">
         <div className="w-full max-w-screen-xl sm:border-x sm:border-ios-border/20 shadow-sm bg-ios-bg">
-          <SetupView onConfigure={configureApp} onSeedData={seedData} onImport={importData} />
+          <SetupView defaultCurrency={currency} onConfigure={configureApp} onSeedData={seedData} onImport={importData} />
         </div>
       </div>
     );

@@ -152,6 +152,8 @@ const el: TranslationKeys = {
   setupDescription: 'Ας ρυθμίσουμε το κατάλυμά σας.',
   propertyName: 'Όνομα καταλύματος',
   numberOfRooms: 'Αριθμός δωματίων',
+  currency: 'Νόμισμα',
+  currencyChangeConfirm: 'Η αλλαγή νομίσματος αλλάζει μόνο το σύμβολο. Τα υπάρχοντα ποσά δεν μετατρέπονται. Συνέχεια;',
   configureApp: 'Ρύθμιση εφαρμογής',
   or: 'Ή',
   importBackup: 'Εισαγωγή αντιγράφου',

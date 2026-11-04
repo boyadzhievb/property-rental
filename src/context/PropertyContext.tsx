@@ -1,16 +1,23 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
-import { api, seedDemoData, configureProperty, resetData as resetDataDb } from '../api/client';
+import { seedDemoData, configureProperty, resetData as resetDataDb } from '../api/client';
 import { backupService, type BackupData } from '../services/BackupService';
 import { useLocale } from './LocaleContext';
+import { settingsService } from '../services/SettingsService';
+import type { CurrencyCode } from '../domain/currency';
 
 interface PropertyContextValue {
   propertyName: string;
   isConfigured: boolean;
+  /** Display currency for all amounts. */
+  currency: CurrencyCode;
   loading: boolean;
   error: string | null;
   clearError: () => void;
   updateName: (name: string) => Promise<void>;
-  configureApp: (name: string, roomCount: number) => Promise<void>;
+  /** Change the display currency; existing amounts are not converted. */
+  updateCurrency: (currency: CurrencyCode) => Promise<void>;
+  refreshSettings: () => Promise<void>;
+  configureApp: (name: string, roomCount: number, currency: CurrencyCode) => Promise<void>;
   seedData: () => Promise<void>;
   importData: (data: BackupData) => Promise<void>;
   resetData: () => Promise<void>;
@@ -21,6 +28,7 @@ const PropertyContext = createContext<PropertyContextValue | null>(null);
 export function PropertyProvider({ children }: { children: ReactNode }) {
   const [propertyName, setPropertyName] = useState('');
   const [isConfigured, setIsConfigured] = useState(false);
+  const [currency, setCurrency] = useState<CurrencyCode>(() => settingsService.detectCurrency());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { t } = useLocale();
@@ -28,9 +36,10 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => {
-    api.settings.getProperty().then((s) => {
-      setPropertyName(s.name);
-      setIsConfigured(s.isConfigured);
+    settingsService.getPropertySettings().then((settings) => {
+      setPropertyName(settings.name);
+      setIsConfigured(settings.isConfigured);
+      setCurrency(settings.currency);
       setLoading(false);
     }).catch((e: unknown) => {
       setError(e instanceof Error ? e.message : 'Failed to load property settings');
@@ -40,16 +49,33 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
 
   const updateName = useCallback(async (name: string) => {
     try {
-      await api.settings.saveProperty({ name });
+      await settingsService.saveName(name);
       setPropertyName(name);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to update property name');
     }
   }, []);
 
-  const configureApp = useCallback(async (name: string, roomCount: number) => {
+  const updateCurrency = useCallback(async (nextCurrency: CurrencyCode) => {
     try {
-      await configureProperty(name, roomCount);
+      await settingsService.saveCurrency(nextCurrency);
+      setCurrency(nextCurrency);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to update currency');
+    }
+  }, []);
+
+  /** Reload name and currency from storage, e.g. after a restore. Saves a currency guess if none is stored. */
+  const refreshSettings = useCallback(async () => {
+    const settings = await settingsService.getPropertySettings();
+    setPropertyName(settings.name);
+    setCurrency(settings.currency);
+  }, []);
+
+  const configureApp = useCallback(async (name: string, roomCount: number, chosenCurrency: CurrencyCode) => {
+    try {
+      await configureProperty(name, roomCount, chosenCurrency);
+      setCurrency(chosenCurrency);
       setPropertyName(name || 'My Property');
       setIsConfigured(true);
     } catch (e: unknown) {
@@ -60,23 +86,23 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   const seedData = useCallback(async () => {
     try {
       await seedDemoData();
-      setPropertyName('Villa Blanca');
       setIsConfigured(true);
+      await refreshSettings();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to seed demo data');
     }
-  }, []);
+  }, [refreshSettings]);
 
   const importData = useCallback(async (data: BackupData) => {
     try {
       // First-run import: nothing stored yet, so keep valid records even if some are skipped.
       await backupService.import(data, { allowPartial: true });
-      setPropertyName(data.settings?.name || 'My Property');
       setIsConfigured(true);
+      await refreshSettings();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to import backup');
     }
-  }, []);
+  }, [refreshSettings]);
 
   const resetData = useCallback(async () => {
     let backup: BackupData;
@@ -104,6 +130,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     try {
       await resetDataDb();
       setPropertyName('My Property');
+      setCurrency(settingsService.detectCurrency());
       setIsConfigured(false);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to reset data');
@@ -111,7 +138,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   }, [t]);
 
   return (
-    <PropertyContext.Provider value={useMemo(() => ({ propertyName, isConfigured, loading, error, clearError, updateName, configureApp, seedData, importData, resetData }), [propertyName, isConfigured, loading, error, clearError, updateName, configureApp, seedData, importData, resetData])}>
+    <PropertyContext.Provider value={useMemo(() => ({ propertyName, isConfigured, currency, loading, error, clearError, updateName, updateCurrency, refreshSettings, configureApp, seedData, importData, resetData }), [propertyName, isConfigured, currency, loading, error, clearError, updateName, updateCurrency, refreshSettings, configureApp, seedData, importData, resetData])}>
       {children}
     </PropertyContext.Provider>
   );

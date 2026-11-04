@@ -162,6 +162,8 @@ const en = {
   setupDescription: "Let's set up your property.",
   propertyName: 'Property Name',
   numberOfRooms: 'Number of Rooms',
+  currency: 'Currency',
+  currencyChangeConfirm: 'Changing the currency only changes the symbol. Existing amounts are not converted. Continue?',
   configureApp: 'Configure App',
   or: 'OR',
   importBackup: 'Import Backup',

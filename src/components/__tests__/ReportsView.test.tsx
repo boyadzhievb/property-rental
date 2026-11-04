@@ -87,6 +87,11 @@ vi.mock('../../context/GuestContext', () => ({
   }),
 }))
 
+const propertyCurrency = vi.hoisted(() => ({ value: 'USD' as 'USD' | 'EUR' }))
+vi.mock('../../context/PropertyContext', () => ({
+  usePropertyContext: () => ({ currency: propertyCurrency.value }),
+}))
+
 vi.mock('../../context/LocaleContext', async () => {
   const englishTranslations = (await import('../../i18n/en')).default
   return {

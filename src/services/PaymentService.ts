@@ -36,7 +36,7 @@ export class PaymentService {
         const totalPaid = Math.round(existing.reduce((sum, record) => sum + record.amount, 0) * 100) / 100;
         const remaining = Math.round((reservation.price - totalPaid) * 100) / 100;
         if (Math.round((totalPaid + validated.amount) * 100) / 100 > reservation.price) {
-          throw new Error(`Payment exceeds remaining balance of $${remaining}`);
+          throw new Error(`Payment exceeds remaining balance of ${remaining}`);
         }
 
         const newPayment = new Payment(validated);

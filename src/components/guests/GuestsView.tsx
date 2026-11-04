@@ -6,6 +6,7 @@ import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
 import { usePaymentContext } from '../../context/PaymentContext';
 import { useLocale } from '../../context/LocaleContext';
+import { useMoney } from '../../hooks/useMoney';
 import { paymentService } from '../../services/PaymentService';
 import { type Guest } from '../../domain/Guest';
 import { type Reservation } from '../../domain/Reservation';
@@ -17,6 +18,7 @@ export default memo(function GuestsView() {
   const { rooms } = useRoomContext();
   const { payments, refresh: refreshPayments } = usePaymentContext();
   const { t } = useLocale();
+  const formatMoney = useMoney();
   const [search, setSearch] = useState('');
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
@@ -270,14 +272,14 @@ export default memo(function GuestsView() {
                         <div className="flex items-center justify-between text-sm border-t border-ios-border/40 pt-2 mt-2">
                           <div className="space-y-0.5">
                             <div className="text-ios-text-secondary">
-                              {t.total}: <span className="font-semibold text-ios-text">${res.price}</span>
+                              {t.total}: <span className="font-semibold text-ios-text">{formatMoney(res.price)}</span>
                             </div>
                             <div className="text-ios-text-secondary">
-                              {t.paid}: <span className="font-semibold text-ios-green">${paid}</span>
+                              {t.paid}: <span className="font-semibold text-ios-green">{formatMoney(paid)}</span>
                             </div>
                             {balance > 0 && (
                               <div className="text-ios-text-secondary">
-                                {t.balance}: <span className="font-semibold text-ios-red">${balance}</span>
+                                {t.balance}: <span className="font-semibold text-ios-red">{formatMoney(balance)}</span>
                               </div>
                             )}
                             {balance <= 0 && (
@@ -303,7 +305,7 @@ export default memo(function GuestsView() {
                                   <span>{p.date}</span>
                                   <span className="capitalize bg-ios-gray-light px-1.5 py-0.5 rounded">{p.method}</span>
                                 </div>
-                                <span className="font-semibold text-ios-text">${p.amount}</span>
+                                <span className="font-semibold text-ios-text">{formatMoney(p.amount)}</span>
                               </div>
                             ))}
                           </div>

@@ -6,6 +6,7 @@ import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
 import { usePaymentContext } from '../../context/PaymentContext';
 import { useLocale } from '../../context/LocaleContext';
+import { useMoney } from '../../hooks/useMoney';
 import { reservationStatusLabel } from '../../i18n/reservationStatus';
 import { reservationService } from '../../services/ReservationService';
 import { paymentService } from '../../services/PaymentService';
@@ -23,6 +24,7 @@ export default memo(function CalendarView() {
   const { refresh: refreshRooms } = useRoomContext();
   const { payments, refresh: refreshPayments } = usePaymentContext();
   const { t } = useLocale();
+  const formatMoney = useMoney();
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -256,16 +258,16 @@ export default memo(function CalendarView() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-ios-text-secondary">{t.total}</span>
-                    <span className="font-semibold text-ios-text">${selectedReservation.price}</span>
+                    <span className="font-semibold text-ios-text">{formatMoney(selectedReservation.price)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-ios-text-secondary">{t.paid}</span>
-                    <span className="font-semibold text-ios-green">${getReservationPaid(selectedReservation.id)}</span>
+                    <span className="font-semibold text-ios-green">{formatMoney(getReservationPaid(selectedReservation.id))}</span>
                   </div>
                   {selectedReservation.price - getReservationPaid(selectedReservation.id) > 0 ? (
                     <div className="flex justify-between text-sm">
                       <span className="text-ios-text-secondary">{t.balance}</span>
-                      <span className="font-semibold text-ios-red">${selectedReservation.price - getReservationPaid(selectedReservation.id)}</span>
+                      <span className="font-semibold text-ios-red">{formatMoney(selectedReservation.price - getReservationPaid(selectedReservation.id))}</span>
                     </div>
                   ) : (
                     <div className="text-xs font-semibold text-ios-green mt-1">{t.fullyPaid}</div>
@@ -281,7 +283,7 @@ export default memo(function CalendarView() {
                             <span className="capitalize bg-ios-gray-light px-1.5 py-0.5 rounded">{p.method}</span>
                             {p.note && <span className="truncate max-w-[80px]">— {p.note}</span>}
                           </div>
-                          <span className="font-semibold text-ios-text">${p.amount}</span>
+                          <span className="font-semibold text-ios-text">{formatMoney(p.amount)}</span>
                         </div>
                       ))}
                     </div>

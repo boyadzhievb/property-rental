@@ -6,6 +6,7 @@ import { usePaymentContext } from '../../context/PaymentContext';
 import { useRoomContext } from '../../context/RoomContext';
 import { useGuestContext } from '../../context/GuestContext';
 import { useLocale } from '../../context/LocaleContext';
+import { useMoney } from '../../hooks/useMoney';
 import PageHeader from '../layout/PageHeader';
 
 type Period = 'week' | 'month';
@@ -16,6 +17,7 @@ export default function ReportsView() {
   const { rooms } = useRoomContext();
   const { guests } = useGuestContext();
   const { t } = useLocale();
+  const formatMoney = useMoney();
   const [period, setPeriod] = useState<Period>('month');
   const [offset, setOffset] = useState(0);
 
@@ -171,17 +173,17 @@ export default function ReportsView() {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
             <div className="mb-2"><TrendingUp size={24} className="text-ios-green" /></div>
-            <div className="text-2xl font-bold text-ios-text">${totalCollected}</div>
+            <div className="text-2xl font-bold text-ios-text">{formatMoney(totalCollected)}</div>
             <div className="text-ios-text-secondary text-sm font-medium">{t.collected}</div>
           </div>
           <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
             <div className="mb-2"><Banknote size={24} className="text-ios-blue" /></div>
-            <div className="text-2xl font-bold text-ios-text">${totalRevenue}</div>
+            <div className="text-2xl font-bold text-ios-text">{formatMoney(totalRevenue)}</div>
             <div className="text-ios-text-secondary text-sm font-medium">{t.bookedRevenue}</div>
           </div>
           <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
             <div className="mb-2"><AlertCircle size={24} className="text-ios-red" /></div>
-            <div className="text-2xl font-bold text-ios-text">${totalOutstanding}</div>
+            <div className="text-2xl font-bold text-ios-text">{formatMoney(totalOutstanding)}</div>
             <div className="text-ios-text-secondary text-sm font-medium">{t.outstanding}</div>
           </div>
           <div className="bg-ios-card rounded-3xl p-5 shadow-sm border border-black/[0.04]">
@@ -214,7 +216,7 @@ export default function ReportsView() {
                           style={{ width: `${(amount / totalCollected) * 100}%` }}
                         />
                       </div>
-                      <span className="text-sm font-semibold text-ios-text w-16 text-right">${amount}</span>
+                      <span className="text-sm font-semibold text-ios-text w-16 text-right">{formatMoney(amount)}</span>
                     </div>
                   </div>
                 ))}
@@ -237,8 +239,8 @@ export default function ReportsView() {
                         <div className="text-xs text-ios-text-secondary">{item.roomName} — {item.arrivalDate}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-ios-red text-sm">${item.balance}</div>
-                        <div className="text-xs text-ios-text-secondary">${item.paid} / ${item.total}</div>
+                        <div className="font-bold text-ios-red text-sm">{formatMoney(item.balance)}</div>
+                        <div className="text-xs text-ios-text-secondary">{formatMoney(item.paid)} / {formatMoney(item.total)}</div>
                       </div>
                     </div>
                   </div>
@@ -277,7 +279,7 @@ export default function ReportsView() {
                           {p.note && ` · ${p.note}`}
                         </div>
                       </div>
-                      <div className="font-bold text-ios-text text-sm">${p.amount}</div>
+                      <div className="font-bold text-ios-text text-sm">{formatMoney(p.amount)}</div>
                     </div>
                   );
                 })}

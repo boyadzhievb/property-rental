@@ -152,6 +152,8 @@ const fr: TranslationKeys = {
   setupDescription: 'Configurons votre propriété.',
   propertyName: 'Nom de la propriété',
   numberOfRooms: 'Nombre de chambres',
+  currency: 'Devise',
+  currencyChangeConfirm: 'Changer de devise ne modifie que le symbole. Les montants existants ne sont pas convertis. Continuer ?',
   configureApp: "Configurer l'application",
   or: 'OU',
   importBackup: 'Importer une sauvegarde',

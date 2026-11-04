@@ -13,7 +13,7 @@ A property management application for short-term rentals. An owner's daily opera
 - **Reports** — Revenue summary, occupancy rate, payment breakdown by method, outstanding balances, and recent payment history. Filterable by week or month with period navigation.
 - **Reservations** — Book rooms, check in/out guests, and cancel with automatic room status updates. Date conflict detection and capacity validation.
 - **Notifications** — Local push notifications on native devices for guest arrivals, departures, cleaning reminders, and outstanding payment alerts. Configurable via Settings toggle.
-- **Settings** — Property configuration, language selection (EN/BG/DE/EL/FR/ES), appearance (light/dark/system), notifications toggle, data import/export, and reset.
+- **Settings** — Property configuration, currency (pre-selected from the device region at setup; changing it later only changes the symbol, amounts are not converted), language selection (EN/BG/DE/EL/FR/ES), appearance (light/dark/system), notifications toggle, data import/export, and reset.
 
 ## Privacy & Offline
 

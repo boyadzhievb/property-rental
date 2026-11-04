@@ -2,15 +2,19 @@ import { useState, useRef } from 'react';
 import { Home, Upload } from 'lucide-react';
 import { useLocale } from '../context/LocaleContext';
 import { type BackupData } from '../services/BackupService';
+import { SUPPORTED_CURRENCIES, currencyLabel, type CurrencyCode } from '../domain/currency';
 
 interface SetupViewProps {
-  onConfigure: (name: string, roomCount: number) => void;
+  /** Pre-selected currency, guessed from the device's region. */
+  defaultCurrency: CurrencyCode;
+  onConfigure: (name: string, roomCount: number, currency: CurrencyCode) => void;
   onSeedData: () => void;
   onImport: (data: BackupData) => void;
 }
 
-export default function SetupView({ onConfigure, onSeedData, onImport }: SetupViewProps) {
-  const { t } = useLocale();
+export default function SetupView({ defaultCurrency, onConfigure, onSeedData, onImport }: SetupViewProps) {
+  const { t, locale } = useLocale();
+  const [configCurrency, setConfigCurrency] = useState<CurrencyCode>(defaultCurrency);
   const [configName, setConfigName] = useState('Villa Blanca');
   const [configRooms, setConfigRooms] = useState(4);
   const [importError, setImportError] = useState('');
@@ -68,8 +72,21 @@ export default function SetupView({ onConfigure, onSeedData, onImport }: SetupVi
             className="w-full p-4 border border-ios-border/40 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue bg-ios-bg/30 text-ios-text"
           />
         </div>
+        <div>
+          <label htmlFor="setup-currency" className="text-xs uppercase tracking-wider text-ios-text-secondary font-semibold ml-2 mb-1 block">{t.currency}</label>
+          <select
+            id="setup-currency"
+            value={configCurrency}
+            onChange={(e) => setConfigCurrency(e.target.value as CurrencyCode)}
+            className="w-full p-4 border border-ios-border/40 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ios-blue bg-ios-bg/30 text-ios-text"
+          >
+            {SUPPORTED_CURRENCIES.map(code => (
+              <option key={code} value={code}>{currencyLabel(code, locale)}</option>
+            ))}
+          </select>
+        </div>
         <button
-          onClick={() => onConfigure(configName, configRooms)}
+          onClick={() => onConfigure(configName, configRooms, configCurrency)}
           className="w-full bg-ios-blue text-white font-semibold py-4 rounded-xl active:opacity-70 mt-2 focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           {t.configureApp}

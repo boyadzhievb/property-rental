@@ -152,6 +152,8 @@ const bg: TranslationKeys = {
   setupDescription: 'Нека настроим вашия имот.',
   propertyName: 'Име на имот',
   numberOfRooms: 'Брой стаи',
+  currency: 'Валута',
+  currencyChangeConfirm: 'Смяната на валутата променя само символа. Съществуващите суми не се преизчисляват. Продължаване?',
   configureApp: 'Настрой приложението',
   or: 'ИЛИ',
   importBackup: 'Импорт на резервно копие',

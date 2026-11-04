@@ -60,6 +60,8 @@ export interface PropertySettings {
   id: string;
   name: string;
   isConfigured: boolean;
+  /** ISO 4217 code chosen at setup (see domain/currency). Missing for data from before currencies. */
+  currency?: string;
 }
 
 const DB_NAME = 'property-rental';
@@ -219,7 +221,7 @@ export interface BackupPreferences {
 
 export interface BackupData {
   schemaVersion?: number;
-  settings?: Partial<Pick<PropertySettings, 'name'>>;
+  settings?: Partial<Pick<PropertySettings, 'name' | 'currency'>>;
   rooms?: Room[];
   guests?: Guest[];
   reservations?: Reservation[];
@@ -249,7 +251,7 @@ export async function exportBackup(): Promise<BackupData> {
 
   return {
     schemaVersion: BACKUP_SCHEMA_VERSION,
-    settings: settings ? { name: settings.name } : undefined,
+    settings: settings ? { name: settings.name, ...(settings.currency ? { currency: settings.currency } : {}) } : undefined,
     rooms, guests, reservations, payments, tasks, preferences,
   };
 }
@@ -273,7 +275,12 @@ export async function importBackup(data: BackupData): Promise<void> {
   for (const reservation of data.reservations ?? []) tx.objectStore('reservations').put(reservation);
   for (const payment of data.payments ?? []) tx.objectStore('payments').put(payment);
   for (const task of data.tasks ?? []) tx.objectStore('tasks').put(task);
-  tx.objectStore('settings').put({ id: 'property', name: data.settings?.name ?? 'My Property', isConfigured: true });
+  tx.objectStore('settings').put({
+    id: 'property',
+    name: data.settings?.name ?? 'My Property',
+    isConfigured: true,
+    ...(data.settings?.currency ? { currency: data.settings.currency } : {}),
+  });
 
   await new Promise<void>((resolve, reject) => {
     tx.oncomplete = () => resolve();
@@ -304,7 +311,7 @@ export async function resetData() {
   });
 }
 
-export async function configureProperty(name: string, roomCount: number) {
+export async function configureProperty(name: string, roomCount: number, currency?: string) {
   const db = await getDB();
   const rooms: Room[] = Array.from({ length: roomCount }).map((_, i) => ({
     id: `room-${i + 1}`,
@@ -315,7 +322,7 @@ export async function configureProperty(name: string, roomCount: number) {
   }));
   const tx = db.transaction(['rooms', 'settings'], 'readwrite');
   for (const room of rooms) tx.objectStore('rooms').put(room);
-  tx.objectStore('settings').put({ id: 'property', name: name || 'My Property', isConfigured: true });
+  tx.objectStore('settings').put({ id: 'property', name: name || 'My Property', isConfigured: true, ...(currency ? { currency } : {}) });
   await new Promise<void>((resolve, reject) => {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);

@@ -3,6 +3,7 @@ import { Users, Pencil, Check, X, SprayCan, Wrench, CheckCircle } from 'lucide-r
 import { type Room, RoomStatus, type RoomStatusAction } from '../../domain/Room';
 import { roomService } from '../../services/RoomService';
 import { useLocale } from '../../context/LocaleContext';
+import { useMoney } from '../../hooks/useMoney';
 
 interface RoomCardProps {
   room: Room;
@@ -20,6 +21,7 @@ const getStatusColor = (status: RoomStatus) => {
 
 export default function RoomCard({ room, onUpdated }: RoomCardProps) {
   const { t } = useLocale();
+  const formatMoney = useMoney();
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editPrice, setEditPrice] = useState('');
@@ -132,7 +134,7 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
               <span>{room.maxGuests} {t.guestsMax}</span>
             </div>
             <div className="text-right">
-              <span className="font-semibold text-ios-text">${room.pricePerNight}</span>
+              <span className="font-semibold text-ios-text">{formatMoney(room.pricePerNight)}</span>
               <span className="text-xs text-ios-text-secondary"> {t.perNight}</span>
             </div>
           </div>

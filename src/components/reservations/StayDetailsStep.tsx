@@ -129,7 +129,7 @@ export default function StayDetailsStep({ rooms, reservations, roomId, checkIn, 
         <div className="bg-ios-card rounded-3xl overflow-hidden shadow-sm border border-black/[0.04]">
           <input
             type="number"
-            placeholder="$0.00"
+            placeholder="0.00"
             aria-label={t.totalPrice}
             aria-invalid={!!errors.price}
             aria-describedby={errors.price ? 'error-price' : undefined}

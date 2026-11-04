@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Download, Upload, RotateCcw, Palette, Check, Globe, Shield, Bell } from 'lucide-react';
+import { Download, Upload, RotateCcw, Palette, Check, Globe, Shield, Bell, Banknote } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { usePropertyContext } from '../../context/PropertyContext';
@@ -14,11 +14,12 @@ import { usePaymentContext } from '../../context/PaymentContext';
 import { useTaskContext } from '../../context/TaskContext';
 import { backupService, BackupImportError, type BackupData } from '../../services/BackupService';
 import { notificationService } from '../../services/NotificationService';
+import { SUPPORTED_CURRENCIES, currencyLabel, type CurrencyCode } from '../../domain/currency';
 import { SettingsGroup, SettingsItem } from '../ui/SettingsGroup';
 import PageHeader from '../layout/PageHeader';
 
 export default function SettingsView() {
-  const { propertyName, updateName, resetData } = usePropertyContext();
+  const { propertyName, updateName, resetData, currency, updateCurrency, refreshSettings } = usePropertyContext();
   const { mode, setMode } = useTheme();
   const { locale, setLocale, t } = useLocale();
   const { refresh: refreshRooms } = useRoomContext();
@@ -30,6 +31,7 @@ export default function SettingsView() {
   const [nameInput, setNameInput] = useState(propertyName);
   const [showThemePicker, setShowThemePicker] = useState(false);
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [restoreStatus, setRestoreStatus] = useState<string | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationError, setNotificationError] = useState<string | null>(null);
@@ -74,6 +76,13 @@ export default function SettingsView() {
       URL.revokeObjectURL(url);
     }
     return filename;
+  };
+
+  const handleSelectCurrency = async (nextCurrency: CurrencyCode) => {
+    setShowCurrencyPicker(false);
+    if (nextCurrency === currency) return;
+    if (!window.confirm(t.currencyChangeConfirm)) return;
+    await updateCurrency(nextCurrency);
   };
 
   const handleBackup = async () => {
@@ -148,7 +157,7 @@ export default function SettingsView() {
 
       // The user has seen and accepted the skipped-record count in the confirmation above.
       const report = await backupService.import(backup, { allowPartial: true });
-      await Promise.all([refreshRooms(), refreshGuests(), refreshReservations(), refreshPayments(), refreshTasks()]);
+      await Promise.all([refreshSettings(), refreshRooms(), refreshGuests(), refreshReservations(), refreshPayments(), refreshTasks()]);
       if (report.total > 0) {
         console.warn('Import skipped records:', report.skippedDetails);
         setRestoreStatus(`${t.backupRestored} (${report.total} ${t.invalidRecordsSkipped})`);
@@ -205,6 +214,28 @@ export default function SettingsView() {
               <div className="text-sm text-ios-text-secondary">{t.ownerAccount}</div>
             </div>
           </div>
+
+          <div onClick={() => setShowCurrencyPicker(!showCurrencyPicker)}>
+            <SettingsItem icon={Banknote} label={t.currency} color="bg-ios-green" value={currency} />
+          </div>
+          {showCurrencyPicker && (
+            <div className="px-4 py-3 grid grid-cols-2 gap-2">
+              {SUPPORTED_CURRENCIES.map(code => (
+                <button
+                  key={code}
+                  onClick={() => handleSelectCurrency(code)}
+                  aria-pressed={currency === code}
+                  className={`py-2.5 px-2 rounded-xl font-semibold text-sm truncate transition-colors focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none ${
+                    currency === code
+                      ? 'bg-ios-green text-white'
+                      : 'bg-ios-gray-light text-ios-text'
+                  }`}
+                >
+                  {currencyLabel(code, locale)}
+                </button>
+              ))}
+            </div>
+          )}
         </SettingsGroup>
 
         <SettingsGroup title={t.preferences}>

@@ -152,6 +152,8 @@ const de: TranslationKeys = {
   setupDescription: 'Richten wir Ihre Unterkunft ein.',
   propertyName: 'Name der Unterkunft',
   numberOfRooms: 'Anzahl der Zimmer',
+  currency: 'Währung',
+  currencyChangeConfirm: 'Das Ändern der Währung ändert nur das Symbol. Vorhandene Beträge werden nicht umgerechnet. Fortfahren?',
   configureApp: 'App konfigurieren',
   or: 'ODER',
   importBackup: 'Backup importieren',
