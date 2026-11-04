@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { Task, type TaskData, type TaskCategory } from '../domain/Task';
 import { TaskSchema } from '../schemas/TaskSchema';
 import { taskRepository } from '../repositories/TaskRepository';
-import { Room, type RoomData } from '../domain/Room';
+import { Room, RoomStatus, type RoomData } from '../domain/Room';
 import { atomicReadWrite } from '../api/client';
 
 export class TaskService {
@@ -37,7 +37,9 @@ export class TaskService {
         task.complete();
         if (task.category === 'cleaning' && task.linkedRoomId) {
           const roomData = await stores.rooms.get<RoomData>(task.linkedRoomId);
-          if (roomData) {
+          // The room may already have been made Available (or moved on) by hand; then the
+          // task is simply done and the room is left as it is.
+          if (roomData && roomData.status === RoomStatus.CLEANING) {
             const room = new Room(roomData);
             room.vacate();
             stores.rooms.put(room.toData());

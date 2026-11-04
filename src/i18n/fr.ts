@@ -67,6 +67,8 @@ const fr: TranslationKeys = {
   addPayment: 'Ajouter un paiement',
   balanceRemaining: 'Solde restant',
   paymentFailed: 'Échec du paiement',
+  actionFailed: 'Une erreur s’est produite. Veuillez réessayer.',
+  dismiss: 'Fermer',
 
   searchGuests: 'Rechercher des clients...',
   noGuestsFound: 'Aucun client trouvé.',

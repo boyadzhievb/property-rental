@@ -67,6 +67,8 @@ const de: TranslationKeys = {
   addPayment: 'Zahlung hinzufügen',
   balanceRemaining: 'Offener Restbetrag',
   paymentFailed: 'Zahlung fehlgeschlagen',
+  actionFailed: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
+  dismiss: 'Schließen',
 
   searchGuests: 'Gäste suchen...',
   noGuestsFound: 'Keine Gäste gefunden.',

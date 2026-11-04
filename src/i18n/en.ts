@@ -71,6 +71,8 @@ const en = {
   addPayment: 'Add Payment',
   balanceRemaining: 'Balance remaining',
   paymentFailed: 'Payment failed',
+  actionFailed: 'Something went wrong. Please try again.',
+  dismiss: 'Dismiss',
 
   // Guests
   searchGuests: 'Search guests...',

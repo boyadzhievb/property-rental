@@ -67,6 +67,8 @@ const bg: TranslationKeys = {
   addPayment: 'Добави плащане',
   balanceRemaining: 'Оставащ остатък',
   paymentFailed: 'Плащането не бе успешно',
+  actionFailed: 'Нещо се обърка. Моля, опитайте отново.',
+  dismiss: 'Затвори',
 
   searchGuests: 'Търсене на гости...',
   noGuestsFound: 'Няма намерени гости.',

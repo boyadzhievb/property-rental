@@ -91,7 +91,7 @@ vi.mock('../../context/TaskContext', () => ({
 }))
 
 vi.mock('../../services/ReservationService', () => ({
-  reservationService: { checkIn: vi.fn(), checkOut: vi.fn() },
+  reservationService: { checkIn: vi.fn().mockResolvedValue(undefined), checkOut: vi.fn().mockResolvedValue(undefined) },
 }))
 
 vi.mock('../../services/TaskService', () => ({
@@ -118,6 +118,9 @@ vi.mock('../../context/LocaleContext', async () => {
 })
 
 import TodayView from '../today/TodayView'
+import { taskService } from '../../services/TaskService'
+import { reservationService } from '../../services/ReservationService'
+import { waitFor } from '@testing-library/react'
 
 function LoadingToggle({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
@@ -158,5 +161,31 @@ describe('TodayView', () => {
 
     expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
     expect(screen.getByText('Maria Lopez')).toBeInTheDocument()
+  })
+
+  describe('error handling', () => {
+    beforeEach(() => {
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+    })
+
+    it('shows a translated error when generating automatic tasks fails', async () => {
+      vi.mocked(taskService.ensureAutoTasks).mockRejectedValueOnce(new Error('disk full'))
+
+      render(<LoadingCtx.Provider value={false}><TodayView /></LoadingCtx.Provider>)
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong. Please try again.')
+    })
+
+    it('shows a translated error when check-in fails, instead of an unhandled rejection', async () => {
+      const user = userEvent.setup()
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      vi.mocked(reservationService.checkIn).mockRejectedValueOnce(new Error('Room can only be occupied from Available status'))
+      render(<LoadingCtx.Provider value={false}><TodayView /></LoadingCtx.Provider>)
+
+      await user.click(screen.getAllByRole('button', { name: /check in/i })[0])
+
+      await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong. Please try again.'))
+      expect(screen.getByRole('alert')).not.toHaveTextContent('Available status')
+    })
   })
 })

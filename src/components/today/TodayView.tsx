@@ -15,6 +15,7 @@ import { RoomStatus } from '../../domain/Room';
 import { type Task, type TaskCategory } from '../../domain/Task';
 import PageHeader from '../layout/PageHeader';
 import StatCard from '../ui/StatCard';
+import ErrorBanner from '../ui/ErrorBanner';
 
 export default memo(function TodayView() {
   const { data, loading } = useToday();
@@ -27,6 +28,13 @@ export default memo(function TodayView() {
   type StatFilter = 'arrivals' | 'departures' | 'occupied' | 'cleaning' | 'tasks' | null;
   const [activeFilter, setActiveFilter] = useState<StatFilter>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  /** Report a failed action to the user without leaking raw (English) domain messages. */
+  const reportFailure = useCallback((error: unknown) => {
+    console.error('Today action failed:', error);
+    setActionError(t.actionFailed);
+  }, [t]);
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('custom');
@@ -87,18 +95,23 @@ export default memo(function TodayView() {
         notificationPaymentTitle: t.notificationPaymentTitle,
         notificationPaymentBody: t.notificationPaymentBody,
       },
+    }).catch((error: unknown) => {
+      // Reminders are best effort; a failure here must not break the Today screen.
+      console.error('Scheduling notifications failed:', error);
     });
   }, [data, payments, refreshTasks, guestMap, roomMap, t]);
 
   useEffect(() => {
-    if (data) generateAutoTasks();
-  }, [data, generateAutoTasks]);
+    if (data) generateAutoTasks().catch(reportFailure);
+  }, [data, generateAutoTasks, reportFailure]);
 
   const handleToggleTask = async (task: Task) => {
     setLoadingId(task.id);
     try {
       await taskService.toggleTask(task.id);
       await Promise.all([refreshTasks(), refreshRooms()]);
+    } catch (error: unknown) {
+      reportFailure(error);
     } finally {
       setLoadingId(null);
     }
@@ -110,6 +123,8 @@ export default memo(function TodayView() {
     try {
       await reservationService.checkIn(reservationId);
       await Promise.all([refreshReservations(), refreshRooms()]);
+    } catch (error: unknown) {
+      reportFailure(error);
     } finally {
       setLoadingId(null);
     }
@@ -121,6 +136,8 @@ export default memo(function TodayView() {
     try {
       await reservationService.checkOut(reservationId);
       await Promise.all([refreshReservations(), refreshRooms(), refreshTasks()]);
+    } catch (error: unknown) {
+      reportFailure(error);
     } finally {
       setLoadingId(null);
     }
@@ -129,15 +146,20 @@ export default memo(function TodayView() {
   const handleAddTask = async () => {
     if (!newTaskTitle.trim()) return;
     const todayStr = format(today, 'yyyy-MM-dd');
-    await taskService.createTask({
-      id: crypto.randomUUID(),
-      title: newTaskTitle.trim(),
-      category: newTaskCategory,
-      completed: false,
-      date: todayStr,
-      auto: false,
-    });
-    await refreshTasks();
+    try {
+      await taskService.createTask({
+        id: crypto.randomUUID(),
+        title: newTaskTitle.trim(),
+        category: newTaskCategory,
+        completed: false,
+        date: todayStr,
+        auto: false,
+      });
+      await refreshTasks();
+    } catch (error: unknown) {
+      reportFailure(error);
+      return;
+    }
     setNewTaskTitle('');
     setNewTaskCategory('custom');
     setShowAddTask(false);
@@ -170,6 +192,7 @@ export default memo(function TodayView() {
   return (
     <div className="pb-24">
       <PageHeader title={propertyName} subtitle={localDate} />
+      {actionError && <ErrorBanner message={actionError} onDismiss={() => setActionError(null)} />}
 
       <div className="px-5 space-y-6">
         {/* Quick stats */}

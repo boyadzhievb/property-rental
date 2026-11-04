@@ -67,6 +67,8 @@ const el: TranslationKeys = {
   addPayment: 'Προσθήκη πληρωμής',
   balanceRemaining: 'Εναπομένον υπόλοιπο',
   paymentFailed: 'Η πληρωμή απέτυχε',
+  actionFailed: 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.',
+  dismiss: 'Κλείσιμο',
 
   searchGuests: 'Αναζήτηση επισκεπτών...',
   noGuestsFound: 'Δεν βρέθηκαν επισκέπτες.',

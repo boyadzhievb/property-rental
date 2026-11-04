@@ -174,6 +174,20 @@ describe('TaskService', () => {
       expect(roomData.status).toBe(RoomStatus.AVAILABLE)
     })
 
+    it.each([RoomStatus.AVAILABLE, RoomStatus.MAINTENANCE, RoomStatus.OCCUPIED])(
+      'completing a cleaning task when the room is already %s completes the task and leaves the room alone',
+      async (status) => {
+        seedRoom({ status })
+        seedTask({ category: 'cleaning', linkedRoomId: 'room-1' })
+
+        const result = await service.toggleTask('task-1')
+
+        expect(result!.completed).toBe(true)
+        expect(taskStore.get('task-1').completed).toBe(true)
+        expect(roomStore.get('room-1').status).toBe(status)
+      },
+    )
+
     it('completing a non-cleaning task does not change room status', async () => {
       seedRoom({ status: RoomStatus.CLEANING })
       seedTask({ category: 'preparation', linkedRoomId: 'room-1' })

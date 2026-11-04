@@ -71,6 +71,8 @@ const es = {
   addPayment: 'Añadir pago',
   balanceRemaining: 'Saldo pendiente',
   paymentFailed: 'Error en el pago',
+  actionFailed: 'Algo salió mal. Inténtelo de nuevo.',
+  dismiss: 'Cerrar',
 
   // Guests
   searchGuests: 'Buscar huéspedes...',
