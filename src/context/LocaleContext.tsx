@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
-import { type Locale, type TranslationKeys, getTranslations, loadTranslations } from '../i18n';
+import { type Locale, type TranslationKeys, LOCALE_LABELS, getTranslations, loadTranslations } from '../i18n';
 
 interface LocaleContextValue {
   locale: Locale;
@@ -11,7 +11,8 @@ const STORAGE_KEY = 'app-locale';
 
 function getInitialLocale(): Locale {
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored && ['en', 'fr', 'de', 'bg', 'el'].includes(stored)) {
+  // Derive the list from LOCALE_LABELS so a newly added language is never forgotten here.
+  if (stored && stored in LOCALE_LABELS) {
     return stored as Locale;
   }
   return 'en';
