@@ -147,8 +147,35 @@ function openDB(): Promise<IDBDatabase> {
       }
     };
 
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      const db = request.result;
+      // A newer app version (e.g. in another tab after an update) wants to upgrade the schema.
+      // Close this connection so the upgrade is not blocked, then reload into the new version;
+      // this tab's code no longer matches the database.
+      db.onversionchange = () => {
+        db.close();
+        dbPromise = null;
+        if (typeof window !== 'undefined') window.location.reload();
+      };
+      resolve(db);
+    };
     request.onerror = () => reject(request.error);
+    // Another tab still holds an older connection. The open completes once that tab closes it
+    // (it does so in its own onversionchange handler); until then, make the wait visible.
+    request.onblocked = () => {
+      console.warn('Database upgrade is waiting for another tab of this app to close.');
+    };
+  });
+}
+
+/**
+ * Ask the browser not to evict our IndexedDB under storage pressure (Safari in particular
+ * evicts site data of PWAs that are not used for a while). Best effort: never blocks startup.
+ */
+function requestPersistentStorage() {
+  if (typeof navigator === 'undefined' || typeof navigator.storage?.persist !== 'function') return;
+  navigator.storage.persist().catch(() => {
+    // Not granted or not supported: data stays in best-effort storage, nothing else to do.
   });
 }
 
@@ -299,6 +326,7 @@ let dbPromise: Promise<IDBDatabase> | null = null;
 
 function getDB(): Promise<IDBDatabase> {
   if (!dbPromise) {
+    requestPersistentStorage();
     dbPromise = openDB().then(async (db) => {
       await ensureSettings(db);
       return db;
