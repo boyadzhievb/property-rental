@@ -6,6 +6,7 @@ import { useReservationContext } from '../context/ReservationContext';
 import { type Room, RoomStatus } from '../domain/Room';
 import { type Guest } from '../domain/Guest';
 import { type Reservation } from '../domain/Reservation';
+import { useCurrentDate } from './useCurrentDate';
 
 export interface TodayData {
   arrivals: Reservation[];
@@ -23,11 +24,12 @@ export function useToday() {
   const { reservations, loading: resLoading } = useReservationContext();
 
   const loading = roomsLoading || resLoading;
+  const currentDate = useCurrentDate();
 
   const data = useMemo<TodayData | null>(() => {
     if (loading) return null;
 
-    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const todayStr = format(currentDate, 'yyyy-MM-dd');
     const arrivals = reservations.filter(r => r.arrivalDate === todayStr && r.status === 'Confirmed');
     const departures = reservations.filter(r => r.departureDate === todayStr && r.status === 'Checked In');
 
@@ -45,7 +47,7 @@ export function useToday() {
       guests,
       timeline,
     };
-  }, [rooms, guests, reservations, loading]);
+  }, [rooms, guests, reservations, loading, currentDate]);
 
   return { data, loading, error: null };
 }

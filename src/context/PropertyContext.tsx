@@ -47,7 +47,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
       setError(errorMessage(e, t, String));
       setLoading(false);
     });
-  }, []);
+  }, [t]);
 
   const updateName = useCallback(async (name: string) => {
     try {

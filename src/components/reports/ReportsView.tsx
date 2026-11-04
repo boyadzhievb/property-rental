@@ -8,6 +8,7 @@ import { useGuestContext } from '../../context/GuestContext';
 import { useLocale } from '../../context/LocaleContext';
 import { useMoney } from '../../hooks/useMoney';
 import PageHeader from '../layout/PageHeader';
+import { useCurrentDate } from '../../hooks/useCurrentDate';
 
 type Period = 'week' | 'month';
 
@@ -25,11 +26,11 @@ export default function ReportsView() {
   const roomMap = useMemo(() => new Map(rooms.map(r => [r.id, r])), [rooms]);
   const reservationMap = useMemo(() => new Map(reservations.map(r => [r.id, r])), [reservations]);
 
+  const now = useCurrentDate();
   const currentDate = useMemo(() => {
-    const now = new Date();
     if (offset === 0) return now;
     return period === 'month' ? addMonths(now, offset) : addWeeks(now, offset);
-  }, [offset, period]);
+  }, [offset, period, now]);
 
   const dateRange = useMemo(() => {
     if (period === 'month') {

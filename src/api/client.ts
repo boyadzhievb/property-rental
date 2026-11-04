@@ -1,8 +1,3 @@
-import { RoomSchema } from '../schemas/RoomSchema';
-import { GuestSchema } from '../schemas/GuestSchema';
-import { ReservationSchema } from '../schemas/ReservationSchema';
-import { PaymentSchema } from '../schemas/PaymentSchema';
-import { TaskSchema } from '../schemas/TaskSchema';
 
 export interface Room {
   id: string;
@@ -551,6 +546,6 @@ export const api = {
       getById<PropertySettings>('settings', 'property').then(s => s ?? { id: 'property', name: 'My Property', isConfigured: false }),
     saveProperty: (data: Partial<PropertySettings>) =>
       getById<PropertySettings>('settings', 'property')
-        .then(existing => put('settings', { ...{ id: 'property', name: 'My Property', isConfigured: false }, ...existing, ...data })),
+        .then(existing => put('settings', { id: 'property', name: 'My Property', isConfigured: false, ...existing, ...data })),
   },
 };

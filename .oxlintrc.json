@@ -1,0 +1,62 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "unicorn", "oxc"],
+  "categories": { "correctness": "error" },
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error",
+    "no-unused-vars": "error",
+    "react/set-state-in-effect": "error",
+    "react/purity": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/context/createEntityContext.tsx", "src/hooks/useCalendar.ts", "src/hooks/useReservation.ts"],
+      // These effects load data from IndexedDB and set a loading flag before the read. That is
+      // synchronization with an external system, which the rule's heuristic cannot tell apart
+      // from derived state.
+      "rules": { "react/set-state-in-effect": "off" }
+    },
+    {
+      "files": ["src/components/**", "src/context/**", "src/hooks/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "patterns": [
+            { "group": ["**/repositories/**"], "message": "UI, contexts and hooks go through services, never repositories (CLAUDE.md layers)." },
+            { "group": ["**/api/client"], "message": "UI, contexts and hooks go through services, never api/client (CLAUDE.md layers)." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/services/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "patterns": [
+            { "group": ["**/components/**", "**/context/**", "**/hooks/**"], "message": "Services never import UI, contexts or hooks (CLAUDE.md layers)." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/repositories/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "patterns": [
+            { "group": ["**/services/**", "**/components/**", "**/context/**", "**/hooks/**"], "message": "Repositories only talk to api/client." }
+          ]
+        }]
+      }
+    },
+    {
+      "files": ["src/domain/**", "src/schemas/**"],
+      "rules": {
+        "no-restricted-imports": ["error", {
+          "patterns": [
+            { "group": ["**/services/**", "**/repositories/**", "**/api/**", "**/components/**", "**/context/**", "**/hooks/**"], "message": "Domain and schemas are pure: no I/O, no UI." }
+          ]
+        }]
+      }
+    }
+  ]
+}

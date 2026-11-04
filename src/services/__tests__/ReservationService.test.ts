@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ReservationService } from '../ReservationService'
-import { Reservation } from '../../domain/Reservation'
-import { Room, RoomStatus } from '../../domain/Room'
+import { RoomStatus } from '../../domain/Room'
 
 vi.mock('../../repositories/ReservationRepository', () => {
   const store = new Map<string, any>()

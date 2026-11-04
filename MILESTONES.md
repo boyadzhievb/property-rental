@@ -207,6 +207,7 @@ Each fix starts with a failing test.
 - [ ] Move balance/paid calculations out of components (`TodayView.tsx:57`, `CalendarView`, `ReportsView`) into domain/`PaymentService`.
 - [ ] Store money as integer cents (DB migration v6) to remove float rounding patches.
 - [ ] Add ESLint with `eslint-plugin-react-hooks` (would have caught the v1.1.24/25 production hooks crash) and an import-boundary rule (`eslint-plugin-boundaries` or dependency-cruiser) to enforce layering in CI instead of grep-based agents.
+  - In progress 2026-11-04: used **oxlint 1.89.0** instead (TypeScript 7 native compiler may not work with typescript-eslint; same toolchain as oxfmt). `.oxlintrc.json`: rules-of-hooks, exhaustive-deps, purity, set-state-in-effect as errors; layer boundaries via per-folder `no-restricted-imports`; `npm run lint`. All findings fixed (incl. new `useCurrentDate()` hook so views roll over at midnight) except the one intended violation: `PropertyContext` → `api/client` (seed/configure/reset), which is the layer-violation item above. Still to do: fix that, then add `npm run lint` to CI and the pre-commit hook.
 - [ ] Targeted cross-tab refresh — broadcast which store changed instead of refreshing all 5 contexts on every write.
 
 ---

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Task, type TaskData, type TaskCategory } from '../domain/Task';
+import { Task, type TaskData } from '../domain/Task';
 import { TaskSchema } from '../schemas/TaskSchema';
 import { taskRepository } from '../repositories/TaskRepository';
 import { Room, RoomStatus, type RoomData } from '../domain/Room';

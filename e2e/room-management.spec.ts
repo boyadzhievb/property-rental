@@ -88,9 +88,6 @@ test.describe('Add Room', () => {
   });
 
   test('can add a new room', async ({ page }) => {
-    // Count initial rooms
-    const initialRoomCards = await page.locator('[class*="bg-ios-card"][class*="rounded-3xl"][class*="p-5"]').count();
-
     // Click Add button
     await page.getByRole('button', { name: /add/i }).click();
 

@@ -28,7 +28,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     if (locale !== 'en') {
       loadTranslations(locale).then(setT);
     }
-  }, []);
+  }, [locale]);
 
   const setLocale = useCallback((newLocale: Locale) => {
     loadTranslations(newLocale).then((translations) => {

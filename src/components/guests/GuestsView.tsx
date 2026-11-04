@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, memo } from 'react';
+import { useState, useMemo, useRef, memo } from 'react';
 import { format } from 'date-fns';
 import { Search, ChevronRight, Phone, X, Calendar, DoorOpen, Plus, Banknote } from 'lucide-react';
 import { useGuests } from '../../hooks/useGuests';
@@ -51,11 +51,8 @@ export default memo(function GuestsView() {
 
   const letters = useMemo(() => Object.keys(groupedGuests).sort(), [groupedGuests]);
 
-  useEffect(() => {
-    if (activeLetter && !letters.includes(activeLetter)) {
-      setActiveLetter(null);
-    }
-  }, [letters, activeLetter]);
+  // A letter whose guests were filtered away is no longer active.
+  const highlightedLetter = activeLetter && letters.includes(activeLetter) ? activeLetter : null;
 
   const guestReservations = useMemo(() => {
     if (!selectedGuest) return [];
@@ -211,7 +208,7 @@ export default memo(function GuestsView() {
                 key={letter}
                 onClick={() => scrollToLetter(letter)}
                 className={`text-[11px] font-semibold w-5 h-5 flex items-center justify-center rounded-full transition-colors ${
-                  activeLetter === letter
+                  highlightedLetter === letter
                     ? 'bg-ios-blue text-white'
                     : 'text-ios-blue hover:bg-ios-blue/10'
                 }`}

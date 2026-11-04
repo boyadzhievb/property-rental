@@ -19,6 +19,7 @@ import StatCard from '../ui/StatCard';
 import ErrorBanner from '../ui/ErrorBanner';
 import { errorMessage } from '../../i18n/errorMessage';
 import { useMoney } from '../../hooks/useMoney';
+import { useCurrentDate } from '../../hooks/useCurrentDate';
 
 export default memo(function TodayView() {
   const { data, loading } = useToday();
@@ -43,11 +44,11 @@ export default memo(function TodayView() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('custom');
   const toggleFilter = (f: StatFilter) => setActiveFilter(prev => prev === f ? null : f);
-  const today = new Date();
+  const today = useCurrentDate();
   const localDate = today.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 
-  const guestMap = useMemo(() => data ? new Map(data.guests.map(g => [g.id, g])) : new Map(), [data?.guests]);
-  const roomMap = useMemo(() => data ? new Map(data.rooms.map(r => [r.id, r])) : new Map(), [data?.rooms]);
+  const guestMap = useMemo(() => data ? new Map(data.guests.map(g => [g.id, g])) : new Map(), [data]);
+  const roomMap = useMemo(() => data ? new Map(data.rooms.map(r => [r.id, r])) : new Map(), [data]);
 
   const generateAutoTasks = useCallback(async () => {
     if (!data) return;
@@ -169,8 +170,8 @@ export default memo(function TodayView() {
     setShowAddTask(false);
   };
 
-  const occupiedRooms = useMemo(() => data ? data.rooms.filter(r => r.status === RoomStatus.OCCUPIED) : [], [data?.rooms]);
-  const cleaningRooms = useMemo(() => data ? data.rooms.filter(r => r.status === RoomStatus.CLEANING) : [], [data?.rooms]);
+  const occupiedRooms = useMemo(() => data ? data.rooms.filter(r => r.status === RoomStatus.OCCUPIED) : [], [data]);
+  const cleaningRooms = useMemo(() => data ? data.rooms.filter(r => r.status === RoomStatus.CLEANING) : [], [data]);
   const pendingTasks = useMemo(() => tasks.filter(t => !t.completed), [tasks]);
   const completedTasks = useMemo(() => tasks.filter(t => t.completed), [tasks]);
 

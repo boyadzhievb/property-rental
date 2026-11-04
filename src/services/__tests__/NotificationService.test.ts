@@ -207,7 +207,7 @@ describe('NotificationService', () => {
     const scheduledAt = (callIndex: number) =>
       vi.mocked(LocalNotifications.schedule).mock.calls[callIndex][0].notifications.map(notification => ({
         body: notification.body,
-        at: (notification.schedule?.at as Date).getTime(),
+        at: (notification.schedule!.at as Date).getTime(),
       }))
 
     beforeEach(() => {

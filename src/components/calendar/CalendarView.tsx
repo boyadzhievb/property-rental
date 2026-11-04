@@ -17,9 +17,10 @@ import PageHeader from '../layout/PageHeader';
 import CalendarRow from './CalendarRow';
 import { errorMessage } from '../../i18n/errorMessage';
 import ErrorBanner from '../ui/ErrorBanner';
+import { useCurrentDate } from '../../hooks/useCurrentDate';
 
 export default memo(function CalendarView() {
-  const today = new Date();
+  const today = useCurrentDate();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(today, { weekStartsOn: 1 }));
   const { data, loading, refresh: refreshCalendar } = useCalendar(weekStart);
   const { refresh: refreshReservations } = useReservationContext();

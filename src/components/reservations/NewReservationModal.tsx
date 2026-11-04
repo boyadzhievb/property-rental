@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, memo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { ZodError } from 'zod';
 import { useRooms } from '../../hooks/useRooms';
@@ -62,6 +62,15 @@ function validateGuestStep(form: FormData, t: TranslationKeys): FormErrors {
   }
 
   return errors;
+}
+
+/** Nights × the room's nightly rate, or null when room or dates are not chosen yet. */
+function suggestedPrice(form: FormData, rooms: { id: string; pricePerNight: number }[]): number | null {
+  if (!form.roomId || !form.checkIn || !form.checkOut) return null;
+  const room = rooms.find(candidate => candidate.id === form.roomId);
+  if (!room) return null;
+  const nights = differenceInCalendarDays(parseISO(form.checkOut), parseISO(form.checkIn));
+  return nights > 0 ? nights * room.pricePerNight : null;
 }
 
 function validateStayStep(form: FormData, t: TranslationKeys): FormErrors {
@@ -129,6 +138,11 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
       if (field === 'recurrencePattern' && value === '') {
         updated.recurrenceEndDate = '';
       }
+      // Choosing a room or dates suggests a price (nights × nightly rate); the owner can still edit it.
+      if (field === 'roomId' || field === 'checkIn' || field === 'checkOut') {
+        const suggested = suggestedPrice(updated, rooms);
+        if (suggested !== null) updated.price = String(suggested);
+      }
       return updated;
     });
     setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -157,15 +171,6 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
     }
   }, [form.recurrencePattern, form.recurrenceEndDate, form.checkIn, form.checkOut, form.roomId, form.guestsCount, form.price]);
 
-  useEffect(() => {
-    if (!form.roomId || !form.checkIn || !form.checkOut) return;
-    const room = rooms.find(r => r.id === form.roomId);
-    if (!room) return;
-    const nights = differenceInCalendarDays(parseISO(form.checkOut), parseISO(form.checkIn));
-    if (nights > 0) {
-      setForm(prev => ({ ...prev, price: String(nights * room.pricePerNight) }));
-    }
-  }, [form.roomId, form.checkIn, form.checkOut, rooms]);
 
   const handleNext = () => {
     const stepErrors = validateGuestStep(form, t);
