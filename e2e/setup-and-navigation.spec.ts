@@ -28,7 +28,9 @@ test.describe('Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     const welcome = page.getByRole('heading', { name: 'Welcome' });
-    if (await welcome.isVisible({ timeout: 2000 }).catch(() => false)) {
+    // isVisible() checks once without waiting; first wait until either screen has rendered.
+    await expect(welcome.or(page.getByText(/today/i).first())).toBeVisible({ timeout: 10000 });
+    if (await welcome.isVisible()) {
       await page.getByRole('button', { name: /configure app/i }).click();
     }
     await expect(page.getByText(/today/i).first()).toBeVisible();
