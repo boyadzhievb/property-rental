@@ -171,8 +171,9 @@ Each fix starts with a failing test.
 - [x] Weekly/biweekly series with stay longer than the interval overlaps itself → double booking (`ReservationService.ts:96`). Reject or check occurrences against each other.
 - [x] Cap the number of generated occurrences (e.g. 104) and series end date.
   - Done 2026-11-04: `Reservation.generateOccurrences()` computes each arrival from the anchor with `addWeeks`/`addMonths`, rejects self-overlapping series (any pattern, incl. monthly stays > 28 days), caps at `MAX_SERIES_OCCURRENCES = 104` and `MAX_SERIES_YEARS = 2`.
-- [ ] Notification time bug — when the slot has passed, `setMinutes(now.getMinutes() + 1)` is applied to the 08:00 date, still in the past (`NotificationService.ts:71`, also lines 86, 101, 115). Use `now + 1 min`.
-- [ ] Reschedule notifications when today's data changes — the once-per-day localStorage flag suppresses later arrivals; clean up old `notifications-scheduled-*` keys.
+- [x] Notification time bug — when the slot has passed, `setMinutes(now.getMinutes() + 1)` is applied to the 08:00 date, still in the past (`NotificationService.ts:71`, also lines 86, 101, 115). Use `now + 1 min`.
+- [x] Reschedule notifications when today's data changes — the once-per-day localStorage flag suppresses later arrivals; clean up old `notifications-scheduled-*` keys.
+  - Done 2026-11-04: past slots fire at now + 1 min. The daily flag is replaced by a key → ID map, so a same-day change cancels dropped reminders and schedules only new ones (no duplicates); legacy `'true'` records are adopted; earlier days' keys are removed.
 - [ ] Check-in proceeds silently when the room is missing (`ReservationService.ts:122`) — throw `Room not found`.
 - [ ] Validate date format `yyyy-MM-dd` (regex) in Reservation, Payment, Task schemas — overlap logic depends on lexical comparison.
 - [ ] Add a payment amount upper bound and 2-decimal precision in `PaymentSchema`.
@@ -236,10 +237,10 @@ Each fix starts with a failing test.
 | 0 | MS13 Repo Hygiene | 4 | 4 | ✅ Complete |
 | 1 | MS14 Backup, Storage & Privacy | 7 | 7 | ✅ Complete |
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
-| 2 | MS16 Domain & Scheduling Bugs | 8 | 3 | 🟨 In progress |
+| 2 | MS16 Domain & Scheduling Bugs | 8 | 5 | 🟨 In progress |
 | 2 | MS17 Error Handling & i18n Leaks | 6 | 0 | ⬜ Not started |
 | 3 | MS18 Structure & Enforcement | 8 | 0 | ⬜ Not started |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **67** | **36** | 🟨 54% complete |
+| | **Total** | **67** | **38** | 🟨 57% complete |

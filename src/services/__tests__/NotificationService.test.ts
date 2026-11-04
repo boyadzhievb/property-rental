@@ -183,7 +183,7 @@ describe('NotificationService', () => {
       expect(scheduleCall.notifications[2].body).toContain('Suite 3')
       expect(scheduleCall.notifications[3].title).toBe('Payment')
       expect(scheduleCall.notifications[3].body).toContain('Carol')
-      expect(localStorage.getItem(`notifications-scheduled-${today}`)).toBe('true')
+      expect(localStorage.getItem(`notifications-scheduled-${today}`)).toBeTruthy()
     })
 
     it('does not call schedule when there are no notifications to send', async () => {
@@ -197,7 +197,91 @@ describe('NotificationService', () => {
         translations: makeTranslations(),
       })
       expect(LocalNotifications.schedule).not.toHaveBeenCalled()
-      expect(localStorage.getItem(`notifications-scheduled-${today}`)).toBe('true')
+      expect(localStorage.getItem(`notifications-scheduled-${today}`)).toBeTruthy()
+    })
+  })
+
+  describe('scheduleDailyNotifications timing and rescheduling', () => {
+    const at = (hours: number, minutes: number) => new Date(2026, 10, 4, hours, minutes)
+    const emptyDay = { arrivals: [], departures: [], cleaningRooms: [], pendingPayments: [] }
+    const scheduledAt = (callIndex: number) =>
+      vi.mocked(LocalNotifications.schedule).mock.calls[callIndex][0].notifications.map(notification => ({
+        body: notification.body,
+        at: (notification.schedule?.at as Date).getTime(),
+      }))
+
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true)
+      localStorage.setItem('notifications-enabled', 'true')
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('schedules a reminder whose slot has passed one minute from now, not earlier today', async () => {
+      vi.setSystemTime(at(11, 42))
+
+      await service.scheduleDailyNotifications({ ...emptyDay, arrivals: [{ guestName: 'Alice', roomName: 'Suite 1' }], translations: makeTranslations() })
+
+      expect(scheduledAt(0)).toEqual([{ body: 'Alice arriving in Suite 1', at: at(11, 43).getTime() }])
+    })
+
+    it('schedules a reminder at its slot when the slot is still ahead', async () => {
+      vi.setSystemTime(at(6, 0))
+
+      await service.scheduleDailyNotifications({ ...emptyDay, arrivals: [{ guestName: 'Alice', roomName: 'Suite 1' }], translations: makeTranslations() })
+
+      expect(scheduledAt(0)).toEqual([{ body: 'Alice arriving in Suite 1', at: at(8, 0).getTime() }])
+    })
+
+    it('on a same-day data change, cancels dropped reminders and schedules only new ones', async () => {
+      vi.setSystemTime(at(6, 0))
+      await service.scheduleDailyNotifications({
+        ...emptyDay,
+        arrivals: [{ guestName: 'Alice', roomName: 'Suite 1' }],
+        pendingPayments: [{ guestName: 'Carol' }],
+        translations: makeTranslations(),
+      })
+      const [aliceId] = vi.mocked(LocalNotifications.schedule).mock.calls[0][0].notifications.map(notification => notification.id)
+
+      // Alice's booking was cancelled and Dan's was added; Carol's reminder is unchanged.
+      vi.setSystemTime(at(11, 42))
+      await service.scheduleDailyNotifications({
+        ...emptyDay,
+        arrivals: [{ guestName: 'Dan', roomName: 'Suite 2' }],
+        pendingPayments: [{ guestName: 'Carol' }],
+        translations: makeTranslations(),
+      })
+
+      expect(LocalNotifications.cancel).toHaveBeenCalledWith({ notifications: [{ id: aliceId }] })
+      expect(scheduledAt(1)).toEqual([{ body: 'Dan arriving in Suite 2', at: at(11, 43).getTime() }])
+      const danId = vi.mocked(LocalNotifications.schedule).mock.calls[1][0].notifications[0].id
+      expect(danId).not.toBe(aliceId)
+    })
+
+    it('does nothing when called again with unchanged data', async () => {
+      vi.setSystemTime(at(6, 0))
+      const day = { ...emptyDay, arrivals: [{ guestName: 'Alice', roomName: 'Suite 1' }], translations: makeTranslations() }
+
+      await service.scheduleDailyNotifications(day)
+      await service.scheduleDailyNotifications(day)
+
+      expect(LocalNotifications.schedule).toHaveBeenCalledTimes(1)
+      expect(LocalNotifications.cancel).not.toHaveBeenCalled()
+    })
+
+    it('removes scheduling records from previous days', async () => {
+      vi.setSystemTime(at(6, 0))
+      localStorage.setItem('notifications-scheduled-2026-11-01', 'true')
+      localStorage.setItem('notifications-scheduled-2026-11-03', '[]')
+
+      await service.scheduleDailyNotifications({ ...emptyDay, translations: makeTranslations() })
+
+      expect(localStorage.getItem('notifications-scheduled-2026-11-01')).toBeNull()
+      expect(localStorage.getItem('notifications-scheduled-2026-11-03')).toBeNull()
+      expect(localStorage.getItem('notifications-scheduled-2026-11-04')).not.toBeNull()
     })
   })
 })
