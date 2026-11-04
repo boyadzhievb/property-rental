@@ -103,8 +103,10 @@ export class ReservationService {
 
   async checkIn(id: string): Promise<Reservation | null> {
     return this.transitionWithRoom(id, (reservation, room) => {
+      // Checking in marks the room Occupied; without a room that invariant cannot hold.
+      if (!room) throw new Error('Room not found');
       reservation.checkIn();
-      room?.occupy();
+      room.occupy();
       return room;
     });
   }

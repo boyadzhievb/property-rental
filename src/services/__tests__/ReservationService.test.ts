@@ -254,6 +254,17 @@ describe('ReservationService', () => {
     })
   })
 
+  describe('checkIn with a missing room', () => {
+    it('throws Room not found and leaves the reservation Confirmed', async () => {
+      seedGuest()
+      seedReservation({ roomId: 'room-gone' })
+
+      await expect(service.checkIn('res-1')).rejects.toThrow('Room not found')
+
+      expect(resStore.get('res-1').status).toBe('Confirmed')
+    })
+  })
+
   describe('checkOut', () => {
     it('sets reservation to Checked Out and room to Cleaning', async () => {
       seedRoom({ status: RoomStatus.OCCUPIED })

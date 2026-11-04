@@ -158,3 +158,51 @@ describe('TaskSchema', () => {
     expect(() => TaskSchema.parse({ ...valid, date: '' })).toThrow()
   })
 })
+
+describe('local date fields (yyyy-MM-dd)', () => {
+  const reservation = {
+    id: 'r-1', roomId: 'room-1', guestId: 'guest-1',
+    arrivalDate: '2026-09-10', departureDate: '2026-09-15',
+    guestsCount: 1, status: 'Confirmed', price: 500,
+  }
+  const payment = { id: 'p-1', reservationId: 'r-1', amount: 200, date: '2026-09-10', method: 'cash', note: '' }
+  const task = { id: 't-1', title: 'Clean room', category: 'cleaning', completed: false, date: '2026-09-10', auto: false }
+
+  const badDates = ['2026-9-10', '10/09/2026', '2026-09-10T00:00:00.000Z', '2026-02-30', '2026-13-01', 'tomorrow']
+
+  it.each(badDates)('ReservationSchema rejects arrivalDate %s', (date) => {
+    expect(ReservationSchema.safeParse({ ...reservation, arrivalDate: date, departureDate: '2026-12-31' }).success).toBe(false)
+  })
+
+  it.each(badDates)('ReservationSchema rejects departureDate %s', (date) => {
+    expect(ReservationSchema.safeParse({ ...reservation, arrivalDate: '2026-01-01', departureDate: date }).success).toBe(false)
+  })
+
+  it('ReservationSchema rejects a malformed recurrence end date', () => {
+    expect(ReservationSchema.safeParse({ ...reservation, recurrence: { pattern: 'weekly', endDate: '2026/12/01' } }).success).toBe(false)
+  })
+
+  it.each(badDates)('PaymentSchema rejects date %s', (date) => {
+    expect(PaymentSchema.safeParse({ ...payment, date }).success).toBe(false)
+  })
+
+  it.each(badDates)('TaskSchema rejects date %s', (date) => {
+    expect(TaskSchema.safeParse({ ...task, date }).success).toBe(false)
+  })
+
+  it('accepts a leap day', () => {
+    expect(PaymentSchema.safeParse({ ...payment, date: '2028-02-29' }).success).toBe(true)
+  })
+})
+
+describe('PaymentSchema amount', () => {
+  const payment = { id: 'p-1', reservationId: 'r-1', amount: 200, date: '2026-09-10', method: 'cash', note: '' }
+
+  it.each([19.99, 0.01, 1_000_000])('accepts %s', (amount) => {
+    expect(PaymentSchema.safeParse({ ...payment, amount }).success).toBe(true)
+  })
+
+  it.each([33.333, 0.001, 1_000_000.01, Number.POSITIVE_INFINITY, Number.NaN])('rejects %s', (amount) => {
+    expect(PaymentSchema.safeParse({ ...payment, amount }).success).toBe(false)
+  })
+})
