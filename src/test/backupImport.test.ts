@@ -196,3 +196,26 @@ describe('referential checks on import', () => {
     expect(report.total).toBe(5)
   })
 })
+
+describe('payment amounts on restore', () => {
+  beforeEach(() => {
+    globalThis.indexedDB = new IDBFactory()
+    vi.resetModules()
+  })
+
+  it('rounds amounts with more than 2 decimals instead of skipping the payment', async () => {
+    const client = await import('../api/client')
+    const { backupService } = await import('../services/BackupService')
+    const reservation = { id: 'res-1', roomId: 'room-1', guestId: 'guest-1', arrivalDate: '2026-11-10', departureDate: '2026-11-12', guestsCount: 1, status: 'Confirmed', price: 200 }
+
+    const report = await backupService.import({
+      rooms: [existingRoom],
+      guests: [existingGuest],
+      reservations: [reservation],
+      payments: [{ id: 'pay-1', reservationId: 'res-1', amount: 33.333, date: '2026-11-10', method: 'cash', note: '' }],
+    })
+
+    expect(report.total).toBe(0)
+    expect((await client.api.payments.getAll()).map(payment => payment.amount)).toEqual([33.33])
+  })
+})

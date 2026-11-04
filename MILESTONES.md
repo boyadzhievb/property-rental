@@ -177,7 +177,7 @@ Each fix starts with a failing test.
 - [x] Check-in proceeds silently when the room is missing (`ReservationService.ts:122`) — throw `Room not found`.
 - [x] Validate date format `yyyy-MM-dd` (regex) in Reservation, Payment, Task schemas — overlap logic depends on lexical comparison.
 - [x] Add a payment amount upper bound and 2-decimal precision in `PaymentSchema`.
-  - Done 2026-11-04: shared `src/schemas/localDate.ts` (format + real calendar date) used for reservation arrival/departure/recurrence end, payment and task dates; `MAX_PAYMENT_AMOUNT = 1_000_000`, at most 2 decimals. Note: backups with records that fail the stricter rules now report them as skipped.
+  - Done 2026-11-04: shared `src/schemas/localDate.ts` (format + real calendar date) used for reservation arrival/departure/recurrence end, payment and task dates; `MAX_PAYMENT_AMOUNT = 1_000_000`, at most 2 decimals. Amounts with more than 2 decimals are rounded to cents (`src/domain/money.ts` `roundToCents`) both when entering a payment and on restore, instead of being rejected or skipped.
 
 ### MS17: Error Handling & i18n Leaks
 

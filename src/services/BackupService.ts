@@ -6,6 +6,7 @@ import { GuestSchema } from '../schemas/GuestSchema';
 import { ReservationSchema } from '../schemas/ReservationSchema';
 import { PaymentSchema } from '../schemas/PaymentSchema';
 import { TaskSchema } from '../schemas/TaskSchema';
+import { roundToCents } from '../domain/money';
 import { BACKUP_SCHEMA_VERSION, BackupFileSchema, type BackupFile } from '../schemas/BackupSchema';
 
 export type { BackupData, BackupFile };
@@ -128,6 +129,16 @@ function missingLink(kind: string, id: string | undefined, knownIds: Set<string>
   return id !== undefined && !knownIds.has(id) ? `${kind} "${id}"` : undefined;
 }
 
+/**
+ * Older app versions saved payment amounts exactly as typed (e.g. 33.333). Round them to cents
+ * so such payments are restored instead of being skipped by the 2-decimal rule.
+ */
+function withAmountInCents(record: unknown): unknown {
+  if (typeof record !== 'object' || record === null || !('amount' in record)) return record;
+  const { amount } = record;
+  return typeof amount === 'number' && Number.isFinite(amount) ? { ...record, amount: roundToCents(amount) } : record;
+}
+
 function describeFormatError(error: z.ZodError): string {
   const key = String(error.issues[0]?.path[0] ?? '');
   if ((RECORD_KEYS as readonly string[]).includes(key)) return `Invalid format: "${key}" must be an array`;
@@ -171,7 +182,7 @@ function parseBackup(data: unknown): ParsedBackup {
   const reservations = dropOrphans(parseRecords(backup.reservations, ReservationSchema), reservation =>
     missingLink('room', reservation.roomId, roomIds) ?? missingLink('guest', reservation.guestId, guestIds));
   const reservationIds = idsOf(reservations);
-  const payments = dropOrphans(parseRecords(backup.payments, PaymentSchema), payment =>
+  const payments = dropOrphans(parseRecords(backup.payments?.map(withAmountInCents), PaymentSchema), payment =>
     missingLink('reservation', payment.reservationId, reservationIds));
   const tasks = dropOrphans(parseRecords(backup.tasks, TaskSchema), task =>
     missingLink('room', task.linkedRoomId, roomIds)

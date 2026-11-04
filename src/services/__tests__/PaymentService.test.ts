@@ -92,6 +92,22 @@ describe('PaymentService', () => {
     service = new PaymentService()
   })
 
+  describe('createPayment amount rounding', () => {
+    it.each([[33.333, 33.33], [19.995, 20], [0.005, 0.01], [100.1, 100.1]])('stores %s as %s', async (typed, stored) => {
+      seedReservation()
+
+      const payment = await service.createPayment(makePaymentData({ amount: typed }))
+
+      expect(payment.amount).toBe(stored)
+      expect(payStore.get('pay-1').amount).toBe(stored)
+    })
+
+    it('still rejects an amount that rounds to zero', async () => {
+      seedReservation()
+      await expect(service.createPayment(makePaymentData({ amount: 0.004 }))).rejects.toThrow()
+    })
+  })
+
   describe('getAllPayments', () => {
     it('returns all payments', async () => {
       payStore.set('pay-1', makePaymentData({ id: 'pay-1' }))

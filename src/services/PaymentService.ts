@@ -1,5 +1,6 @@
 import { Payment, type PaymentData } from '../domain/Payment';
 import { PaymentSchema } from '../schemas/PaymentSchema';
+import { roundToCents } from '../domain/money';
 import { paymentRepository } from '../repositories/PaymentRepository';
 import { atomicReadWrite } from '../api/client';
 import type { Reservation as ReservationRecord, Payment as PaymentRecord } from '../api/client';
@@ -14,7 +15,9 @@ export class PaymentService {
   }
 
   async createPayment(data: PaymentData): Promise<Payment> {
-    const validated = PaymentSchema.parse(data);
+    // Amount fields accept any decimals (step="0.01" is not enforced without a native form
+    // submit), so normalize to cents here rather than rejecting e.g. 33.333.
+    const validated = PaymentSchema.parse({ ...data, amount: roundToCents(data.amount) });
 
     const payment = await atomicReadWrite<Payment>(
       ['reservations', 'payments'],
