@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Offline-first PWA for short-term rental owners. Daily operating tool to manage rooms, guests, reservations, payments, and tasks. No backend — all data lives in IndexedDB, never leaves the device. Deployed to GitHub Pages; shipped to Google Play and the App Store via Capacitor 8.
+Offline-first PWA for short-term rental owners. Daily operating tool to manage rooms, guests, reservations, payments, and tasks. No backend — all data lives in IndexedDB, never leaves the device (OS cloud backups are disabled; manual JSON export is the only copy). Deployed to GitHub Pages; shipped to Google Play and the App Store via Capacitor 8.
 
 ## Architecture
 
@@ -91,6 +91,7 @@ Auto-deploys to GitHub Pages on push to `master` via `.github/workflows/deploy.y
 ## Key design decisions
 
 - **No backend by design** — privacy-first, works offline, zero infrastructure cost.
+- **No OS cloud backups** — Android `allowBackup="false"` + `res/xml/data_extraction_rules.xml` (no Google backup, no device transfer); iOS excludes `Library/WebKit` from backup in `AppDelegate.swift`. Guest PII never reaches a Google/Apple account; the trade-off is that a lost phone without a manual export means lost data.
 - **Domain models enforce rules** — UI cannot bypass state machine; services call domain methods that throw on invalid transitions.
 - **One context per entity** — keeps re-renders scoped; contexts hold both state and dispatch methods.
 - **Mobile via Capacitor** — same build output wrapped in native shell, no code changes needed. Native-only features (local notifications, filesystem export) are guarded by `Capacitor.isNativePlatform()`.

@@ -7,8 +7,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        excludeWebDataFromBackup()
         return true
+    }
+
+    /// Keep the WebView's storage (IndexedDB with guest and payment records, localStorage)
+    /// out of iCloud and computer backups. The only copy outside the app is a backup file
+    /// the user exports manually from Settings > Export Backup.
+    private func excludeWebDataFromBackup() {
+        guard let libraryURL = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first else { return }
+        var webKitURL = libraryURL.appendingPathComponent("WebKit", isDirectory: true)
+        do {
+            // Create it before the WebView does, so the very first data is already excluded.
+            try FileManager.default.createDirectory(at: webKitURL, withIntermediateDirectories: true)
+            var resourceValues = URLResourceValues()
+            resourceValues.isExcludedFromBackup = true
+            try webKitURL.setResourceValues(resourceValues)
+        } catch {
+            print("Failed to exclude WebKit data from backup: \(error)")
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

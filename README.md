@@ -19,6 +19,17 @@ A property management application for short-term rentals. An owner's daily opera
 
 This application runs entirely on your device. All data is stored in the browser's IndexedDB and never leaves your machine. There are no external API calls, no cloud services, no analytics, and no telemetry. The included service worker enables offline use after the initial load.
 
+### No automatic cloud backups
+
+The mobile apps deliberately **exclude their data from operating-system backups**:
+
+- **Android** — `android:allowBackup="false"` plus `data_extraction_rules.xml` keep app data out of Google Drive backup and out of device-to-device transfer when setting up a new phone.
+- **iOS** — the WebView storage folder (`Library/WebKit`) is marked `isExcludedFromBackup` on every launch, so it is not included in iCloud or computer backups.
+
+**Consequence:** if the phone is lost, reset, replaced, or the app is uninstalled, the data is gone, because no copy exists anywhere else. The **only** way to keep a copy is **Settings → Export Backup**, which writes a JSON file you control. Export regularly and keep the file somewhere safe. After that, the file is an ordinary file, and your phone, computer, or cloud storage treats it like any other file you own.
+
+In the browser (PWA), data lives in the browser's site storage, which browsers do not sync or back up.
+
 ## How It Works
 
 The app follows a layered architecture:

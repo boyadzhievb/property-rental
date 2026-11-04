@@ -139,7 +139,8 @@ Open items from the 2026-09-22 review (`chat-22sep.md`) that are still unresolve
 - [ ] Referential checks on import — reservations → rooms/guests, payments → reservations.
 - [ ] Call `navigator.storage.persist()` on startup — IndexedDB is evictable (Safari especially) for PWA users.
 - [ ] Add `onblocked` / `onversionchange` handlers in `openDB()` (`client.ts:93`) so upgrades don't hang with another tab open.
-- [ ] **Privacy claim mismatch** — `android:allowBackup="true"` (`AndroidManifest.xml:4`) uploads guest PII to Google Drive; iOS backs up the app container to iCloud. Either disable (`allowBackup=false` + `dataExtractionRules`, iOS exclude-from-backup) or update README, privacy policy, and Play Data Safety form.
+- [x] **Privacy claim mismatch** — `android:allowBackup="true"` (`AndroidManifest.xml:4`) uploads guest PII to Google Drive; iOS backs up the app container to iCloud. Either disable (`allowBackup=false` + `dataExtractionRules`, iOS exclude-from-backup) or update README, privacy policy, and Play Data Safety form.
+  - Done 2026-11-04 (decision: disable): `allowBackup="false"` + `res/xml/data_extraction_rules.xml` (cloud backup and device transfer excluded); iOS `AppDelegate.excludeWebDataFromBackup()` marks `Library/WebKit` as excluded. README, privacy policy (Nov 4 2026) and HLD state that Export Backup is the only copy.
 
 ### MS15: Transactional Integrity
 
@@ -226,7 +227,7 @@ Each fix starts with a failing test.
 |-------|-----------|-------|------|--------|
 | 0 | MS12 Claude Code Infrastructure | 14 | 14 | ✅ Complete |
 | 0 | MS13 Repo Hygiene | 4 | 2 | 🟨 In progress |
-| 1 | MS14 Backup, Storage & Privacy | 7 | 1 | 🟨 In progress |
+| 1 | MS14 Backup, Storage & Privacy | 7 | 2 | 🟨 In progress |
 | 1 | MS15 Transactional Integrity | 8 | 0 | ⬜ Not started |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 0 | ⬜ Not started |
 | 2 | MS17 Error Handling & i18n Leaks | 6 | 0 | ⬜ Not started |
@@ -234,4 +235,4 @@ Each fix starts with a failing test.
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **67** | **17** | 🟨 25% complete |
+| | **Total** | **67** | **18** | 🟨 27% complete |
