@@ -13,12 +13,8 @@ export class TaskRepository {
   }
 
   async getById(id: string): Promise<Task | null> {
-    try {
-      const data = await api.tasks.getById(id);
-      return data ? new Task(data) : null;
-    } catch {
-      return null;
-    }
+    const data = await api.tasks.getById(id);
+    return data == null ? null : new Task(data);
   }
 
   async save(task: Task): Promise<Task> {

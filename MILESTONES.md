@@ -148,14 +148,14 @@ Open items from the 2026-09-22 review (`chat-22sep.md`) that are still unresolve
 
 ### MS15: Transactional Integrity
 
-- [ ] `atomicReadWrite()` must call `transaction.abort()` when the callback throws (`client.ts:461-473`) — partial `put()`s currently commit.
+- [x] `atomicReadWrite()` must call `transaction.abort()` when the callback throws (`client.ts:461-473`) — partial `put()`s currently commit.
 - [ ] Move reservation create (conflict check + save) into a single transaction — double-tap / two tabs can double-book (`ReservationService.ts:59-69`).
 - [ ] Move `checkIn` / `checkOut` / `cancel` / `cancelSeries` reads inside the write transaction (stale-read overwrite risk).
 - [ ] Make `deleteReservation()` cascade atomic (`ReservationService.ts:201`).
 - [ ] Make `toggleTask()` room transition + task save atomic (`TaskService.ts:23-39`).
-- [ ] `api.*.update()` on a missing ID silently writes a partial record (`client.ts:497`) — throw instead; do read+write in one transaction.
-- [ ] Repositories detect "not found" via a caught TypeError from `new Room(undefined)` and swallow real DB errors (`RoomRepository.ts:14-20`, Guest, Reservation). Check `data == null` explicitly, let other errors propagate (as `PaymentRepository` does).
-- [ ] `batchPut()` — add `onabort` handler so the promise can't hang.
+- [x] `api.*.update()` on a missing ID silently writes a partial record (`client.ts:497`) — throw instead; do read+write in one transaction.
+- [x] Repositories detect "not found" via a caught TypeError from `new Room(undefined)` and swallow real DB errors (`RoomRepository.ts:14-20`, Guest, Reservation). Check `data == null` explicitly, let other errors propagate (as `PaymentRepository` does).
+- [x] `batchPut()` — add `onabort` handler so the promise can't hang.
 
 ---
 
@@ -232,11 +232,11 @@ Each fix starts with a failing test.
 | 0 | MS12 Claude Code Infrastructure | 14 | 14 | ✅ Complete |
 | 0 | MS13 Repo Hygiene | 4 | 2 | 🟨 In progress |
 | 1 | MS14 Backup, Storage & Privacy | 7 | 7 | ✅ Complete |
-| 1 | MS15 Transactional Integrity | 8 | 0 | ⬜ Not started |
+| 1 | MS15 Transactional Integrity | 8 | 4 | 🟨 In progress |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 0 | ⬜ Not started |
 | 2 | MS17 Error Handling & i18n Leaks | 6 | 0 | ⬜ Not started |
 | 3 | MS18 Structure & Enforcement | 8 | 0 | ⬜ Not started |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **67** | **23** | 🟨 34% complete |
+| | **Total** | **67** | **27** | 🟨 40% complete |

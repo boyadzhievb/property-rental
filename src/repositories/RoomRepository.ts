@@ -12,12 +12,8 @@ export class RoomRepository {
   }
 
   async getById(id: string): Promise<Room | null> {
-    try {
-      const data = await api.rooms.getById(id);
-      return new Room(toRoomData(data));
-    } catch {
-      return null;
-    }
+    const data = await api.rooms.getById(id);
+    return data == null ? null : new Room(toRoomData(data));
   }
 
   async save(room: Room): Promise<Room> {

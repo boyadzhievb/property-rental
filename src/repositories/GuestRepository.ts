@@ -8,12 +8,8 @@ export class GuestRepository {
   }
 
   async getById(id: string): Promise<Guest | null> {
-    try {
-      const data = await api.guests.getById(id);
-      return new Guest(data);
-    } catch {
-      return null;
-    }
+    const data = await api.guests.getById(id);
+    return data == null ? null : new Guest(data);
   }
 
   async save(guest: Guest): Promise<Guest> {

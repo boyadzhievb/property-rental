@@ -13,12 +13,8 @@ export class ReservationRepository {
   }
 
   async getById(id: string): Promise<Reservation | null> {
-    try {
-      const data = await api.reservations.getById(id);
-      return new Reservation(data);
-    } catch {
-      return null;
-    }
+    const data = await api.reservations.getById(id);
+    return data == null ? null : new Reservation(data);
   }
 
   async save(reservation: Reservation): Promise<Reservation> {

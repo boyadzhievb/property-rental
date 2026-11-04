@@ -346,7 +346,7 @@ function getAll<T>(storeName: string): Promise<T[]> {
   });
 }
 
-function getById<T>(storeName: string, id: string): Promise<T> {
+function getById<T>(storeName: string, id: string): Promise<T | undefined> {
   return getDB().then(db => {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readonly');
@@ -357,26 +357,51 @@ function getById<T>(storeName: string, id: string): Promise<T> {
   });
 }
 
-function put<T>(storeName: string, item: T): Promise<T> {
-  return getDB().then(db => {
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, 'readwrite');
-      tx.objectStore(storeName).put(item);
-      tx.oncomplete = () => { notifyOtherTabs(); resolve(item); };
-      tx.onerror = () => reject(tx.error);
-    });
+/**
+ * Resolve when `transaction` commits; reject when it fails or is aborted. Attach it before
+ * issuing requests that may finish the transaction. Aborts without a request error (quota
+ * exceeded, explicit abort) only fire `abort`, so that handler is required to avoid hanging.
+ */
+export function waitForTransaction(transaction: IDBTransaction): Promise<void> {
+  return new Promise((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    // Request errors bubble here before transaction.error is set; report the request's error.
+    transaction.onerror = (event) => {
+      const requestError = event.target instanceof IDBRequest ? event.target.error : null;
+      reject(transaction.error ?? requestError ?? new DOMException('Transaction failed', 'UnknownError'));
+    };
+    transaction.onabort = () => reject(transaction.error ?? new DOMException('Transaction aborted', 'AbortError'));
   });
 }
 
-function deleteById(storeName: string, id: string): Promise<void> {
-  return getDB().then(db => {
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, 'readwrite');
-      tx.objectStore(storeName).delete(id);
-      tx.oncomplete = () => { notifyOtherTabs(); resolve(); };
-      tx.onerror = () => reject(tx.error);
-    });
+async function put<T>(storeName: string, item: T): Promise<T> {
+  const db = await getDB();
+  const tx = db.transaction(storeName, 'readwrite');
+  const done = waitForTransaction(tx);
+  tx.objectStore(storeName).put(item);
+  await done;
+  notifyOtherTabs();
+  return item;
+}
+
+/** Merge `data` into an existing record, reading and writing in one transaction. Throws if the record is missing. */
+async function updateById<T extends object>(storeName: string, id: string, data: Partial<T>): Promise<T> {
+  return atomicReadWrite([storeName], async (stores) => {
+    const existing = await stores[storeName].get<T>(id);
+    if (existing === undefined) throw new Error(`${storeName} record "${id}" not found`);
+    const updated = { ...existing, ...data };
+    stores[storeName].put(updated);
+    return updated;
   });
+}
+
+async function deleteById(storeName: string, id: string): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction(storeName, 'readwrite');
+  const done = waitForTransaction(tx);
+  tx.objectStore(storeName).delete(id);
+  await done;
+  notifyOtherTabs();
 }
 
 function getByIndex<T>(storeName: string, indexName: string, key: IDBValidKey): Promise<T[]> {
@@ -408,12 +433,21 @@ function wrapRequest<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
+/**
+ * Run `callback` inside one readwrite transaction. If the callback throws, the transaction is
+ * aborted and none of its writes are kept.
+ *
+ * The callback may only await requests made through `stores`: awaiting anything else (another
+ * getDB() call, a timer, fetch) lets the transaction auto-commit, after which further requests
+ * fail with TransactionInactiveError.
+ */
 export async function atomicReadWrite<T>(
   storeNames: string[],
   callback: (stores: Record<string, StoreAccessor>) => Promise<T>,
 ): Promise<T> {
   const database = await getDB();
   const transaction = database.transaction(storeNames, 'readwrite');
+  const done = waitForTransaction(transaction);
 
   const stores: Record<string, StoreAccessor> = {};
   for (const name of storeNames) {
@@ -426,14 +460,23 @@ export async function atomicReadWrite<T>(
     };
   }
 
-  const result = await callback(stores);
+  let result: T;
+  try {
+    result = await callback(stores);
+  } catch (error) {
+    done.catch(() => {
+      // The abort below rejects `done`; the callback's error is the one worth reporting.
+    });
+    try {
+      transaction.abort();
+    } catch {
+      // Already committed or aborted (InvalidStateError): nothing left to roll back.
+    }
+    throw error;
+  }
 
-  await new Promise<void>((resolve, reject) => {
-    transaction.oncomplete = () => { notifyOtherTabs(); resolve(); };
-    transaction.onerror = () => reject(transaction.error);
-    transaction.onabort = () => reject(transaction.error);
-  });
-
+  await done;
+  notifyOtherTabs();
   return result;
 }
 
@@ -441,13 +484,12 @@ export async function batchPut(operations: BatchOperation[]): Promise<void> {
   const db = await getDB();
   const storeNames = [...new Set(operations.map(operation => operation.store))];
   const transaction = db.transaction(storeNames, 'readwrite');
+  const done = waitForTransaction(transaction);
   for (const operation of operations) {
     transaction.objectStore(operation.store).put(operation.data);
   }
-  await new Promise<void>((resolve, reject) => {
-    transaction.oncomplete = () => { notifyOtherTabs(); resolve(); };
-    transaction.onerror = () => reject(transaction.error);
-  });
+  await done;
+  notifyOtherTabs();
 }
 
 export const api = {
@@ -455,16 +497,14 @@ export const api = {
     getAll: () => getAll<Room>('rooms'),
     getById: (id: string) => getById<Room>('rooms', id),
     create: (room: Room) => put('rooms', room),
-    update: (id: string, data: Partial<Room>) =>
-      getById<Room>('rooms', id).then(existing => put('rooms', { ...existing, ...data })),
+    update: (id: string, data: Partial<Room>) => updateById<Room>('rooms', id, data),
     delete: (id: string) => deleteById('rooms', id),
   },
   guests: {
     getAll: () => getAll<Guest>('guests'),
     getById: (id: string) => getById<Guest>('guests', id),
     create: (guest: Guest) => put('guests', guest),
-    update: (id: string, data: Partial<Guest>) =>
-      getById<Guest>('guests', id).then(existing => put('guests', { ...existing, ...data })),
+    update: (id: string, data: Partial<Guest>) => updateById<Guest>('guests', id, data),
     delete: (id: string) => deleteById('guests', id),
   },
   reservations: {
@@ -475,8 +515,7 @@ export const api = {
       }),
     getById: (id: string) => getById<Reservation>('reservations', id),
     create: (reservation: Reservation) => put('reservations', reservation),
-    update: (id: string, data: Partial<Reservation>) =>
-      getById<Reservation>('reservations', id).then(existing => put('reservations', { ...existing, ...data })),
+    update: (id: string, data: Partial<Reservation>) => updateById<Reservation>('reservations', id, data),
     delete: (id: string) => deleteById('reservations', id),
   },
   payments: {

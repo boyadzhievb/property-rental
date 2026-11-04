@@ -13,12 +13,8 @@ export class PaymentRepository {
   }
 
   async getById(id: string): Promise<Payment | null> {
-    try {
-      const data = await api.payments.getById(id);
-      return data ? new Payment(data) : null;
-    } catch {
-      return null;
-    }
+    const data = await api.payments.getById(id);
+    return data == null ? null : new Payment(data);
   }
 
   async save(payment: Payment): Promise<Payment> {
