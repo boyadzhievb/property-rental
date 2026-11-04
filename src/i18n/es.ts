@@ -144,6 +144,10 @@ const es = {
   backupRestored: 'Copia de seguridad restaurada correctamente',
   failedToRestore: 'Error: no se pudo restaurar la copia de seguridad',
   invalidRecordsSkipped: 'registros inválidos omitidos',
+  restoreConfirm: 'La restauración reemplaza todos los datos actuales. Primero se hará una copia de seguridad de sus datos actuales. ¿Continuar?',
+  restoreComparison: 'Actual → copia de seguridad',
+  importWouldEraseData: 'Restauración rechazada: la copia de seguridad no contiene habitaciones, huéspedes ni reservas y borraría sus datos.',
+  preRestoreBackupFailed: 'No se pudo hacer una copia de seguridad de los datos actuales. Restauración cancelada.',
 
   // Setup
   welcome: 'Bienvenido',

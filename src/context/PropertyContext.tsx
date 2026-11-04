@@ -67,7 +67,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
 
   const importData = useCallback(async (data: BackupData) => {
     try {
-      await backupService.import(data);
+      // First-run import: nothing stored yet, so keep valid records even if some are skipped.
+      await backupService.import(data, { allowPartial: true });
       setPropertyName(data.settings?.name || 'My Property');
       setIsConfigured(true);
     } catch (e: unknown) {

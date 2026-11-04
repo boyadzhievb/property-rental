@@ -135,6 +135,10 @@ const fr: TranslationKeys = {
   backupRestored: 'Sauvegarde restaurée avec succès',
   failedToRestore: 'Erreur : échec de la restauration',
   invalidRecordsSkipped: 'enregistrements invalides ignorés',
+  restoreConfirm: 'La restauration remplace toutes les données actuelles. Vos données actuelles seront d’abord sauvegardées. Continuer ?',
+  restoreComparison: 'Actuel → sauvegarde',
+  importWouldEraseData: 'Restauration refusée : la sauvegarde ne contient ni chambres, ni clients, ni réservations et effacerait vos données.',
+  preRestoreBackupFailed: 'Impossible de sauvegarder les données actuelles. Restauration annulée.',
 
   welcome: 'Bienvenue',
   setupTagline: 'Un moyen simple et privé de gérer votre propriété.',

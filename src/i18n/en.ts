@@ -144,6 +144,10 @@ const en = {
   backupRestored: 'Backup restored successfully',
   failedToRestore: 'Error: failed to restore backup',
   invalidRecordsSkipped: 'invalid records skipped',
+  restoreConfirm: 'Restoring replaces all current data. Your current data will be backed up first. Continue?',
+  restoreComparison: 'Current → backup',
+  importWouldEraseData: 'Restore refused: the backup has no rooms, guests or reservations and would erase your data.',
+  preRestoreBackupFailed: 'Could not back up current data. Restore cancelled.',
 
   // Setup
   welcome: 'Welcome',

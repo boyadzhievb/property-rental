@@ -33,8 +33,9 @@ describe('BackupService', () => {
 
   describe('import', () => {
     it('delegates to backupRepository.importAll', async () => {
-      const fakeData = { rooms: [{ id: 'r1' }] }
+      const fakeData = { rooms: [{ id: 'r1', name: 'Suite', status: 'Available', pricePerNight: 100, maxGuests: 2 }] }
       const fakeReport = { imported: { rooms: 1, guests: 0, reservations: 0 }, errors: [] }
+      mockExportAll.mockResolvedValue({})
       mockImportAll.mockResolvedValue(fakeReport)
 
       const result = await service.import(fakeData as unknown as import('../../api/client').BackupData)

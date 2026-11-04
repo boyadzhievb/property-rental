@@ -117,7 +117,7 @@ Open items from the 2026-09-22 review (`chat-22sep.md`) that are still unresolve
 - [x] `test-website.md` — remove the stale "ignore Property.test.ts:68 TS error" note (typecheck is clean); start/stop the dev server in a single command (`npm run dev &` + `kill %1` across separate shells orphans the server on strict port 8443).
 - [x] `track-architecture.md` — include `src/context/` in the layer-boundary greps (misses `PropertyContext` → `api/client`).
 - [x] `release.md` — replace `git add -A` with explicit paths; align commit format with history (`Release vX.Y.Z — …`); add CHANGELOG step.
-- [ ] Consolidate overlapping agents — `project-manager` now defers version checks to `track-versioning` (done). Still open: decide whether to keep `code-reviewer` vs built-in `/code-review` and `security-privacy` vs `/security-review` (project agents carry repo-specific rules).
+- [x] Consolidate overlapping agents — `project-manager` now defers version checks to `track-versioning`. Decision (2026-11-04): keep `code-reviewer` and `security-privacy` alongside the built-in `/code-review` / `/security-review`, since they carry repo-specific rules.
 
 ### MS13: Repo Hygiene
 
@@ -132,7 +132,8 @@ Open items from the 2026-09-22 review (`chat-22sep.md`) that are still unresolve
 
 ### MS14: Backup, Storage & Privacy
 
-- [ ] **Import wipes all data** — `importBackup()` clears all stores then writes only valid records (`client.ts:262-283`). A file containing only `{"settings":{}}` passes `BackupService.validate()` (`BackupService.ts:41`) and erases everything. Add: confirmation dialog, automatic pre-import backup (as reset already does), refuse when import would empty non-empty stores, all-or-nothing option when records are skipped.
+- [x] **Import wipes all data** — `importBackup()` clears all stores then writes only valid records (`client.ts:262-283`). A file containing only `{"settings":{}}` passes `BackupService.validate()` (`BackupService.ts:41`) and erases everything. Add: confirmation dialog, automatic pre-import backup (as reset already does), refuse when import would empty non-empty stores, all-or-nothing option when records are skipped.
+  - Done 2026-11-04: `BackupService.analyze()` + guarded `import()` throw `BackupImportError` (`wouldEraseData` when the backup has no rooms/guests/reservations but the DB does; `invalidRecords` unless `allowPartial`). Settings restore shows a current → backup count comparison incl. skipped records, saves a `property-backup-before-restore-*` file, and aborts if that fails. Regression tests: `src/test/backupImport.test.ts`.
 - [ ] Add `schemaVersion` to the backup format; validate `payments`/`tasks` are arrays; validate `settings` and `preferences` (locale/theme are written to localStorage unchecked).
 - [ ] Persist parsed Zod output instead of raw input in import (unknown fields are currently stored).
 - [ ] Referential checks on import — reservations → rooms/guests, payments → reservations.
@@ -223,9 +224,9 @@ Each fix starts with a failing test.
 
 | Phase | Milestone | Tasks | Done | Status |
 |-------|-----------|-------|------|--------|
-| 0 | MS12 Claude Code Infrastructure | 14 | 13 | 🟨 In progress |
+| 0 | MS12 Claude Code Infrastructure | 14 | 14 | ✅ Complete |
 | 0 | MS13 Repo Hygiene | 4 | 2 | 🟨 In progress |
-| 1 | MS14 Backup, Storage & Privacy | 7 | 0 | ⬜ Not started |
+| 1 | MS14 Backup, Storage & Privacy | 7 | 1 | 🟨 In progress |
 | 1 | MS15 Transactional Integrity | 8 | 0 | ⬜ Not started |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 0 | ⬜ Not started |
 | 2 | MS17 Error Handling & i18n Leaks | 6 | 0 | ⬜ Not started |
@@ -233,4 +234,4 @@ Each fix starts with a failing test.
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **67** | **15** | 🟨 22% complete |
+| | **Total** | **67** | **17** | 🟨 25% complete |

@@ -135,6 +135,10 @@ const de: TranslationKeys = {
   backupRestored: 'Backup erfolgreich wiederhergestellt',
   failedToRestore: 'Fehler: Backup konnte nicht wiederhergestellt werden',
   invalidRecordsSkipped: 'ungültige Einträge übersprungen',
+  restoreConfirm: 'Die Wiederherstellung ersetzt alle aktuellen Daten. Ihre aktuellen Daten werden zuerst gesichert. Fortfahren?',
+  restoreComparison: 'Aktuell → Sicherung',
+  importWouldEraseData: 'Wiederherstellung abgelehnt: Die Sicherung enthält keine Zimmer, Gäste oder Reservierungen und würde Ihre Daten löschen.',
+  preRestoreBackupFailed: 'Aktuelle Daten konnten nicht gesichert werden. Wiederherstellung abgebrochen.',
 
   welcome: 'Willkommen',
   setupTagline: 'Eine einfache und private Verwaltung für Ihre Unterkunft.',

@@ -12,7 +12,7 @@ import { useGuestContext } from '../../context/GuestContext';
 import { useReservationContext } from '../../context/ReservationContext';
 import { usePaymentContext } from '../../context/PaymentContext';
 import { useTaskContext } from '../../context/TaskContext';
-import { backupService } from '../../services/BackupService';
+import { backupService, BackupImportError, type BackupData } from '../../services/BackupService';
 import { notificationService } from '../../services/NotificationService';
 import { SettingsGroup, SettingsItem } from '../ui/SettingsGroup';
 import PageHeader from '../layout/PageHeader';
@@ -52,29 +52,35 @@ export default function SettingsView() {
     }
   };
 
+  /** Save a backup to Documents (native) or trigger a download (web). Returns the file name. */
+  const saveBackupFile = async (data: BackupData, filePrefix: string): Promise<string> => {
+    const json = JSON.stringify(data, null, 2);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `${filePrefix}-${timestamp}.json`;
+
+    if (isNative) {
+      await Filesystem.writeFile({
+        path: filename,
+        data: json,
+        directory: Directory.Documents,
+      });
+    } else {
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = filename;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    }
+    return filename;
+  };
+
   const handleBackup = async () => {
     try {
       const data = await backupService.export();
-      const json = JSON.stringify(data, null, 2);
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const filename = `property-backup-${timestamp}.json`;
-
-      if (isNative) {
-        await Filesystem.writeFile({
-          path: filename,
-          data: json,
-          directory: Directory.Documents,
-        });
-        setRestoreStatus(`${t.backupSavedToDevice} ${filename}`);
-      } else {
-        const blob = new Blob([json], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement('a');
-        anchor.href = url;
-        anchor.download = filename;
-        anchor.click();
-        URL.revokeObjectURL(url);
-      }
+      const filename = await saveBackupFile(data, 'property-backup');
+      if (isNative) setRestoreStatus(`${t.backupSavedToDevice} ${filename}`);
     } catch {
       setRestoreStatus(t.failedToExport);
     }
@@ -112,7 +118,35 @@ export default function SettingsView() {
         return;
       }
 
-      const report = await backupService.import(result.data!);
+      const backup = result.data!;
+      const plan = await backupService.analyze(backup);
+      if (plan.wouldEraseData) {
+        setRestoreStatus(t.importWouldEraseData);
+        e.target.value = '';
+        return;
+      }
+
+      const comparison = [
+        `${t.rooms}: ${plan.current.rooms} → ${plan.incoming.rooms}`,
+        `${t.guests}: ${plan.current.guests} → ${plan.incoming.guests}`,
+        `${t.reservations}: ${plan.current.reservations} → ${plan.incoming.reservations}`,
+      ];
+      const skippedLine = plan.skipped > 0 ? `\n\n${plan.skipped} ${t.invalidRecordsSkipped}` : '';
+      if (!window.confirm(`${t.restoreConfirm}\n\n${t.restoreComparison}\n${comparison.join('\n')}${skippedLine}`)) {
+        e.target.value = '';
+        return;
+      }
+
+      try {
+        await saveBackupFile(await backupService.export(), 'property-backup-before-restore');
+      } catch {
+        setRestoreStatus(t.preRestoreBackupFailed);
+        e.target.value = '';
+        return;
+      }
+
+      // The user has seen and accepted the skipped-record count in the confirmation above.
+      const report = await backupService.import(backup, { allowPartial: true });
       await Promise.all([refreshRooms(), refreshGuests(), refreshReservations(), refreshPayments(), refreshTasks()]);
       if (report.total > 0) {
         console.warn('Import skipped records:', report.skippedDetails);
@@ -120,8 +154,8 @@ export default function SettingsView() {
       } else {
         setRestoreStatus(t.backupRestored);
       }
-    } catch {
-      setRestoreStatus(t.failedToRestore);
+    } catch (error: unknown) {
+      setRestoreStatus(error instanceof BackupImportError && error.code === 'wouldEraseData' ? t.importWouldEraseData : t.failedToRestore);
     }
 
     e.target.value = '';
