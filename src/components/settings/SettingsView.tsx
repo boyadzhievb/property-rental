@@ -113,7 +113,8 @@ export default function SettingsView() {
 
       const result = backupService.validate(parsed);
       if (!result.valid) {
-        setRestoreStatus(`Error: ${result.error}`);
+        console.warn('Backup file rejected:', result.error);
+        setRestoreStatus(result.code === 'newerVersion' ? t.backupFromNewerVersion : t.invalidBackupFormat);
         e.target.value = '';
         return;
       }

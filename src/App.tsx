@@ -52,7 +52,7 @@ function AppContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-ios-bg flex items-center justify-center">
-        <div className="text-ios-text-secondary">Loading...</div>
+        <div className="text-ios-text-secondary">{t.loading}</div>
       </div>
     );
   }
@@ -88,7 +88,7 @@ function AppContent() {
     <div className="min-h-screen bg-ios-bg flex justify-center w-full">
       <div className="w-full h-full min-h-screen max-w-screen-xl relative flex flex-col sm:border-x sm:border-ios-border/20 shadow-sm bg-ios-bg">
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:bg-ios-blue focus:text-white focus:px-4 focus:py-2 focus:rounded-xl focus:text-sm focus:font-semibold">
-          Skip to content
+          {t.skipToContent}
         </a>
         <main id="main-content" className="flex-1 overflow-y-auto no-scrollbar relative w-full">
           <InstallBanner />

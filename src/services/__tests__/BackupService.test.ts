@@ -46,6 +46,15 @@ describe('BackupService', () => {
   })
 
   describe('validate', () => {
+    it.each([
+      [null, 'notObject'],
+      [{ foo: 'bar' }, 'noData'],
+      [{ rooms: 'nope' }, 'invalidField'],
+      [{ schemaVersion: 99, rooms: [] }, 'newerVersion'],
+    ])('reports an error code for %j', (input, code) => {
+      expect(service.validate(input).code).toBe(code)
+    })
+
     it('rejects null', () => {
       const result = service.validate(null)
       expect(result.valid).toBe(false)

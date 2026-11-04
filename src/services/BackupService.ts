@@ -12,9 +12,14 @@ import { BACKUP_SCHEMA_VERSION, BackupFileSchema, type BackupFile } from '../sch
 export type { BackupData, BackupFile };
 export { BACKUP_SCHEMA_VERSION };
 
+/** Why a file is not a usable backup; lets the UI show a translated message. */
+export type BackupFormatErrorCode = 'notObject' | 'noData' | 'invalidField' | 'newerVersion';
+
 interface BackupValidationResult {
   valid: boolean;
+  /** English description for logs; show a translation of `code` to users. */
   error?: string;
+  code?: BackupFormatErrorCode;
   data?: BackupFile;
 }
 
@@ -147,23 +152,23 @@ function describeFormatError(error: z.ZodError): string {
   return 'Invalid backup file format';
 }
 
-function checkFormat(data: unknown): { backup: BackupFile } | { error: string } {
+function checkFormat(data: unknown): { backup: BackupFile } | { error: string; code: BackupFormatErrorCode } {
   if (data === null || typeof data !== 'object') {
-    return { error: 'Invalid file: not a JSON object' };
+    return { error: 'Invalid file: not a JSON object', code: 'notObject' };
   }
   if (Array.isArray(data)) {
-    return { error: 'Invalid backup: file contains no recognizable data (rooms, guests, reservations, or settings)' };
+    return { error: 'Invalid backup: file contains no recognizable data (rooms, guests, reservations, or settings)', code: 'noData' };
   }
 
   const result = BackupFileSchema.safeParse(data);
-  if (!result.success) return { error: describeFormatError(result.error) };
+  if (!result.success) return { error: describeFormatError(result.error), code: 'invalidField' };
 
   const backup = result.data;
   if ((backup.schemaVersion ?? 1) > BACKUP_SCHEMA_VERSION) {
-    return { error: 'Unsupported backup: it was created by a newer version of the app. Update the app and try again.' };
+    return { error: 'Unsupported backup: it was created by a newer version of the app. Update the app and try again.', code: 'newerVersion' };
   }
   if (!backup.settings && RECORD_KEYS.every(key => backup[key] === undefined)) {
-    return { error: 'Invalid backup: file contains no recognizable data (rooms, guests, reservations, or settings)' };
+    return { error: 'Invalid backup: file contains no recognizable data (rooms, guests, reservations, or settings)', code: 'noData' };
   }
   return { backup };
 }
@@ -265,7 +270,7 @@ export class BackupService {
 
   validate(data: unknown): BackupValidationResult {
     const format = checkFormat(data);
-    if ('error' in format) return { valid: false, error: format.error };
+    if ('error' in format) return { valid: false, error: format.error, code: format.code };
     return { valid: true, data: format.backup };
   }
 

@@ -73,6 +73,8 @@ const es = {
   paymentFailed: 'Error en el pago',
   actionFailed: 'Algo salió mal. Inténtelo de nuevo.',
   dismiss: 'Cerrar',
+  somethingWentWrong: 'Algo salió mal',
+  tryAgain: 'Reintentar',
 
   // Guests
   searchGuests: 'Buscar huéspedes...',
@@ -150,6 +152,9 @@ const es = {
   restoreComparison: 'Actual → copia de seguridad',
   importWouldEraseData: 'Restauración rechazada: la copia de seguridad no contiene habitaciones, huéspedes ni reservas y borraría sus datos.',
   preRestoreBackupFailed: 'No se pudo hacer una copia de seguridad de los datos actuales. Restauración cancelada.',
+  skipToContent: 'Saltar al contenido',
+  resetBackupStarted: 'La descarga de la copia de seguridad ha comenzado. Pulse Aceptar para continuar con el restablecimiento o Cancelar para abortar.',
+  backupFromNewerVersion: 'Esta copia de seguridad se creó con una versión más reciente de la aplicación. Actualice la aplicación e inténtelo de nuevo.',
 
   // Setup
   welcome: 'Bienvenido',

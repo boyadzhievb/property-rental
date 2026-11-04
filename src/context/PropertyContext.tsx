@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { api, seedDemoData, configureProperty, resetData as resetDataDb } from '../api/client';
 import { backupService, type BackupData } from '../services/BackupService';
+import { useLocale } from './LocaleContext';
 
 interface PropertyContextValue {
   propertyName: string;
@@ -22,6 +23,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   const [isConfigured, setIsConfigured] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLocale();
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -96,7 +98,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     a.click();
     URL.revokeObjectURL(url);
 
-    const confirmed = window.confirm('Backup download started. Press OK to proceed with reset, or Cancel to abort.');
+    const confirmed = window.confirm(t.resetBackupStarted);
     if (!confirmed) return;
 
     try {
@@ -106,7 +108,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to reset data');
     }
-  }, []);
+  }, [t]);
 
   return (
     <PropertyContext.Provider value={useMemo(() => ({ propertyName, isConfigured, loading, error, clearError, updateName, configureApp, seedData, importData, resetData }), [propertyName, isConfigured, loading, error, clearError, updateName, configureApp, seedData, importData, resetData])}>

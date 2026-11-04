@@ -6,6 +6,7 @@ import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
 import { usePaymentContext } from '../../context/PaymentContext';
 import { useLocale } from '../../context/LocaleContext';
+import { reservationStatusLabel } from '../../i18n/reservationStatus';
 import { reservationService } from '../../services/ReservationService';
 import { paymentService } from '../../services/PaymentService';
 import { type Reservation } from '../../domain/Reservation';
@@ -235,10 +236,7 @@ export default memo(function CalendarView() {
                     selectedReservation.status === 'Checked Out' ? 'text-ios-orange' :
                     'text-ios-red'
                   }`}>
-                    {selectedReservation.status === 'Confirmed' ? t.confirmed :
-                     selectedReservation.status === 'Checked In' ? t.checkedIn :
-                     selectedReservation.status === 'Checked Out' ? t.checkedOut :
-                     t.cancelled}
+                    {reservationStatusLabel(selectedReservation.status, t)}
                   </div>
                 </div>
 

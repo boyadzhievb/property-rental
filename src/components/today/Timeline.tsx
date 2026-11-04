@@ -7,6 +7,7 @@ import { reservationService } from '../../services/ReservationService';
 import { useReservationContext } from '../../context/ReservationContext';
 import { useRoomContext } from '../../context/RoomContext';
 import { useLocale } from '../../context/LocaleContext';
+import { reservationStatusLabel } from '../../i18n/reservationStatus';
 
 interface TimelineEvent {
   type: string;
@@ -84,10 +85,7 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
                       event.reservation.status === 'Checked Out' ? 'text-ios-orange' :
                       'text-ios-red'
                     }`}>
-                      {event.reservation.status === 'Confirmed' ? t.confirmed :
-                       event.reservation.status === 'Checked In' ? t.checkedIn :
-                       event.reservation.status === 'Checked Out' ? t.checkedOut :
-                       t.cancelled}
+                      {reservationStatusLabel(event.reservation.status, t)}
                     </div>
                   </div>
 

@@ -69,6 +69,8 @@ const de: TranslationKeys = {
   paymentFailed: 'Zahlung fehlgeschlagen',
   actionFailed: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
   dismiss: 'Schließen',
+  somethingWentWrong: 'Etwas ist schiefgelaufen',
+  tryAgain: 'Erneut versuchen',
 
   searchGuests: 'Gäste suchen...',
   noGuestsFound: 'Keine Gäste gefunden.',
@@ -141,6 +143,9 @@ const de: TranslationKeys = {
   restoreComparison: 'Aktuell → Sicherung',
   importWouldEraseData: 'Wiederherstellung abgelehnt: Die Sicherung enthält keine Zimmer, Gäste oder Reservierungen und würde Ihre Daten löschen.',
   preRestoreBackupFailed: 'Aktuelle Daten konnten nicht gesichert werden. Wiederherstellung abgebrochen.',
+  skipToContent: 'Zum Inhalt springen',
+  resetBackupStarted: 'Der Download der Sicherung wurde gestartet. Drücken Sie OK, um mit dem Zurücksetzen fortzufahren, oder Abbrechen, um abzubrechen.',
+  backupFromNewerVersion: 'Diese Sicherung wurde mit einer neueren Version der App erstellt. Aktualisieren Sie die App und versuchen Sie es erneut.',
 
   welcome: 'Willkommen',
   setupTagline: 'Eine einfache und private Verwaltung für Ihre Unterkunft.',

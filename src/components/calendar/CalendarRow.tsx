@@ -3,6 +3,8 @@ import { format, addDays } from 'date-fns';
 import { type Room } from '../../domain/Room';
 import { type Reservation } from '../../domain/Reservation';
 import { type Guest } from '../../domain/Guest';
+import { useLocale } from '../../context/LocaleContext';
+import { reservationStatusLabel } from '../../i18n/reservationStatus';
 
 interface CalendarRowProps {
   room: Room;
@@ -14,6 +16,7 @@ interface CalendarRowProps {
 }
 
 export default memo(function CalendarRow({ room, reservations, guests, weekStart, days, onReservationClick }: CalendarRowProps) {
+  const { t } = useLocale();
   const roomReservations = reservations.filter(r => r.roomId === room.id);
 
   return (
@@ -54,7 +57,7 @@ export default memo(function CalendarRow({ room, reservations, guests, weekStart
               onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && onReservationClick) { e.preventDefault(); onReservationClick(res); } }}
               role="button"
               tabIndex={0}
-              aria-label={`${guest?.name || 'Reservation'}, ${res.arrivalDate} to ${res.departureDate}, ${res.status}`}
+              aria-label={`${guest?.name || t.reservation}, ${res.arrivalDate} – ${res.departureDate}, ${reservationStatusLabel(res.status, t)}`}
               className={`absolute top-2 bottom-2 rounded-xl ${barColor} border px-3 py-1 overflow-hidden flex items-center cursor-pointer active:scale-[0.98] transition-transform focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:outline-none`}
               style={{
                 left: `${(actualStart / 7) * 100}%`,

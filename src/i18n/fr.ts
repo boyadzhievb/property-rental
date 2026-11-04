@@ -69,6 +69,8 @@ const fr: TranslationKeys = {
   paymentFailed: 'Échec du paiement',
   actionFailed: 'Une erreur s’est produite. Veuillez réessayer.',
   dismiss: 'Fermer',
+  somethingWentWrong: 'Une erreur s’est produite',
+  tryAgain: 'Réessayer',
 
   searchGuests: 'Rechercher des clients...',
   noGuestsFound: 'Aucun client trouvé.',
@@ -141,6 +143,9 @@ const fr: TranslationKeys = {
   restoreComparison: 'Actuel → sauvegarde',
   importWouldEraseData: 'Restauration refusée : la sauvegarde ne contient ni chambres, ni clients, ni réservations et effacerait vos données.',
   preRestoreBackupFailed: 'Impossible de sauvegarder les données actuelles. Restauration annulée.',
+  skipToContent: 'Aller au contenu',
+  resetBackupStarted: 'Le téléchargement de la sauvegarde a commencé. Appuyez sur OK pour poursuivre la réinitialisation, ou sur Annuler pour l’interrompre.',
+  backupFromNewerVersion: 'Cette sauvegarde a été créée par une version plus récente de l’application. Mettez l’application à jour et réessayez.',
 
   welcome: 'Bienvenue',
   setupTagline: 'Un moyen simple et privé de gérer votre propriété.',

@@ -73,6 +73,8 @@ const en = {
   paymentFailed: 'Payment failed',
   actionFailed: 'Something went wrong. Please try again.',
   dismiss: 'Dismiss',
+  somethingWentWrong: 'Something went wrong',
+  tryAgain: 'Try again',
 
   // Guests
   searchGuests: 'Search guests...',
@@ -150,6 +152,9 @@ const en = {
   restoreComparison: 'Current → backup',
   importWouldEraseData: 'Restore refused: the backup has no rooms, guests or reservations and would erase your data.',
   preRestoreBackupFailed: 'Could not back up current data. Restore cancelled.',
+  skipToContent: 'Skip to content',
+  resetBackupStarted: 'Backup download started. Press OK to proceed with reset, or Cancel to abort.',
+  backupFromNewerVersion: 'This backup was created by a newer version of the app. Update the app and try again.',
 
   // Setup
   welcome: 'Welcome',
