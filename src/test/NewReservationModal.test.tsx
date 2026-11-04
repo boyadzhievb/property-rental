@@ -53,13 +53,15 @@ vi.mock('../context/GuestContext', () => ({
   }),
 }))
 
+const activeLocale = vi.hoisted(() => ({ value: 'en' as 'en' | 'de' }))
 vi.mock('../context/LocaleContext', async () => {
   const englishTranslations = (await import('../i18n/en')).default
+  const germanTranslations = (await import('../i18n/de')).default
   return {
     useLocale: () => ({
-      locale: 'en' as const,
+      locale: activeLocale.value,
       setLocale: vi.fn(),
-      t: englishTranslations,
+      t: activeLocale.value === 'de' ? germanTranslations : englishTranslations,
     }),
   }
 })
@@ -134,5 +136,22 @@ describe('NewReservationModal', () => {
 
     // Should show validation error for empty guest name
     expect(screen.getByText('Guest name is required')).toBeInTheDocument()
+  })
+
+  it('shows validation errors in the current language', async () => {
+    const german = (await import('../i18n/de')).default
+    activeLocale.value = 'de'
+    try {
+      const user = userEvent.setup()
+      render(<NewReservationModal onClose={vi.fn()} />)
+
+      await user.click(screen.getByText(german.newGuest))
+      await user.click(screen.getByText(german.next))
+
+      expect(screen.getByText(german.validationGuestNameRequired)).toBeInTheDocument()
+      expect(screen.queryByText('Guest name is required')).toBeNull()
+    } finally {
+      activeLocale.value = 'en'
+    }
   })
 })

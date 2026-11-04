@@ -192,7 +192,7 @@ Each fix starts with a failing test.
   - Done 2026-11-04: all five listed, plus the `ErrorBoundary` crash screen and `ErrorBanner` dismiss label. `BackupService.validate()` now returns a `code` (`notObject`/`noData`/`invalidField`/`newerVersion`) that the UI translates. Shared `src/i18n/reservationStatus.ts` replaces three copies of the status-label mapping.
 - [x] Domain/service errors shown raw in UI — throw typed error codes and translate in the UI.
   - Done 2026-11-04: `DomainError` (`src/domain/errors.ts`, 21 codes + params, English `message` unchanged) thrown by all domain/service rules; `i18n/errorMessage.ts` translates them (statuses translated, money via the property currency) and falls back to `actionFailed`. Used in Today, Calendar (check-in/out/cancel now caught + banner), Guests, the booking modal and PropertyContext; entity-context load errors show `loadFailed`.
-- [ ] Zod validation messages in forms are English (`'Room is required'`, etc. from `src/schemas/`) — surfaced by the booking modal. Map issues to i18n keys (found while doing the item above).
+- [x] Zod validation messages in forms are English (`'Room is required'`, etc. from `src/schemas/`) — surfaced by the booking modal. Map issues to i18n keys (found while doing the item above). — done 2026-11-04: `i18n/validationMessage.ts` maps schema messages to keys at display time (schemas keep English for logs/tests); a test fails if a booking-form message has no key. The modal's two hardcoded recurrence messages are translated too.
 
 ---
 
@@ -245,9 +245,9 @@ Each fix starts with a failing test.
 | 1 | MS14 Backup, Storage & Privacy | 7 | 7 | ✅ Complete |
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 8 | ✅ Complete |
-| 2 | MS17 Error Handling & i18n Leaks | 7 | 6 | 🟨 In progress |
+| 2 | MS17 Error Handling & i18n Leaks | 7 | 7 | ✅ Complete |
 | 3 | MS18 Structure & Enforcement | 8 | 0 | ⬜ Not started |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **68** | **47** | 🟨 69% complete |
+| | **Total** | **68** | **48** | 🟨 71% complete |

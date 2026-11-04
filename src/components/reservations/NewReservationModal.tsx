@@ -14,6 +14,8 @@ import { ReservationSchema } from '../../schemas/ReservationSchema';
 import GuestInfoStep from './GuestInfoStep';
 import StayDetailsStep from './StayDetailsStep';
 import { errorMessage } from '../../i18n/errorMessage';
+import { validationMessage } from '../../i18n/validationMessage';
+import type { TranslationKeys } from '../../i18n/en';
 
 interface FormData {
   guestId: string;
@@ -32,7 +34,7 @@ interface FormData {
 
 type FormErrors = Partial<Record<string, string>>;
 
-function validateGuestStep(form: FormData, pleaseSelectGuestMsg: string): FormErrors {
+function validateGuestStep(form: FormData, t: TranslationKeys): FormErrors {
   const errors: FormErrors = {};
 
   if (form.isNewGuest) {
@@ -48,21 +50,21 @@ function validateGuestStep(form: FormData, pleaseSelectGuestMsg: string): FormEr
     if (!guestResult.success) {
       for (const issue of guestResult.error.issues) {
         const field = issue.path[0] as string;
-        if (field === 'name') errors.guestName = issue.message;
-        else if (field === 'phone') errors.phone = issue.message;
-        else if (field === 'email') errors.email = issue.message;
+        if (field === 'name') errors.guestName = validationMessage(issue.message, t);
+        else if (field === 'phone') errors.phone = validationMessage(issue.message, t);
+        else if (field === 'email') errors.email = validationMessage(issue.message, t);
       }
     }
   } else {
     if (!form.guestId) {
-      errors.guestId = pleaseSelectGuestMsg;
+      errors.guestId = t.pleaseSelectGuest;
     }
   }
 
   return errors;
 }
 
-function validateStayStep(form: FormData): FormErrors {
+function validateStayStep(form: FormData, t: TranslationKeys): FormErrors {
   const errors: FormErrors = {};
 
   const resResult = ReservationSchema.safeParse({
@@ -79,18 +81,18 @@ function validateStayStep(form: FormData): FormErrors {
   if (!resResult.success) {
     for (const issue of resResult.error.issues) {
       const field = issue.path[0] as string;
-      if (field === 'roomId') errors.roomId = issue.message;
-      else if (field === 'arrivalDate') errors.checkIn = issue.message;
-      else if (field === 'departureDate') errors.checkOut = issue.message;
-      else if (field === 'price') errors.price = issue.message;
+      if (field === 'roomId') errors.roomId = validationMessage(issue.message, t);
+      else if (field === 'arrivalDate') errors.checkIn = validationMessage(issue.message, t);
+      else if (field === 'departureDate') errors.checkOut = validationMessage(issue.message, t);
+      else if (field === 'price') errors.price = validationMessage(issue.message, t);
     }
   }
 
   if (form.recurrencePattern && !form.recurrenceEndDate) {
-    errors.recurrenceEndDate = 'End date is required for recurring reservations';
+    errors.recurrenceEndDate = t.validationRecurrenceEndRequired;
   }
   if (form.recurrencePattern && form.recurrenceEndDate && form.recurrenceEndDate <= form.checkOut) {
-    errors.recurrenceEndDate = 'End date must be after the first check-out';
+    errors.recurrenceEndDate = t.validationRecurrenceEndAfterCheckOut;
   }
 
   return errors;
@@ -166,7 +168,7 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
   }, [form.roomId, form.checkIn, form.checkOut, rooms]);
 
   const handleNext = () => {
-    const stepErrors = validateGuestStep(form, t.pleaseSelectGuest);
+    const stepErrors = validateGuestStep(form, t);
     if (Object.keys(stepErrors).length > 0) {
       setErrors(stepErrors);
       return;
@@ -175,7 +177,7 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
   };
 
   const handleSave = async () => {
-    const stayErrors = validateStayStep(form);
+    const stayErrors = validateStayStep(form, t);
     if (Object.keys(stayErrors).length > 0) {
       setErrors(stayErrors);
       return;
@@ -237,7 +239,7 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
       if (e instanceof ZodError) {
         const zodErrors: FormErrors = {};
         for (const issue of e.issues) {
-          zodErrors[issue.path[0] as string] = issue.message;
+          zodErrors[issue.path[0] as string] = validationMessage(issue.message, t);
         }
         setErrors(zodErrors);
       } else {
