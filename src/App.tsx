@@ -1,15 +1,15 @@
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { Calendar, Home, Users, Settings as SettingsIcon, LayoutGrid, Plus, BarChart3 } from 'lucide-react';
-import { RoomProvider, useRoomContext } from './context/RoomContext';
-import { GuestProvider, useGuestContext } from './context/GuestContext';
-import { ReservationProvider, useReservationContext } from './context/ReservationContext';
+import { RoomProvider } from './context/RoomContext';
+import { GuestProvider } from './context/GuestContext';
+import { ReservationProvider } from './context/ReservationContext';
 import { PaymentProvider } from './context/PaymentContext';
 import { TaskProvider } from './context/TaskContext';
 import { PropertyProvider, usePropertyContext } from './context/PropertyContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LocaleProvider, useLocale } from './context/LocaleContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import ErrorBanner from './components/ui/ErrorBanner';
+import ErrorMessages from './components/layout/ErrorMessages';
 import TodayView from './components/today/TodayView';
 import SetupView from './components/SetupView';
 import TabBar from './components/layout/TabBar';
@@ -25,30 +25,6 @@ const SettingsView = lazy(() => import('./components/settings/SettingsView'));
 const NewReservationModal = lazy(() => import('./components/reservations/NewReservationModal'));
 
 type Tab = 'today' | 'calendar' | 'rooms' | 'guests' | 'reports' | 'settings';
-
-function ErrorMessages() {
-  const { error: propertyError, clearError: clearPropertyError } = usePropertyContext();
-  const { error: roomError, clearError: clearRoomError } = useRoomContext();
-  const { error: guestError, clearError: clearGuestError } = useGuestContext();
-  const { error: resError, clearError: clearResError } = useReservationContext();
-
-  const errors = [
-    { message: propertyError, clear: clearPropertyError },
-    { message: roomError, clear: clearRoomError },
-    { message: guestError, clear: clearGuestError },
-    { message: resError, clear: clearResError },
-  ].filter(e => e.message);
-
-  if (errors.length === 0) return null;
-
-  return (
-    <div className="pt-2">
-      {errors.map((e, i) => (
-        <ErrorBanner key={i} message={e.message!} onDismiss={e.clear} />
-      ))}
-    </div>
-  );
-}
 
 function Loading({ t }: { t: { loading: string } }) {
   return (

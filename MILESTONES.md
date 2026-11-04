@@ -183,7 +183,7 @@ Each fix starts with a failing test.
 
 - [x] Completing a cleaning task throws if the room is no longer in Cleaning (`TaskService.ts:33`) — guard the transition; `handleToggleTask` and the auto-task effect have no `catch` (`TodayView.tsx:93-104`).
   - Done 2026-11-04: `toggleTask()` only vacates a room that is still in Cleaning. TodayView catches failures of toggle, check-in/out, add task and the auto-task effect, logs them and shows a translated `ErrorBanner` (`actionFailed`); `ErrorBanner`'s dismiss label is translated. CalendarView handlers still lack catches (covered by the typed-error-code item below).
-- [ ] Render Payment and Task context errors in `ErrorMessages` (`App.tsx:35`).
+- [x] Render Payment and Task context errors in `ErrorMessages` (`App.tsx:35`). — done 2026-11-04; `ErrorMessages` moved to `src/components/layout/ErrorMessages.tsx` with tests.
 - [ ] Auto-task titles are persisted in English (`TaskService.ts:61,76,91`) — store type + params, translate at render time.
 - [ ] Hardcoded `$` currency (`CalendarView.tsx:261-286`, `PaymentService.ts:36`, others) — add a currency setting and format with `Intl.NumberFormat`.
 - [ ] Hardcoded English strings — `window.confirm` in `PropertyContext.tsx:98`, "Loading..." (`App.tsx:79`), "Skip to content" (`App.tsx:115`), `Error: ${result.error}` (`SettingsView.tsx:110`), `CalendarRow.tsx:57` aria-label.
@@ -240,9 +240,9 @@ Each fix starts with a failing test.
 | 1 | MS14 Backup, Storage & Privacy | 7 | 7 | ✅ Complete |
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 8 | ✅ Complete |
-| 2 | MS17 Error Handling & i18n Leaks | 6 | 1 | 🟨 In progress |
+| 2 | MS17 Error Handling & i18n Leaks | 6 | 2 | 🟨 In progress |
 | 3 | MS18 Structure & Enforcement | 8 | 0 | ⬜ Not started |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **67** | **42** | 🟨 63% complete |
+| | **Total** | **67** | **43** | 🟨 64% complete |
