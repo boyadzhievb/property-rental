@@ -110,13 +110,11 @@ const guestStore = (guestRepository as any)._store as Map<string, any>
 const payStore = (paymentRepository as any)._store as Map<string, any>
 const taskStore = (taskRepository as any)._store as Map<string, any>
 
-vi.mock('../../api/client', () => ({
-  batchPut: vi.fn(async (operations: Array<{ store: string; data: any }>) => {
-    for (const operation of operations) {
-      if (operation.store === 'reservations') resStore.set(operation.data.id, operation.data)
-      if (operation.store === 'rooms') roomStore.set(operation.data.id, operation.data)
-    }
-  }),
+vi.mock('../../api/client', async () => ({
+  atomicReadWrite: async (storeNames: string[], callback: Parameters<typeof import('../../test/fakeAtomicReadWrite').fakeAtomicReadWrite>[2]) => {
+    const { fakeAtomicReadWrite } = await import('../../test/fakeAtomicReadWrite')
+    return fakeAtomicReadWrite({ reservations: resStore, rooms: roomStore, guests: guestStore, payments: payStore, tasks: taskStore }, storeNames, callback)
+  },
 }))
 
 function seedRoom(overrides: Partial<any> = {}) {
@@ -427,9 +425,9 @@ describe('ReservationService', () => {
       await service.deleteReservation('res-1')
 
       expect(resStore.has('res-1')).toBe(false)
-      expect(paymentRepository.getByReservationId).toHaveBeenCalledWith('res-1')
-      expect(taskRepository.getAll).toHaveBeenCalled()
-      expect(reservationRepository.delete).toHaveBeenCalledWith('res-1')
+      expect(payStore.size).toBe(0)
+      expect(taskStore.size).toBe(0)
+      expect(roomStore.has('room-1')).toBe(true)
     })
   })
 })

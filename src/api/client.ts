@@ -422,8 +422,10 @@ export interface BatchOperation {
 
 export interface StoreAccessor {
   get: <T>(key: string) => Promise<T | undefined>;
+  getAll: <T>() => Promise<T[]>;
   getAllByIndex: <T>(indexName: string, key: IDBValidKey) => Promise<T[]>;
   put: (data: unknown) => void;
+  delete: (key: string) => void;
 }
 
 function wrapRequest<T>(request: IDBRequest<T>): Promise<T> {
@@ -453,10 +455,12 @@ export async function atomicReadWrite<T>(
   for (const name of storeNames) {
     const objectStore = transaction.objectStore(name);
     stores[name] = {
-      get: <V>(key: string) => wrapRequest<V>(objectStore.get(key)),
+      get: <V>(key: string) => wrapRequest<V | undefined>(objectStore.get(key)),
+      getAll: <V>() => wrapRequest<V[]>(objectStore.getAll()),
       getAllByIndex: <V>(indexName: string, key: IDBValidKey) =>
         wrapRequest<V[]>(objectStore.index(indexName).getAll(key)),
       put: (data: unknown) => { objectStore.put(data); },
+      delete: (key: string) => { objectStore.delete(key); },
     };
   }
 

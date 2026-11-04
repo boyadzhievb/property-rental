@@ -60,6 +60,13 @@ import { roomRepository } from '../../repositories/RoomRepository'
 const taskStore = (taskRepository as any)._store as Map<string, any>
 const roomStore = (roomRepository as any)._store as Map<string, any>
 
+vi.mock('../../api/client', async () => ({
+  atomicReadWrite: async (storeNames: string[], callback: Parameters<typeof import('../../test/fakeAtomicReadWrite').fakeAtomicReadWrite>[2]) => {
+    const { fakeAtomicReadWrite } = await import('../../test/fakeAtomicReadWrite')
+    return fakeAtomicReadWrite({ tasks: taskStore, rooms: roomStore }, storeNames, callback)
+  },
+}))
+
 const today = format(new Date(), 'yyyy-MM-dd')
 
 function seedTask(overrides: Partial<any> = {}) {

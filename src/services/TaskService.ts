@@ -2,7 +2,8 @@ import { format } from 'date-fns';
 import { Task, type TaskData, type TaskCategory } from '../domain/Task';
 import { TaskSchema } from '../schemas/TaskSchema';
 import { taskRepository } from '../repositories/TaskRepository';
-import { roomRepository } from '../repositories/RoomRepository';
+import { Room, type RoomData } from '../domain/Room';
+import { atomicReadWrite } from '../api/client';
 
 export class TaskService {
   async getAllTasks(): Promise<Task[]> {
@@ -20,22 +21,33 @@ export class TaskService {
     return taskRepository.save(task);
   }
 
+  /**
+   * Complete or reopen a task. Completing a cleaning task also moves its room from Cleaning to
+   * Available; task and room are read and written in one transaction, so both change or neither.
+   */
   async toggleTask(id: string): Promise<Task | null> {
-    const task = await taskRepository.getById(id);
-    if (!task) return null;
-    if (task.completed) {
-      task.reopen();
-    } else {
-      task.complete();
-      if (task.category === 'cleaning' && task.linkedRoomId) {
-        const room = await roomRepository.getById(task.linkedRoomId);
-        if (room) {
-          room.vacate();
-          await roomRepository.save(room);
+    return atomicReadWrite(['tasks', 'rooms'], async (stores) => {
+      const taskData = await stores.tasks.get<TaskData>(id);
+      if (!taskData) return null;
+      const task = new Task(taskData);
+
+      if (task.completed) {
+        task.reopen();
+      } else {
+        task.complete();
+        if (task.category === 'cleaning' && task.linkedRoomId) {
+          const roomData = await stores.rooms.get<RoomData>(task.linkedRoomId);
+          if (roomData) {
+            const room = new Room(roomData);
+            room.vacate();
+            stores.rooms.put(room.toData());
+          }
         }
       }
-    }
-    return taskRepository.save(task);
+
+      stores.tasks.put(task.toData());
+      return task;
+    });
   }
 
   async deleteTask(id: string): Promise<void> {
