@@ -207,8 +207,8 @@ Each fix starts with a failing test.
 - [ ] Decide the context pattern: contexts expose actions (per HLD) vs components calling services directly (current practice in `TodayView`, etc.). Implement one, update `HLD.md`.
 - [ ] Move balance/paid calculations out of components (`TodayView.tsx:57`, `CalendarView`, `ReportsView`) into domain/`PaymentService`.
 - [ ] Store money as integer cents (DB migration v6) to remove float rounding patches.
-- [ ] Add ESLint with `eslint-plugin-react-hooks` (would have caught the v1.1.24/25 production hooks crash) and an import-boundary rule (`eslint-plugin-boundaries` or dependency-cruiser) to enforce layering in CI instead of grep-based agents.
-  - In progress 2026-11-04: used **oxlint 1.89.0** instead (TypeScript 7 native compiler may not work with typescript-eslint; same toolchain as oxfmt). `.oxlintrc.json`: rules-of-hooks, exhaustive-deps, purity, set-state-in-effect as errors; layer boundaries via per-folder `no-restricted-imports`; `npm run lint`. All findings fixed (incl. new `useCurrentDate()` hook so views roll over at midnight) except the one intended violation: `PropertyContext` → `api/client` (seed/configure/reset), which is the layer-violation item above. Still to do: fix that, then add `npm run lint` to CI and the pre-commit hook.
+- [x] Add ESLint with `eslint-plugin-react-hooks` (would have caught the v1.1.24/25 production hooks crash) and an import-boundary rule (`eslint-plugin-boundaries` or dependency-cruiser) to enforce layering in CI instead of grep-based agents.
+  - In progress 2026-11-04: used **oxlint 1.89.0** instead (TypeScript 7 native compiler may not work with typescript-eslint; same toolchain as oxfmt). `.oxlintrc.json`: rules-of-hooks, exhaustive-deps, purity, set-state-in-effect as errors; layer boundaries via per-folder `no-restricted-imports`; `npm run lint`. All findings fixed (incl. new `useCurrentDate()` hook so views roll over at midnight) except the one intended violation: `PropertyContext` → `api/client` (seed/configure/reset), which is the layer-violation item above. Done 2026-11-05: violation fixed; `npm run lint` runs in CI (own job), in the deploy workflow before tests, and in the pre-commit hook.
 - [ ] Targeted cross-tab refresh — broadcast which store changed instead of refreshing all 5 contexts on every write.
 
 ---
@@ -248,8 +248,8 @@ Each fix starts with a failing test.
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 8 | ✅ Complete |
 | 2 | MS17 Error Handling & i18n Leaks | 7 | 7 | ✅ Complete |
-| 3 | MS18 Structure & Enforcement | 8 | 1 | 🟨 In progress |
+| 3 | MS18 Structure & Enforcement | 8 | 2 | 🟨 In progress |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **68** | **49** | 🟨 72% complete |
+| | **Total** | **68** | **50** | 🟨 74% complete |

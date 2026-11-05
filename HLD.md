@@ -71,6 +71,7 @@ State machines are the core invariant — see `FLOWS.md` for full diagrams.
 | Dates      | date-fns                           |
 | Tests      | Vitest (unit), Playwright (e2e)    |
 | Formatting | oxfmt                              |
+| Linting    | oxlint (`.oxlintrc.json`)          |
 | Language   | TypeScript 7                       |
 | Node       | ≥22                                |
 
@@ -82,6 +83,7 @@ npm test             → Vitest unit tests
 npm run test:e2e     → Playwright end-to-end tests
 npm run build        → Production build to dist/
 npm run format       → oxfmt
+npm run lint         → oxlint (hooks rules, layer boundaries)
 ```
 
 ## Deployment

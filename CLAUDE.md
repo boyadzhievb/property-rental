@@ -14,7 +14,7 @@ Before implementing or changing any state transition or multi-step action (check
 - **TypeScript:** strict; no `any`, no `@ts-ignore` without a justifying comment.
 - **Naming:** descriptive names, no abbreviations (`reservationService`, not `resSvc`).
 - **Styling:** Tailwind only; inline styles only when Tailwind cannot express it.
-- **Tests:** bug fixes start with a failing test. Run `npm test` and `npm run typecheck` before committing.
+- **Tests:** bug fixes start with a failing test. Run `npm test`, `npm run typecheck` and `npm run lint` before committing.
 - **Commits:** no `Co-Authored-By` trailers.
 
 ## Commands
@@ -24,6 +24,7 @@ Before implementing or changing any state transition or multi-step action (check
 | `npm run dev` | Vite dev server on port 8443 (strict port) |
 | `npm test` | Vitest unit tests |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | oxlint: React hooks rules and layer boundaries (`.oxlintrc.json`) |
 | `npm run test:e2e` | Playwright end-to-end tests |
 | `npm run build` | Production build to `dist/` |
 | `./scripts/build-mobile.sh [android\|ios\|all]` | Bump native versions, cap sync, produce AAB/archive |
