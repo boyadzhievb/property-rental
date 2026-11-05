@@ -156,7 +156,7 @@ They differ on purpose and must stay that way: Android package names cannot cont
 ./scripts/build-mobile.sh [android|ios|all]   # default: all
 ```
 
-Builds the web app, bumps the native build number (Android `versionCode`, iOS `CURRENT_PROJECT_VERSION`; the version name comes from `package.json`), runs `cap sync` and produces `android/app/build/outputs/bundle/release/app-release.aab` and `ios/App/build/App.xcarchive`. If a platform's build fails, its version bump is undone, so a failed build never uses up a number. With `all`, a successful Android build keeps its bump even if iOS fails afterwards.
+Builds the web app, bumps the native build number automatically (Android `versionCode` and iOS `CURRENT_PROJECT_VERSION` get the same number: the higher of the two + 1; the version name comes from `package.json`), runs `cap sync` and produces `android/app/build/outputs/bundle/release/app-release.aab` and `ios/App/build/App.xcarchive`. If a platform's build fails, its version bump is undone, so a failed build never uses up a number. With `all`, a successful Android build keeps its bump even if iOS fails afterwards.
 
 ### App Icons
 

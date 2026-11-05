@@ -15,6 +15,9 @@ usage() {
   echo "  android  — build Android AAB only"
   echo "  ios      — build iOS archive only"
   echo "  all      — build both (default)"
+  echo ""
+  echo "  The build number (Android versionCode, iOS CURRENT_PROJECT_VERSION) is bumped"
+  echo "  automatically and kept the same on both platforms: the higher of the two + 1."
   exit 1
 }
 
@@ -51,26 +54,30 @@ restore_unfinished_bumps() {
 }
 trap restore_unfinished_bumps EXIT
 
-# Progress goes to stderr; stdout carries only the new number, for $(...) capture.
-bump_android_version() {
-  local current_code new_code
-  current_code=$(grep -o 'versionCode [0-9]*' "$GRADLE_FILE" | awk '{print $2}')
-  new_code=$((current_code + 1))
-  backup_before_bump "$GRADLE_FILE"
-  echo "==> Bumping Android versionCode: $current_code -> $new_code" >&2
-  sed -i '' "s/versionCode $current_code/versionCode $new_code/" "$GRADLE_FILE"
-  echo "$new_code"
+current_android_code() {
+  grep -o 'versionCode [0-9]*' "$GRADLE_FILE" | awk '{print $2}'
 }
 
-bump_ios_version() {
-  local current_code new_code
-  current_code=$(grep -o 'CURRENT_PROJECT_VERSION = [0-9]*' "$PBXPROJ_FILE" | head -1 | awk '{print $3}')
-  new_code=$((current_code + 1))
+current_ios_code() {
+  grep -o 'CURRENT_PROJECT_VERSION = [0-9]*' "$PBXPROJ_FILE" | head -1 | awk '{print $3}'
+}
+
+# One build number for both platforms, so they never drift apart: the higher of the two + 1.
+ANDROID_CODE=$(current_android_code)
+IOS_CODE=$(current_ios_code)
+NEW_CODE=$(( (ANDROID_CODE > IOS_CODE ? ANDROID_CODE : IOS_CODE) + 1 ))
+
+set_android_version() {
+  backup_before_bump "$GRADLE_FILE"
+  echo "==> Android versionCode: $ANDROID_CODE -> $NEW_CODE"
+  sed -i '' "s/versionCode $ANDROID_CODE/versionCode $NEW_CODE/" "$GRADLE_FILE"
+}
+
+set_ios_version() {
   backup_before_bump "$PBXPROJ_FILE"
-  echo "==> Bumping iOS CURRENT_PROJECT_VERSION: $current_code -> $new_code" >&2
-  sed -i '' "s/CURRENT_PROJECT_VERSION = $current_code/CURRENT_PROJECT_VERSION = $new_code/g" "$PBXPROJ_FILE"
+  echo "==> iOS CURRENT_PROJECT_VERSION: $IOS_CODE -> $NEW_CODE"
+  sed -i '' "s/CURRENT_PROJECT_VERSION = $IOS_CODE/CURRENT_PROJECT_VERSION = $NEW_CODE/g" "$PBXPROJ_FILE"
   sed -i '' "s/MARKETING_VERSION = [^;]*/MARKETING_VERSION = $VERSION_NAME/g" "$PBXPROJ_FILE"
-  echo "$new_code"
 }
 
 build_web() {
@@ -79,8 +86,7 @@ build_web() {
 }
 
 build_android() {
-  local version_code
-  version_code=$(bump_android_version)
+  set_android_version
 
   echo "==> Syncing to Android..."
   npx cap sync android
@@ -98,13 +104,12 @@ build_android() {
   echo ""
   echo "Android build successful."
   echo "  AAB: ${AAB_PATH#"$ROOT"/}"
-  echo "  versionCode: $version_code"
+  echo "  versionCode: $NEW_CODE"
   echo "  versionName: $VERSION_NAME"
 }
 
 build_ios() {
-  local version_code
-  version_code=$(bump_ios_version)
+  set_ios_version
 
   echo "==> Syncing to iOS..."
   npx cap sync ios
@@ -128,7 +133,7 @@ build_ios() {
   echo ""
   echo "iOS build successful."
   echo "  Archive: ${ARCHIVE_PATH#"$ROOT"/}"
-  echo "  buildNumber: $version_code"
+  echo "  buildNumber: $NEW_CODE"
   echo "  versionName: $VERSION_NAME"
 }
 
