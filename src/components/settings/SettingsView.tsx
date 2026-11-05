@@ -193,6 +193,9 @@ export default function SettingsView() {
                     onChange={(e) => setNameInput(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
+                        // The row around the input also handles Enter (to start editing); without
+                        // this the editor reopens right away with the old name.
+                        e.stopPropagation();
                         updateName(nameInput);
                         setEditing(false);
                       }

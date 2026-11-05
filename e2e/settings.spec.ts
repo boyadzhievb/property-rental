@@ -87,3 +87,17 @@ test.describe('Data Reset', () => {
     await expect(page.getByRole('heading', { name: 'Welcome' })).toBeVisible();
   });
 });
+
+test.describe('Property Name', () => {
+  test('Enter saves the new name and closes the editor', async ({ page }) => {
+    await setupApp(page);
+    await navigateToSettings(page);
+
+    await page.getByText('Owner Account').click();
+    await page.getByLabel('Property Name').fill('Seaside Lodge');
+    await page.getByLabel('Property Name').press('Enter');
+
+    await expect(page.getByLabel('Property Name')).toHaveCount(0);
+    await expect(page.getByText('Seaside Lodge')).toBeVisible();
+  });
+});
