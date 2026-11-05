@@ -126,6 +126,7 @@ const el: TranslationKeys = {
   occupancy: 'Πληρότητα',
   byMethod: 'Ανά μέθοδο',
   outstandingBalances: 'Εκκρεμή υπόλοιπα',
+  unknown: 'Άγνωστο',
   recentPayments: 'Πρόσφατες πληρωμές',
   noPaymentsYet: 'Δεν έχουν καταγραφεί πληρωμές ακόμα.',
 

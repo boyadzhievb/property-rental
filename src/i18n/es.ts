@@ -132,6 +132,7 @@ const es = {
   occupancy: 'Ocupación',
   byMethod: 'Por método',
   outstandingBalances: 'Saldos pendientes',
+  unknown: 'Desconocido',
   recentPayments: 'Pagos recientes',
   noPaymentsYet: 'Aún no se han registrado pagos.',
 

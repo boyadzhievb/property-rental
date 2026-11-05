@@ -126,6 +126,7 @@ const de: TranslationKeys = {
   occupancy: 'Auslastung',
   byMethod: 'Nach Methode',
   outstandingBalances: 'Offene Salden',
+  unknown: 'Unbekannt',
   recentPayments: 'Letzte Zahlungen',
   noPaymentsYet: 'Noch keine Zahlungen erfasst.',
 

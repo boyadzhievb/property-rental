@@ -174,6 +174,16 @@ describe('PaymentService', () => {
       expect(result.amount).toBe(200)
     })
 
+    it('allows the exact remaining cents after split payments, and not one cent more', async () => {
+      seedReservation({ price: 100 })
+      payStore.set('pay-0', { ...makePaymentData({ id: 'pay-0', amount: 33.33 }) })
+      payStore.set('pay-1', { ...makePaymentData({ id: 'pay-1', amount: 33.33 }) })
+      await expect(service.createPayment(makePaymentData({ id: 'pay-2', amount: 33.35 })))
+        .rejects.toThrow('exceeds remaining balance of 33.34')
+      const result = await service.createPayment(makePaymentData({ id: 'pay-3', amount: 33.34 }))
+      expect(result.amount).toBe(33.34)
+    })
+
     it('rejects invalid payment data', async () => {
       seedReservation()
       await expect(service.createPayment({ ...makePaymentData(), amount: -10 }))

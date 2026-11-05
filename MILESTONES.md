@@ -208,7 +208,8 @@ Each fix starts with a failing test.
   - Done 2026-11-05: setup, demo seed and reset go through `SettingsService` → `SettingsRepository`. Setup rooms are built in the service and validated with `RoomSchema`; the room count and currency are checked first. The reset-abort message is translated (`resetExportFailed`). `npm run lint` is clean.
 - [x] Decide the context pattern: contexts expose actions (per HLD) vs components calling services directly (current practice in `TodayView`, etc.). Implement one, update `HLD.md`.
   - Done 2026-11-05: chose a third option — components keep calling services, and contexts reload by themselves when the data layer announces that their store changed. All manual `refresh()` calls after actions are gone (Today, Timeline, Calendar, Guests, booking modal, rooms, Settings restore); `useReservation` and `PropertyContext` subscribe too. HLD.md architecture section rewritten.
-- [ ] Move balance/paid calculations out of components (`TodayView.tsx:57`, `CalendarView`, `ReportsView`) into domain/`PaymentService`.
+- [x] Move balance/paid calculations out of components (`TodayView.tsx:57`, `CalendarView`, `ReportsView`) into domain/`PaymentService`.
+  - Done 2026-11-05: new `src/domain/balance.ts` (`sumMoney`, `reservationBalance`, `groupPaymentsByReservation`, `totalsByMethod`, `outstandingBalances`) is the only place money is added up; Today, Calendar, Guests, Reports and `PaymentService`'s overpayment check use it, and no component does money arithmetic any more. Fixed on the way: the Guests payment form showed the remaining balance as a raw float with a hardcoded `$` (e.g. `$0.10000000000002274` after paying 499.90 of 500, wrong symbol for non-USD properties) — E2E test first. Reports' hardcoded `'Unknown'` fallback is translated (`unknown`, 6 locales).
 - [ ] Store money as integer cents (DB migration v6) to remove float rounding patches.
 - [x] Add ESLint with `eslint-plugin-react-hooks` (would have caught the v1.1.24/25 production hooks crash) and an import-boundary rule (`eslint-plugin-boundaries` or dependency-cruiser) to enforce layering in CI instead of grep-based agents.
   - In progress 2026-11-04: used **oxlint 1.89.0** instead (TypeScript 7 native compiler may not work with typescript-eslint; same toolchain as oxfmt). `.oxlintrc.json`: rules-of-hooks, exhaustive-deps, purity, set-state-in-effect as errors; layer boundaries via per-folder `no-restricted-imports`; `npm run lint`. All findings fixed (incl. new `useCurrentDate()` hook so views roll over at midnight) except the one intended violation: `PropertyContext` → `api/client` (seed/configure/reset), which is the layer-violation item above. Done 2026-11-05: violation fixed; `npm run lint` runs in CI (own job), in the deploy workflow before tests, and in the pre-commit hook.
@@ -252,8 +253,8 @@ Each fix starts with a failing test.
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 8 | ✅ Complete |
 | 2 | MS17 Error Handling & i18n Leaks | 7 | 7 | ✅ Complete |
-| 3 | MS18 Structure & Enforcement | 8 | 6 | 🟨 In progress |
+| 3 | MS18 Structure & Enforcement | 8 | 7 | 🟨 In progress |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **68** | **54** | 🟨 79% complete |
+| | **Total** | **68** | **55** | 🟨 81% complete |

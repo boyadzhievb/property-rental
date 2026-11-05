@@ -1,6 +1,7 @@
 import { Payment, type PaymentData } from '../domain/Payment';
 import { PaymentSchema } from '../schemas/PaymentSchema';
 import { roundToCents } from '../domain/money';
+import { reservationBalance } from '../domain/balance';
 import { paymentRepository } from '../repositories/PaymentRepository';
 import { atomicReadWrite } from '../api/client';
 import type { ReservationData } from '../domain/Reservation';
@@ -34,10 +35,9 @@ export class PaymentService {
         const existing = await stores.payments.getAllByIndex<PaymentData>(
           'reservationId', validated.reservationId
         );
-        const totalPaid = Math.round(existing.reduce((sum, record) => sum + record.amount, 0) * 100) / 100;
-        const remaining = Math.round((reservation.price - totalPaid) * 100) / 100;
-        if (Math.round((totalPaid + validated.amount) * 100) / 100 > reservation.price) {
-          throw new DomainError('paymentExceedsBalance', { remaining });
+        const { balance } = reservationBalance(reservation.price, existing);
+        if (validated.amount > balance) {
+          throw new DomainError('paymentExceedsBalance', { remaining: balance });
         }
 
         const newPayment = new Payment(validated);

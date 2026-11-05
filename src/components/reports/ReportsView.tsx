@@ -7,6 +7,7 @@ import { useRoomContext } from '../../context/RoomContext';
 import { useGuestContext } from '../../context/GuestContext';
 import { useLocale } from '../../context/LocaleContext';
 import { useMoney } from '../../hooks/useMoney';
+import { sumMoney, totalsByMethod, outstandingBalances as findOutstandingBalances } from '../../domain/balance';
 import PageHeader from '../layout/PageHeader';
 import { useCurrentDate } from '../../hooks/useCurrentDate';
 
@@ -52,17 +53,11 @@ export default function ReportsView() {
   );
 
   const totalCollected = useMemo(() =>
-    Math.round(periodPayments.reduce((sum, p) => sum + p.amount, 0) * 100) / 100,
+    sumMoney(periodPayments.map(p => p.amount)),
     [periodPayments]
   );
 
-  const paymentsByMethod = useMemo(() => {
-    const groups: Record<string, number> = { cash: 0, card: 0, transfer: 0 };
-    for (const p of periodPayments) {
-      groups[p.method] = Math.round(((groups[p.method] || 0) + p.amount) * 100) / 100;
-    }
-    return groups;
-  }, [periodPayments]);
+  const paymentsByMethod = useMemo(() => totalsByMethod(periodPayments), [periodPayments]);
 
   const periodReservations = useMemo(() =>
     reservations.filter(r =>
@@ -72,7 +67,7 @@ export default function ReportsView() {
   );
 
   const totalRevenue = useMemo(() =>
-    periodReservations.reduce((sum, r) => sum + r.price, 0),
+    sumMoney(periodReservations.map(r => r.price)),
     [periodReservations]
   );
 
@@ -92,32 +87,21 @@ export default function ReportsView() {
     return Math.round((occupiedNights / totalRoomNights) * 100);
   }, [rooms, dateRange, periodReservations]);
 
-  const outstandingBalances = useMemo(() => {
-    const active = reservations.filter(r => r.status !== 'Cancelled');
-    const results: { reservationId: string; guestName: string; roomName: string; total: number; paid: number; balance: number; arrivalDate: string }[] = [];
-    for (const res of active) {
-      const paid = Math.round(payments.filter(p => p.reservationId === res.id).reduce((s, p) => s + p.amount, 0) * 100) / 100;
-      const balance = Math.round((res.price - paid) * 100) / 100;
-      if (balance > 0) {
-        const guest = guestMap.get(res.guestId);
-        const room = roomMap.get(res.roomId);
-        results.push({
-          reservationId: res.id,
-          guestName: guest?.name ?? 'Unknown',
-          roomName: room?.name ?? 'Unknown',
-          total: res.price,
-          paid,
-          balance,
-          arrivalDate: res.arrivalDate,
-        });
-      }
-    }
-    results.sort((a, b) => b.balance - a.balance);
-    return results;
-  }, [reservations, payments, guestMap, roomMap]);
+  const outstandingBalances = useMemo(() =>
+    findOutstandingBalances(reservations, payments).map(({ reservation, total, paid, balance }) => ({
+      reservationId: reservation.id,
+      guestName: guestMap.get(reservation.guestId)?.name ?? t.unknown,
+      roomName: roomMap.get(reservation.roomId)?.name ?? t.unknown,
+      total,
+      paid,
+      balance,
+      arrivalDate: reservation.arrivalDate,
+    })),
+    [reservations, payments, guestMap, roomMap, t]
+  );
 
   const totalOutstanding = useMemo(() =>
-    Math.round(outstandingBalances.reduce((sum, b) => sum + b.balance, 0) * 100) / 100,
+    sumMoney(outstandingBalances.map(b => b.balance)),
     [outstandingBalances]
   );
 

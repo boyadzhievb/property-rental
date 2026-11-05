@@ -126,6 +126,7 @@ const fr: TranslationKeys = {
   occupancy: 'Occupation',
   byMethod: 'Par méthode',
   outstandingBalances: 'Soldes impayés',
+  unknown: 'Inconnu',
   recentPayments: 'Paiements récents',
   noPaymentsYet: 'Aucun paiement enregistré.',
 

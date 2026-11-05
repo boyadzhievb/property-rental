@@ -82,4 +82,26 @@ test.describe('Payment Recording', () => {
     // Should show error message
     await expect(page.getByText(/more than the remaining balance of \$/i)).toBeVisible();
   });
+
+  test('guest payment form shows the remaining balance rounded to cents', async ({ page }) => {
+    await setupWithReservation(page); // 5 nights x $100 = $500
+
+    await page.getByRole('button', { name: /calendar/i }).click();
+    await page.locator('.absolute.cursor-pointer', { hasText: 'Payment Test Guest' }).click();
+    await page.locator('button', { hasText: /^add$/i }).click();
+    // 500 - 499.9 is 0.10000000000002274 in floating point.
+    await page.locator('input[type="number"]').last().fill('499.9');
+    await page.getByRole('button', { name: /record payment/i }).click();
+    await expect(page.getByText('$499.90').first()).toBeVisible();
+    await page.locator('[role="dialog"]').locator('button').first().click();
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
+
+    await page.getByRole('button', { name: /guests/i }).click();
+    await page.getByText('Payment Test Guest').click();
+    await page.getByRole('button', { name: /^payment$/i }).click();
+
+    const remaining = page.getByText('Balance Remaining').locator('..');
+    await expect(remaining).toContainText('$0.10');
+    await expect(remaining).not.toContainText('0.1000');
+  });
 });

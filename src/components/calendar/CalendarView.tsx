@@ -9,6 +9,7 @@ import { reservationStatusLabel } from '../../i18n/reservationStatus';
 import { reservationService } from '../../services/ReservationService';
 import { paymentService } from '../../services/PaymentService';
 import { type Reservation } from '../../domain/Reservation';
+import { groupPaymentsByReservation, reservationBalance } from '../../domain/balance';
 import { type Room } from '../../domain/Room';
 import { type Guest } from '../../domain/Guest';
 import PageHeader from '../layout/PageHeader';
@@ -107,18 +108,10 @@ export default memo(function CalendarView() {
     }
   };
 
-  const paymentsByReservation = useMemo(() => {
-    const grouped = new Map<string, typeof payments>();
-    for (const payment of payments) {
-      const existing = grouped.get(payment.reservationId);
-      if (existing) existing.push(payment);
-      else grouped.set(payment.reservationId, [payment]);
-    }
-    return grouped;
-  }, [payments]);
+  const paymentsByReservation = useMemo(() => groupPaymentsByReservation(payments), [payments]);
 
-  const getReservationPaid = (resId: string) =>
-    Math.round((paymentsByReservation.get(resId) ?? []).reduce((sum, p) => sum + p.amount, 0) * 100) / 100;
+  const getReservationBalance = (reservation: Reservation) =>
+    reservationBalance(reservation.price, paymentsByReservation.get(reservation.id) ?? []);
 
   const getReservationPayments = (resId: string) =>
     paymentsByReservation.get(resId) ?? [];
@@ -251,7 +244,7 @@ export default memo(function CalendarView() {
                 <div className="border-t border-ios-border/40 pt-3 mt-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-semibold text-ios-text-secondary uppercase">{t.payment}</div>
-                    {selectedReservation.status !== 'Cancelled' && selectedReservation.price - getReservationPaid(selectedReservation.id) > 0 && (
+                    {selectedReservation.status !== 'Cancelled' && getReservationBalance(selectedReservation).balance > 0 && (
                       <button
                         onClick={() => setShowPaymentForm(!showPaymentForm)}
                         className="flex items-center gap-1 text-xs font-semibold text-ios-blue"
@@ -267,12 +260,12 @@ export default memo(function CalendarView() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-ios-text-secondary">{t.paid}</span>
-                    <span className="font-semibold text-ios-green">{formatMoney(getReservationPaid(selectedReservation.id))}</span>
+                    <span className="font-semibold text-ios-green">{formatMoney(getReservationBalance(selectedReservation).paid)}</span>
                   </div>
-                  {selectedReservation.price - getReservationPaid(selectedReservation.id) > 0 ? (
+                  {getReservationBalance(selectedReservation).balance > 0 ? (
                     <div className="flex justify-between text-sm">
                       <span className="text-ios-text-secondary">{t.balance}</span>
-                      <span className="font-semibold text-ios-red">{formatMoney(selectedReservation.price - getReservationPaid(selectedReservation.id))}</span>
+                      <span className="font-semibold text-ios-red">{formatMoney(getReservationBalance(selectedReservation).balance)}</span>
                     </div>
                   ) : (
                     <div className="text-xs font-semibold text-ios-green mt-1">{t.fullyPaid}</div>

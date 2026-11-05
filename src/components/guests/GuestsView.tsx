@@ -10,6 +10,7 @@ import { useMoney } from '../../hooks/useMoney';
 import { paymentService } from '../../services/PaymentService';
 import { type Guest } from '../../domain/Guest';
 import { type Reservation } from '../../domain/Reservation';
+import { groupPaymentsByReservation, reservationBalance } from '../../domain/balance';
 import PageHeader from '../layout/PageHeader';
 import { errorMessage } from '../../i18n/errorMessage';
 
@@ -61,21 +62,13 @@ export default memo(function GuestsView() {
       .sort((a, b) => b.arrivalDate.localeCompare(a.arrivalDate));
   }, [selectedGuest, reservations]);
 
-  const paymentsByReservation = useMemo(() => {
-    const grouped = new Map<string, typeof payments>();
-    for (const payment of payments) {
-      const existing = grouped.get(payment.reservationId);
-      if (existing) existing.push(payment);
-      else grouped.set(payment.reservationId, [payment]);
-    }
-    return grouped;
-  }, [payments]);
+  const paymentsByReservation = useMemo(() => groupPaymentsByReservation(payments), [payments]);
 
   const getPaymentsForReservation = (reservationId: string) =>
     paymentsByReservation.get(reservationId) ?? [];
 
-  const getTotalPaid = (reservationId: string) =>
-    Math.round(getPaymentsForReservation(reservationId).reduce((sum, p) => sum + p.amount, 0) * 100) / 100;
+  const getBalance = (reservation: Reservation) =>
+    reservationBalance(reservation.price, getPaymentsForReservation(reservation.id));
 
   const scrollToLetter = (letter: string) => {
     setActiveLetter(letter);
@@ -250,8 +243,7 @@ export default memo(function GuestsView() {
               ) : (
                 <div className="space-y-3">
                   {guestReservations.map(res => {
-                    const paid = getTotalPaid(res.id);
-                    const balance = res.price - paid;
+                    const { paid, balance } = getBalance(res);
                     return (
                       <div key={res.id} className="bg-ios-bg rounded-2xl p-4 border border-ios-border/40">
                         <div className="flex items-center justify-between mb-2">
@@ -340,7 +332,7 @@ export default memo(function GuestsView() {
               <div className="flex justify-between text-sm">
                 <span className="text-ios-text-secondary">{t.balanceRemaining}</span>
                 <span className="font-semibold text-ios-red">
-                  ${payingReservation.price - getTotalPaid(payingReservation.id)}
+                  {formatMoney(getBalance(payingReservation).balance)}
                 </span>
               </div>
 

@@ -11,6 +11,7 @@ import { reservationService } from '../../services/ReservationService';
 import { taskService } from '../../services/TaskService';
 import { notificationService } from '../../services/NotificationService';
 import { RoomStatus } from '../../domain/Room';
+import { groupPaymentsByReservation, reservationBalance } from '../../domain/balance';
 import { type Task, type TaskCategory } from '../../domain/Task';
 import PageHeader from '../layout/PageHeader';
 import StatCard from '../ui/StatCard';
@@ -59,14 +60,12 @@ export default memo(function TodayView() {
 
     const pendingPayments: { reservationId: string; guestName: string }[] = [];
     const todayReservations = [...data.arrivals, ...data.departures];
+    const paymentsByReservation = groupPaymentsByReservation(payments);
     const seen = new Set<string>();
     for (const res of todayReservations) {
       if (seen.has(res.id)) continue;
       seen.add(res.id);
-      const totalPaid = Math.round(payments
-        .filter(p => p.reservationId === res.id)
-        .reduce((sum, p) => sum + p.amount, 0) * 100) / 100;
-      if (Math.round((res.price - totalPaid) * 100) / 100 > 0) {
+      if (reservationBalance(res.price, paymentsByReservation.get(res.id) ?? []).balance > 0) {
         const guest = guestMap.get(res.guestId);
         pendingPayments.push({ reservationId: res.id, guestName: guest?.name ?? '' });
       }

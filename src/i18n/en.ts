@@ -132,6 +132,7 @@ const en = {
   occupancy: 'Occupancy',
   byMethod: 'By method',
   outstandingBalances: 'Outstanding balances',
+  unknown: 'Unknown',
   recentPayments: 'Recent payments',
   noPaymentsYet: 'No payments recorded yet.',
 

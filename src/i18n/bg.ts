@@ -126,6 +126,7 @@ const bg: TranslationKeys = {
   occupancy: 'Заетост',
   byMethod: 'По метод',
   outstandingBalances: 'Неплатени салда',
+  unknown: 'Неизвестно',
   recentPayments: 'Скорошни плащания',
   noPaymentsYet: 'Все още няма записани плащания.',
 
