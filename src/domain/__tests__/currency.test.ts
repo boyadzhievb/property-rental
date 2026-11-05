@@ -40,14 +40,15 @@ describe('detectCurrency', () => {
 })
 
 describe('formatMoney', () => {
-  it('formats whole amounts without decimals and others with two', () => {
-    expect(formatMoney(500, 'USD', 'en')).toBe('$500')
-    expect(formatMoney(33.3, 'USD', 'en')).toBe('$33.30')
+  it('formats cents: whole amounts without decimals, others with two', () => {
+    expect(formatMoney(50000, 'USD', 'en')).toBe('$500')
+    expect(formatMoney(3330, 'USD', 'en')).toBe('$33.30')
+    expect(formatMoney(10, 'USD', 'en')).toBe('$0.10')
   })
 
   it('follows the language’s conventions', () => {
-    expect(formatMoney(1234.5, 'EUR', 'de')).toBe('1.234,50 €')
-    expect(formatMoney(1234.5, 'EUR', 'en')).toBe('€1,234.50')
+    expect(formatMoney(123450, 'EUR', 'de')).toBe('1.234,50 €')
+    expect(formatMoney(123450, 'EUR', 'en')).toBe('€1,234.50')
   })
 })
 

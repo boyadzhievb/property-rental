@@ -7,7 +7,7 @@ function makeRoom(overrides: Partial<RoomData> = {}) {
     id: '1',
     name: 'Suite 101',
     status: RoomStatus.AVAILABLE,
-    pricePerNight: 120,
+    pricePerNightCents: 12000,
     maxGuests: 2,
     ...overrides,
   })
@@ -19,7 +19,7 @@ describe('Room', () => {
     expect(room.id).toBe('1')
     expect(room.name).toBe('Suite 101')
     expect(room.status).toBe(RoomStatus.AVAILABLE)
-    expect(room.pricePerNight).toBe(120)
+    expect(room.pricePerNightCents).toBe(12000)
     expect(room.maxGuests).toBe(2)
   })
 
@@ -125,7 +125,7 @@ describe('Room', () => {
       id: '1',
       name: 'Suite 101',
       status: RoomStatus.OCCUPIED,
-      pricePerNight: 120,
+      pricePerNightCents: 12000,
       maxGuests: 2,
     })
   })

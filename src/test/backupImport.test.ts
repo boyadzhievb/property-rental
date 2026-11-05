@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { IDBFactory } from 'fake-indexeddb'
 
-const existingRoom = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNight: 120, maxGuests: 2 }
+const existingRoom = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNightCents: 12000, maxGuests: 2 }
 const existingGuest = { id: 'guest-1', name: 'Maria Ivanova', phone: '+359888123456', email: 'maria@example.com', previousStays: 1, notes: '' }
 
 async function loadModules() {
@@ -30,7 +30,7 @@ describe('BackupService.import safety', () => {
 
   it('refuses a backup with invalid records unless partial import is allowed', async () => {
     const { client, backupService } = await loadModules()
-    const backup = { rooms: [{ id: 'room-2', name: 'Suite', status: 'Available', pricePerNight: 90, maxGuests: 2 }, { id: 'broken' }] }
+    const backup = { rooms: [{ id: 'room-2', name: 'Suite', status: 'Available', pricePerNightCents: 9000, maxGuests: 2 }, { id: 'broken' }] }
 
     await expect(backupService.import(backup as never)).rejects.toMatchObject({ code: 'invalidRecords' })
     expect((await client.api.rooms.getAll()).map(room => room.id)).toEqual(['room-1'])
@@ -82,7 +82,7 @@ describe('backup format validation', () => {
   it('export stamps the current schemaVersion', async () => {
     const { backupService, BACKUP_SCHEMA_VERSION } = await import('../services/BackupService')
     const backup = await backupService.export()
-    expect(BACKUP_SCHEMA_VERSION).toBe(1)
+    expect(BACKUP_SCHEMA_VERSION).toBe(2)
     expect(backup.schemaVersion).toBe(BACKUP_SCHEMA_VERSION)
   })
 
@@ -148,9 +148,9 @@ describe('referential checks on import', () => {
   })
 
   const reservation = (id: string, roomId: string, guestId: string) => ({
-    id, roomId, guestId, arrivalDate: '2026-11-10', departureDate: '2026-11-12', guestsCount: 1, status: 'Confirmed', price: 200,
+    id, roomId, guestId, arrivalDate: '2026-11-10', departureDate: '2026-11-12', guestsCount: 1, status: 'Confirmed', priceCents: 20000,
   })
-  const payment = (id: string, reservationId: string) => ({ id, reservationId, amount: 50, date: '2026-11-10', method: 'cash', note: '' })
+  const payment = (id: string, reservationId: string) => ({ id, reservationId, amountCents: 5000, date: '2026-11-10', method: 'cash', note: '' })
   const task = (id: string, links: Record<string, string>) => ({ id, title: 'Clean', category: 'cleaning', completed: false, date: '2026-11-10', auto: false, ...links })
 
   const backup = {
@@ -203,19 +203,59 @@ describe('payment amounts on restore', () => {
     vi.resetModules()
   })
 
-  it('rounds amounts with more than 2 decimals instead of skipping the payment', async () => {
+  it('upgrades a format-1 backup: decimal prices and amounts become cents', async () => {
     const client = await import('../api/client')
     const { backupService } = await import('../services/BackupService')
-    const reservation = { id: 'res-1', roomId: 'room-1', guestId: 'guest-1', arrivalDate: '2026-11-10', departureDate: '2026-11-12', guestsCount: 1, status: 'Confirmed', price: 200 }
 
     const report = await backupService.import({
-      rooms: [existingRoom],
+      schemaVersion: 1,
+      rooms: [{ id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNight: 120.5, maxGuests: 2 }],
       guests: [existingGuest],
-      reservations: [reservation],
+      reservations: [{ id: 'res-1', roomId: 'room-1', guestId: 'guest-1', arrivalDate: '2026-11-10', departureDate: '2026-11-12', guestsCount: 1, status: 'Confirmed', price: 241 }],
+      // Old versions saved amounts as typed, e.g. 33.333; it is rounded instead of skipped.
       payments: [{ id: 'pay-1', reservationId: 'res-1', amount: 33.333, date: '2026-11-10', method: 'cash', note: '' }],
     })
 
     expect(report.total).toBe(0)
-    expect((await client.api.payments.getAll()).map(payment => payment.amount)).toEqual([33.33])
+    expect((await client.api.rooms.getAll()).map(room => room.pricePerNightCents)).toEqual([12050])
+    expect((await client.api.reservations.getAll()).map(reservation => reservation.priceCents)).toEqual([24100])
+    expect((await client.api.payments.getAll()).map(payment => payment.amountCents)).toEqual([3333])
+  })
+
+  it('treats a backup without schemaVersion as format 1', async () => {
+    const client = await import('../api/client')
+    const { backupService } = await import('../services/BackupService')
+
+    await backupService.import({ rooms: [{ id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNight: 99.99, maxGuests: 2 }] })
+
+    expect((await client.api.rooms.getAll()).map(room => room.pricePerNightCents)).toEqual([9999])
+  })
+
+  it('does not reinterpret a format-2 backup, and skips decimal fields there', async () => {
+    const client = await import('../api/client')
+    const { backupService } = await import('../services/BackupService')
+
+    const report = await backupService.import({
+      schemaVersion: 2,
+      rooms: [
+        { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNightCents: 12050, maxGuests: 2 },
+        { id: 'room-2', name: 'Old', status: 'Available', pricePerNight: 120.5, maxGuests: 2 },
+      ],
+    }, { allowPartial: true })
+
+    expect((await client.api.rooms.getAll()).map(room => room.pricePerNightCents)).toEqual([12050])
+    expect(report.skipped.rooms).toBe(1)
+  })
+
+  it('round-trips money through export and import unchanged', async () => {
+    const client = await import('../api/client')
+    const { backupService } = await import('../services/BackupService')
+    await client.api.rooms.create({ ...existingRoom, status: 'Available', pricePerNightCents: 12050 })
+
+    const backup = await backupService.export()
+    expect(backup.schemaVersion).toBe(2)
+    await backupService.import(backup)
+
+    expect((await client.api.rooms.getAll()).map(room => room.pricePerNightCents)).toEqual([12050])
   })
 })

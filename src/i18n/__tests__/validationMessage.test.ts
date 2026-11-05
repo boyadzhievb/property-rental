@@ -14,9 +14,9 @@ describe('validationMessage', () => {
   it('translates every message the booking form can produce', () => {
     const messages = [
       ...issuesOf(GuestSchema.safeParse({ id: 'x', name: '', phone: '', email: 'not-an-email', previousStays: 0, notes: '' })),
-      ...issuesOf(ReservationSchema.safeParse({ id: 'x', roomId: '', guestId: 'g', arrivalDate: '', departureDate: '', guestsCount: 0, status: 'Confirmed', price: 0 })),
-      ...issuesOf(ReservationSchema.safeParse({ id: 'x', roomId: 'r', guestId: 'g', arrivalDate: '2026-12-05', departureDate: '2026-12-01', guestsCount: 1, status: 'Confirmed', price: 10 })),
-      ...issuesOf(ReservationSchema.safeParse({ id: 'x', roomId: 'r', guestId: 'g', arrivalDate: '2026-02-30', departureDate: '2026-12-01', guestsCount: 1, status: 'Confirmed', price: 10 })),
+      ...issuesOf(ReservationSchema.safeParse({ id: 'x', roomId: '', guestId: 'g', arrivalDate: '', departureDate: '', guestsCount: 0, status: 'Confirmed', priceCents: 0 })),
+      ...issuesOf(ReservationSchema.safeParse({ id: 'x', roomId: 'r', guestId: 'g', arrivalDate: '2026-12-05', departureDate: '2026-12-01', guestsCount: 1, status: 'Confirmed', priceCents: 1000 })),
+      ...issuesOf(ReservationSchema.safeParse({ id: 'x', roomId: 'r', guestId: 'g', arrivalDate: '2026-02-30', departureDate: '2026-12-01', guestsCount: 1, status: 'Confirmed', priceCents: 1000 })),
     ]
     expect(messages.length).toBeGreaterThan(5)
     for (const message of messages) {

@@ -10,6 +10,7 @@ import { reservationService } from '../../services/ReservationService';
 import { paymentService } from '../../services/PaymentService';
 import { type Reservation } from '../../domain/Reservation';
 import { groupPaymentsByReservation, reservationBalance } from '../../domain/balance';
+import { toCents } from '../../domain/money';
 import { type Room } from '../../domain/Room';
 import { type Guest } from '../../domain/Guest';
 import PageHeader from '../layout/PageHeader';
@@ -91,7 +92,7 @@ export default memo(function CalendarView() {
       await paymentService.createPayment({
         id: crypto.randomUUID(),
         reservationId: selectedReservation.id,
-        amount,
+        amountCents: toCents(amount),
         date: format(new Date(), 'yyyy-MM-dd'),
         method: paymentMethod,
         note: paymentNote,
@@ -111,7 +112,7 @@ export default memo(function CalendarView() {
   const paymentsByReservation = useMemo(() => groupPaymentsByReservation(payments), [payments]);
 
   const getReservationBalance = (reservation: Reservation) =>
-    reservationBalance(reservation.price, paymentsByReservation.get(reservation.id) ?? []);
+    reservationBalance(reservation.priceCents, paymentsByReservation.get(reservation.id) ?? []);
 
   const getReservationPayments = (resId: string) =>
     paymentsByReservation.get(resId) ?? [];
@@ -244,7 +245,7 @@ export default memo(function CalendarView() {
                 <div className="border-t border-ios-border/40 pt-3 mt-3">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-sm font-semibold text-ios-text-secondary uppercase">{t.payment}</div>
-                    {selectedReservation.status !== 'Cancelled' && getReservationBalance(selectedReservation).balance > 0 && (
+                    {selectedReservation.status !== 'Cancelled' && getReservationBalance(selectedReservation).balanceCents > 0 && (
                       <button
                         onClick={() => setShowPaymentForm(!showPaymentForm)}
                         className="flex items-center gap-1 text-xs font-semibold text-ios-blue"
@@ -256,16 +257,16 @@ export default memo(function CalendarView() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-ios-text-secondary">{t.total}</span>
-                    <span className="font-semibold text-ios-text">{formatMoney(selectedReservation.price)}</span>
+                    <span className="font-semibold text-ios-text">{formatMoney(selectedReservation.priceCents)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-ios-text-secondary">{t.paid}</span>
-                    <span className="font-semibold text-ios-green">{formatMoney(getReservationBalance(selectedReservation).paid)}</span>
+                    <span className="font-semibold text-ios-green">{formatMoney(getReservationBalance(selectedReservation).paidCents)}</span>
                   </div>
-                  {getReservationBalance(selectedReservation).balance > 0 ? (
+                  {getReservationBalance(selectedReservation).balanceCents > 0 ? (
                     <div className="flex justify-between text-sm">
                       <span className="text-ios-text-secondary">{t.balance}</span>
-                      <span className="font-semibold text-ios-red">{formatMoney(getReservationBalance(selectedReservation).balance)}</span>
+                      <span className="font-semibold text-ios-red">{formatMoney(getReservationBalance(selectedReservation).balanceCents)}</span>
                     </div>
                   ) : (
                     <div className="text-xs font-semibold text-ios-green mt-1">{t.fullyPaid}</div>
@@ -281,7 +282,7 @@ export default memo(function CalendarView() {
                             <span className="capitalize bg-ios-gray-light px-1.5 py-0.5 rounded">{p.method}</span>
                             {p.note && <span className="truncate max-w-[80px]">— {p.note}</span>}
                           </div>
-                          <span className="font-semibold text-ios-text">{formatMoney(p.amount)}</span>
+                          <span className="font-semibold text-ios-text">{formatMoney(p.amountCents)}</span>
                         </div>
                       ))}
                     </div>

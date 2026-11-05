@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { RoomStatus } from '../../domain/Room';
 import { roomService } from '../../services/RoomService';
 import { useLocale } from '../../context/LocaleContext';
+import { parseMoneyInput } from '../../domain/money';
 
 interface AddRoomFormProps {
   onCancel: () => void;
@@ -19,7 +20,7 @@ export default function AddRoomForm({ onCancel }: AddRoomFormProps) {
       id: crypto.randomUUID(),
       name: name.trim(),
       status: RoomStatus.AVAILABLE,
-      pricePerNight: parseFloat(price) || 100,
+      pricePerNightCents: parseMoneyInput(price) || 10_000,
       maxGuests: parseInt(maxGuests) || 2,
     });
     onCancel();

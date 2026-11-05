@@ -13,7 +13,8 @@ export class Reservation {
   readonly departureDate: string;
   readonly guestsCount: number;
   private _status: ReservationStatus;
-  readonly price: number;
+  /** Total for the stay, integer cents. */
+  readonly priceCents: number;
   readonly notes?: string;
   readonly recurrence?: RecurrenceRule;
   readonly seriesId?: string;
@@ -26,7 +27,7 @@ export class Reservation {
     this.departureDate = data.departureDate;
     this.guestsCount = data.guestsCount;
     this._status = data.status;
-    this.price = data.price;
+    this.priceCents = data.priceCents;
     this.notes = data.notes;
     this.recurrence = data.recurrence;
     this.seriesId = data.seriesId;
@@ -77,8 +78,9 @@ export class Reservation {
     return this.arrivalDate < end && this.departureDate > start;
   }
 
-  calculateTotal(pricePerNight: number): number {
-    return this.duration() * pricePerNight;
+  /** Price of the stay in cents: nights × nightly rate. */
+  calculateTotal(pricePerNightCents: number): number {
+    return this.duration() * pricePerNightCents;
   }
 
   toData(): ReservationData {
@@ -90,7 +92,7 @@ export class Reservation {
       departureDate: this.departureDate,
       guestsCount: this.guestsCount,
       status: this._status,
-      price: this.price,
+      priceCents: this.priceCents,
       notes: this.notes,
       recurrence: this.recurrence,
       seriesId: this.seriesId,

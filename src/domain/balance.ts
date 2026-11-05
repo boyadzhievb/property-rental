@@ -1,35 +1,33 @@
 /**
- * Money arithmetic for payments and balances. Every total goes through here so rounding happens
- * in one place: screens, reports and the overpayment check all see the same numbers.
+ * Payment and balance arithmetic, in integer cents (see domain/money). Screens, reports and the
+ * overpayment check all use these, so they always agree.
  */
-import { roundToCents } from './money';
 import type { PaymentMethod } from '../schemas/PaymentSchema';
 import type { ReservationStatus } from '../schemas/ReservationSchema';
 
 interface PaymentAmount {
   reservationId: string;
-  amount: number;
+  amountCents: number;
 }
 
 export interface ReservationBalance {
   /** The reservation price. */
-  total: number;
-  paid: number;
+  totalCents: number;
+  paidCents: number;
   /** What is still owed; zero when fully paid. */
-  balance: number;
+  balanceCents: number;
 }
 
-/** Sum money amounts, rounded to cents so float noise never reaches the screen. */
-export function sumMoney(amounts: Iterable<number>): number {
+export function sumCents(amounts: Iterable<number>): number {
   let sum = 0;
-  for (const amount of amounts) sum += amount;
-  return roundToCents(sum);
+  for (const cents of amounts) sum += cents;
+  return sum;
 }
 
 /** Paid and remaining amounts for a reservation, given the payments made for it. */
-export function reservationBalance(price: number, payments: readonly PaymentAmount[]): ReservationBalance {
-  const paid = sumMoney(payments.map(payment => payment.amount));
-  return { total: price, paid, balance: roundToCents(price - paid) };
+export function reservationBalance(priceCents: number, payments: readonly PaymentAmount[]): ReservationBalance {
+  const paidCents = sumCents(payments.map(payment => payment.amountCents));
+  return { totalCents: priceCents, paidCents, balanceCents: priceCents - paidCents };
 }
 
 export function groupPaymentsByReservation<T extends PaymentAmount>(payments: readonly T[]): Map<string, T[]> {
@@ -44,24 +42,20 @@ export function groupPaymentsByReservation<T extends PaymentAmount>(payments: re
 
 /** Total collected per payment method; methods without payments are zero. */
 export function totalsByMethod(payments: readonly (PaymentAmount & { method: PaymentMethod })[]): Record<PaymentMethod, number> {
-  const amountsByMethod: Record<PaymentMethod, number[]> = { cash: [], card: [], transfer: [] };
-  for (const payment of payments) amountsByMethod[payment.method].push(payment.amount);
-  return {
-    cash: sumMoney(amountsByMethod.cash),
-    card: sumMoney(amountsByMethod.card),
-    transfer: sumMoney(amountsByMethod.transfer),
-  };
+  const totals: Record<PaymentMethod, number> = { cash: 0, card: 0, transfer: 0 };
+  for (const payment of payments) totals[payment.method] += payment.amountCents;
+  return totals;
 }
 
 /** Reservations that still owe money (cancelled ones excluded), largest balance first. */
-export function outstandingBalances<R extends { id: string; price: number; status: ReservationStatus }>(
+export function outstandingBalances<R extends { id: string; priceCents: number; status: ReservationStatus }>(
   reservations: readonly R[],
   payments: readonly PaymentAmount[],
 ): (ReservationBalance & { reservation: R })[] {
   const paymentsByReservation = groupPaymentsByReservation(payments);
   return reservations
     .filter(reservation => reservation.status !== 'Cancelled')
-    .map(reservation => ({ reservation, ...reservationBalance(reservation.price, paymentsByReservation.get(reservation.id) ?? []) }))
-    .filter(item => item.balance > 0)
-    .sort((a, b) => b.balance - a.balance);
+    .map(reservation => ({ reservation, ...reservationBalance(reservation.priceCents, paymentsByReservation.get(reservation.id) ?? []) }))
+    .filter(item => item.balanceCents > 0)
+    .sort((a, b) => b.balanceCents - a.balanceCents);
 }

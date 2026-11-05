@@ -17,7 +17,8 @@ export const ReservationSchema = z.object({
   departureDate: localDate('Check-out date is required'),
   guestsCount: z.number().int().min(1, 'At least 1 guest required'),
   status: ReservationStatusSchema,
-  price: z.number().positive('Price must be greater than 0'),
+  /** Total for the stay, integer cents (see domain/money). */
+  priceCents: z.number().int().positive('Price must be greater than 0'),
   notes: z.string().optional(),
   recurrence: RecurrenceRuleSchema.optional(),
   seriesId: z.string().optional(),

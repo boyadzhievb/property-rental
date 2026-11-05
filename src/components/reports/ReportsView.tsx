@@ -7,7 +7,7 @@ import { useRoomContext } from '../../context/RoomContext';
 import { useGuestContext } from '../../context/GuestContext';
 import { useLocale } from '../../context/LocaleContext';
 import { useMoney } from '../../hooks/useMoney';
-import { sumMoney, totalsByMethod, outstandingBalances as findOutstandingBalances } from '../../domain/balance';
+import { sumCents, totalsByMethod, outstandingBalances as findOutstandingBalances } from '../../domain/balance';
 import PageHeader from '../layout/PageHeader';
 import { useCurrentDate } from '../../hooks/useCurrentDate';
 
@@ -53,7 +53,7 @@ export default function ReportsView() {
   );
 
   const totalCollected = useMemo(() =>
-    sumMoney(periodPayments.map(p => p.amount)),
+    sumCents(periodPayments.map(p => p.amountCents)),
     [periodPayments]
   );
 
@@ -67,7 +67,7 @@ export default function ReportsView() {
   );
 
   const totalRevenue = useMemo(() =>
-    sumMoney(periodReservations.map(r => r.price)),
+    sumCents(periodReservations.map(r => r.priceCents)),
     [periodReservations]
   );
 
@@ -88,20 +88,20 @@ export default function ReportsView() {
   }, [rooms, dateRange, periodReservations]);
 
   const outstandingBalances = useMemo(() =>
-    findOutstandingBalances(reservations, payments).map(({ reservation, total, paid, balance }) => ({
+    findOutstandingBalances(reservations, payments).map(({ reservation, totalCents, paidCents, balanceCents }) => ({
       reservationId: reservation.id,
       guestName: guestMap.get(reservation.guestId)?.name ?? t.unknown,
       roomName: roomMap.get(reservation.roomId)?.name ?? t.unknown,
-      total,
-      paid,
-      balance,
+      totalCents,
+      paidCents,
+      balanceCents,
       arrivalDate: reservation.arrivalDate,
     })),
     [reservations, payments, guestMap, roomMap, t]
   );
 
   const totalOutstanding = useMemo(() =>
-    sumMoney(outstandingBalances.map(b => b.balance)),
+    sumCents(outstandingBalances.map(b => b.balanceCents)),
     [outstandingBalances]
   );
 
@@ -224,8 +224,8 @@ export default function ReportsView() {
                         <div className="text-xs text-ios-text-secondary">{item.roomName} — {item.arrivalDate}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-ios-red text-sm">{formatMoney(item.balance)}</div>
-                        <div className="text-xs text-ios-text-secondary">{formatMoney(item.paid)} / {formatMoney(item.total)}</div>
+                        <div className="font-bold text-ios-red text-sm">{formatMoney(item.balanceCents)}</div>
+                        <div className="text-xs text-ios-text-secondary">{formatMoney(item.paidCents)} / {formatMoney(item.totalCents)}</div>
                       </div>
                     </div>
                   </div>
@@ -264,7 +264,7 @@ export default function ReportsView() {
                           {p.note && ` · ${p.note}`}
                         </div>
                       </div>
-                      <div className="font-bold text-ios-text text-sm">{formatMoney(p.amount)}</div>
+                      <div className="font-bold text-ios-text text-sm">{formatMoney(p.amountCents)}</div>
                     </div>
                   );
                 })}

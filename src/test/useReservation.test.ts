@@ -38,7 +38,7 @@ const sampleReservation = new Reservation({
   departureDate: '2025-06-18',
   guestsCount: 2,
   status: 'Confirmed',
-  price: 450,
+  priceCents: 45000,
 })
 
 describe('useReservation', () => {

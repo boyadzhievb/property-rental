@@ -6,8 +6,11 @@ import { SUPPORTED_CURRENCIES } from '../domain/currency';
  * Version of the backup file format written by `exportBackup()`.
  * Bump it when the format changes incompatibly, and teach the importer to upgrade older versions.
  * Files exported before versioning existed have no `schemaVersion` and are treated as version 1.
+ *
+ * - 1: money as decimal amounts (`pricePerNight`, `price`, `amount`).
+ * - 2: money as integer cents (`pricePerNightCents`, `priceCents`, `amountCents`).
  */
-export const BACKUP_SCHEMA_VERSION = 1;
+export const BACKUP_SCHEMA_VERSION = 2;
 
 const SUPPORTED_LOCALES = ['en', 'bg', 'de', 'el', 'fr', 'es'] as const satisfies readonly Locale[];
 const SUPPORTED_THEMES = ['light', 'dark', 'system'] as const;

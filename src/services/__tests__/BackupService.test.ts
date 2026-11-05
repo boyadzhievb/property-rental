@@ -33,7 +33,7 @@ describe('BackupService', () => {
 
   describe('import', () => {
     it('passes the parsed backup to backupRepository.importAll and returns a report', async () => {
-      const fakeData = { rooms: [{ id: 'r1', name: 'Suite', status: 'Available', pricePerNight: 100, maxGuests: 2 }] }
+      const fakeData = { rooms: [{ id: 'r1', name: 'Suite', status: 'Available', pricePerNightCents: 10000, maxGuests: 2 }] }
       mockExportAll.mockResolvedValue({})
       mockImportAll.mockResolvedValue(undefined)
 

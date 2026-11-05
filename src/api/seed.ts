@@ -16,11 +16,11 @@ function getSeedData() {
   const today = new Date();
 
   const rooms: RoomData[] = [
-    { id: '101', name: 'Suite 1', status: 'Occupied', pricePerNight: 250, maxGuests: 4 },
-    { id: '102', name: 'Ocean View', status: 'Available', pricePerNight: 200, maxGuests: 2 },
-    { id: '103', name: 'Standard Room', status: 'Cleaning', pricePerNight: 150, maxGuests: 2 },
-    { id: '104', name: 'Garden Villa', status: 'Occupied', pricePerNight: 300, maxGuests: 6 },
-    { id: '105', name: 'Penthouse', status: 'Available', pricePerNight: 400, maxGuests: 4 },
+    { id: '101', name: 'Suite 1', status: 'Occupied', pricePerNightCents: 25_000, maxGuests: 4 },
+    { id: '102', name: 'Ocean View', status: 'Available', pricePerNightCents: 20_000, maxGuests: 2 },
+    { id: '103', name: 'Standard Room', status: 'Cleaning', pricePerNightCents: 15_000, maxGuests: 2 },
+    { id: '104', name: 'Garden Villa', status: 'Occupied', pricePerNightCents: 30_000, maxGuests: 6 },
+    { id: '105', name: 'Penthouse', status: 'Available', pricePerNightCents: 40_000, maxGuests: 4 },
   ];
 
   const guests: GuestData[] = [
@@ -32,17 +32,17 @@ function getSeedData() {
   ];
 
   const reservations: ReservationData[] = [
-    { id: 'r1', roomId: '101', guestId: 'g1', arrivalDate: toLocalDate(subDays(today, 1)), departureDate: toLocalDate(addDays(today, 2)), guestsCount: 2, status: 'Checked In', price: 750 },
-    { id: 'r2', roomId: '104', guestId: 'g2', arrivalDate: toLocalDate(today), departureDate: toLocalDate(addDays(today, 4)), guestsCount: 1, status: 'Checked In', price: 1200 },
-    { id: 'r3', roomId: '103', guestId: 'g3', arrivalDate: toLocalDate(subDays(today, 3)), departureDate: toLocalDate(today), guestsCount: 2, status: 'Checked Out', price: 450 },
-    { id: 'r4', roomId: '102', guestId: 'g4', arrivalDate: toLocalDate(addDays(today, 1)), departureDate: toLocalDate(addDays(today, 5)), guestsCount: 2, status: 'Confirmed', price: 800 },
-    { id: 'r5', roomId: '105', guestId: 'g5', arrivalDate: toLocalDate(addDays(today, 3)), departureDate: toLocalDate(addDays(today, 7)), guestsCount: 3, status: 'Confirmed', price: 1600 },
+    { id: 'r1', roomId: '101', guestId: 'g1', arrivalDate: toLocalDate(subDays(today, 1)), departureDate: toLocalDate(addDays(today, 2)), guestsCount: 2, status: 'Checked In', priceCents: 75_000 },
+    { id: 'r2', roomId: '104', guestId: 'g2', arrivalDate: toLocalDate(today), departureDate: toLocalDate(addDays(today, 4)), guestsCount: 1, status: 'Checked In', priceCents: 120_000 },
+    { id: 'r3', roomId: '103', guestId: 'g3', arrivalDate: toLocalDate(subDays(today, 3)), departureDate: toLocalDate(today), guestsCount: 2, status: 'Checked Out', priceCents: 45_000 },
+    { id: 'r4', roomId: '102', guestId: 'g4', arrivalDate: toLocalDate(addDays(today, 1)), departureDate: toLocalDate(addDays(today, 5)), guestsCount: 2, status: 'Confirmed', priceCents: 80_000 },
+    { id: 'r5', roomId: '105', guestId: 'g5', arrivalDate: toLocalDate(addDays(today, 3)), departureDate: toLocalDate(addDays(today, 7)), guestsCount: 3, status: 'Confirmed', priceCents: 160_000 },
   ];
 
   const payments: PaymentData[] = [
-    { id: 'pay-1', reservationId: 'r1', amount: 500, date: toLocalDate(subDays(today, 1)), method: 'card', note: 'Advance payment' },
-    { id: 'pay-2', reservationId: 'r3', amount: 450, date: toLocalDate(subDays(today, 1)), method: 'cash', note: '' },
-    { id: 'pay-3', reservationId: 'r2', amount: 600, date: toLocalDate(today), method: 'transfer', note: 'First installment' },
+    { id: 'pay-1', reservationId: 'r1', amountCents: 50_000, date: toLocalDate(subDays(today, 1)), method: 'card', note: 'Advance payment' },
+    { id: 'pay-2', reservationId: 'r3', amountCents: 45_000, date: toLocalDate(subDays(today, 1)), method: 'cash', note: '' },
+    { id: 'pay-3', reservationId: 'r2', amountCents: 60_000, date: toLocalDate(today), method: 'transfer', note: 'First installment' },
   ];
 
   return { rooms, guests, reservations, payments };

@@ -36,12 +36,20 @@ export function fillPlaceholders(template: string, params: DomainErrorParams, re
   return template.replace(/\{(\w+)\}/g, (placeholder, name: string) => (name in params ? render(name, params[name]) : placeholder));
 }
 
+/** Parameters that hold money, in integer cents. The UI formats them in the property currency. */
+export const MONEY_PARAMS: ReadonlySet<string> = new Set(['remaining']);
+
+/** English rendering for logs and tests: cents as a plain decimal, e.g. 3334 → `33.34`. */
+function renderEnglish(name: string, value: string | number): string {
+  return MONEY_PARAMS.has(name) && typeof value === 'number' ? (value / 100).toFixed(2) : String(value);
+}
+
 export class DomainError extends Error {
   readonly code: DomainErrorCode;
   readonly params: DomainErrorParams;
 
   constructor(code: DomainErrorCode, params: DomainErrorParams = {}) {
-    super(fillPlaceholders(ENGLISH_MESSAGES[code], params));
+    super(fillPlaceholders(ENGLISH_MESSAGES[code], params, renderEnglish));
     this.name = 'DomainError';
     this.code = code;
     this.params = params;

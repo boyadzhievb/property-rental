@@ -4,13 +4,13 @@ import { Room, RoomStatus } from '../Room'
 import { Reservation } from '../Reservation'
 
 function makeRoom(id: string, status: RoomStatus = RoomStatus.AVAILABLE) {
-  return new Room({ id, name: `Room ${id}`, status, pricePerNight: 100, maxGuests: 2 })
+  return new Room({ id, name: `Room ${id}`, status, pricePerNightCents: 10000, maxGuests: 2 })
 }
 
 function makeReservation(id: string, roomId: string, arrival: string, departure: string, status: import('../Reservation').ReservationStatus = 'Confirmed') {
   return new Reservation({
     id, roomId, guestId: 'g-1', arrivalDate: arrival, departureDate: departure,
-    guestsCount: 1, status, price: 500,
+    guestsCount: 1, status, priceCents: 50000,
   })
 }
 

@@ -94,7 +94,7 @@ flowchart TD
     E -->|Yes| G{Amount > remaining balance?}
     G -->|Yes| H[Reject: exceeds remaining balance]
     G -->|No| I[Create Payment record linked to reservation]
-    I --> J[Balance = reservation.price - sum of payments]
+    I --> J[Balance = reservation.priceCents - sum of payment amountCents]
     J --> K{Balance <= 0?}
     K -->|Yes| L[Reservation is fully paid]
     K -->|No| M[Balance still outstanding]

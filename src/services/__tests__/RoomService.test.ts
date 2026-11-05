@@ -32,7 +32,7 @@ import { roomRepository } from '../../repositories/RoomRepository'
 const store = (roomRepository as any)._store as Map<string, any>
 
 function seedRoom(overrides: Partial<any> = {}) {
-  const data = { id: 'room-1', name: 'Suite 1', status: RoomStatus.AVAILABLE, pricePerNight: 100, maxGuests: 2, ...overrides }
+  const data = { id: 'room-1', name: 'Suite 1', status: RoomStatus.AVAILABLE, pricePerNightCents: 10000, maxGuests: 2, ...overrides }
   store.set(data.id, data)
   return data
 }
@@ -49,7 +49,7 @@ describe('RoomService', () => {
     it('creates a room with valid data', async () => {
       const room = await service.createRoom({
         id: 'room-1', name: 'Suite 1', status: RoomStatus.AVAILABLE,
-        pricePerNight: 100, maxGuests: 2,
+        pricePerNightCents: 10000, maxGuests: 2,
       })
       expect(room.id).toBe('room-1')
       expect(room.name).toBe('Suite 1')
@@ -58,7 +58,7 @@ describe('RoomService', () => {
     it('rejects invalid data', async () => {
       await expect(service.createRoom({
         id: 'room-1', name: '', status: RoomStatus.AVAILABLE,
-        pricePerNight: 100, maxGuests: 2,
+        pricePerNightCents: 10000, maxGuests: 2,
       })).rejects.toThrow()
     })
   })
@@ -68,7 +68,7 @@ describe('RoomService', () => {
       seedRoom()
       const room = await service.updateRoom('room-1', { name: 'Deluxe Suite' })
       expect(room!.name).toBe('Deluxe Suite')
-      expect(room!.pricePerNight).toBe(100)
+      expect(room!.pricePerNightCents).toBe(10000)
     })
 
     it('returns null for non-existent room', async () => {

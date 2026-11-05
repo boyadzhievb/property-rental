@@ -2,10 +2,10 @@ import 'fake-indexeddb/auto'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { IDBFactory } from 'fake-indexeddb'
 
-const room = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNight: 100, maxGuests: 2 } as const
+const room = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNightCents: 10000, maxGuests: 2 } as const
 const guest = { id: 'guest-1', name: 'Maria Ivanova', phone: '+359888123456', email: 'maria@example.com', previousStays: 0, notes: '' }
 const booking = (id: string) => ({
-  id, roomId: 'room-1', guestId: 'guest-1', arrivalDate: '2026-12-01', departureDate: '2026-12-05', guestsCount: 1, status: 'Confirmed' as const, price: 400,
+  id, roomId: 'room-1', guestId: 'guest-1', arrivalDate: '2026-12-01', departureDate: '2026-12-05', guestsCount: 1, status: 'Confirmed' as const, priceCents: 40000,
 })
 
 async function setup() {
@@ -59,7 +59,7 @@ describe('service writes are atomic under concurrency', () => {
   it('deleteReservation removes the reservation, its payments and linked tasks together', async () => {
     const { api, reservationService } = await setup()
     await api.reservations.create(booking('res-1'))
-    await api.payments.create({ id: 'pay-1', reservationId: 'res-1', amount: 100, date: '2026-12-01', method: 'cash', note: '' })
+    await api.payments.create({ id: 'pay-1', reservationId: 'res-1', amountCents: 10000, date: '2026-12-01', method: 'cash', note: '' })
     await api.tasks.put({ id: 'task-1', title: 'Prepare', category: 'preparation', completed: false, date: '2026-12-01', linkedReservationId: 'res-1', auto: true })
     await api.tasks.put({ id: 'task-2', title: 'Other', category: 'custom', completed: false, date: '2026-12-01', auto: false })
 

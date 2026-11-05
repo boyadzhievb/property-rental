@@ -20,7 +20,7 @@ export function makeRoom(overrides?: Partial<RoomData>): Room {
     id: `room-${crypto.randomUUID().slice(0, 8)}`,
     name: 'Test Room',
     status: RoomStatus.AVAILABLE,
-    pricePerNight: 100,
+    pricePerNightCents: 10000,
     maxGuests: 2,
     ...overrides,
   });
@@ -47,7 +47,7 @@ export function makeReservation(overrides?: Partial<ReservationData>): Reservati
     departureDate: '2026-12-05',
     guestsCount: 2,
     status: 'Confirmed',
-    price: 400,
+    priceCents: 40000,
     ...overrides,
   });
 }
@@ -56,7 +56,7 @@ export function makePayment(overrides?: Partial<PaymentData>): Payment {
   return new Payment({
     id: `pay-${crypto.randomUUID().slice(0, 8)}`,
     reservationId: 'res-1',
-    amount: 100,
+    amountCents: 10000,
     date: format(new Date(), 'yyyy-MM-dd'),
     method: 'cash',
     note: '',

@@ -57,7 +57,7 @@ describe('SettingsService currency', () => {
     const { client } = await load(['en-US'])
     const { backupService } = await import('../services/BackupService')
     await client.api.settings.saveProperty({ name: 'Villa', isConfigured: true, currency: 'CHF' })
-    await client.api.rooms.create({ id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNight: 100, maxGuests: 2 })
+    await client.api.rooms.create({ id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNightCents: 10000, maxGuests: 2 })
 
     const backup = await backupService.export()
     expect(backup.settings).toEqual({ name: 'Villa', currency: 'CHF' })

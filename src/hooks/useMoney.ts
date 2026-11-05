@@ -3,9 +3,9 @@ import { usePropertyContext } from '../context/PropertyContext';
 import { useLocale } from '../context/LocaleContext';
 import { formatMoney } from '../domain/currency';
 
-/** Returns a formatter for amounts in the property's currency and the current language. */
-export function useMoney(): (amount: number) => string {
+/** Returns a formatter for integer cents in the property's currency and the current language. */
+export function useMoney(): (cents: number) => string {
   const { currency } = usePropertyContext();
   const { locale } = useLocale();
-  return useCallback((amount: number) => formatMoney(amount, currency, locale), [currency, locale]);
+  return useCallback((cents: number) => formatMoney(cents, currency, locale), [currency, locale]);
 }

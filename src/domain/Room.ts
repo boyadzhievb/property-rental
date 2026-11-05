@@ -20,14 +20,15 @@ export class Room {
   readonly id: string;
   readonly name: string;
   private _status: RoomStatus;
-  readonly pricePerNight: number;
+  /** Integer cents. */
+  readonly pricePerNightCents: number;
   readonly maxGuests: number;
 
   constructor(data: RoomData) {
     this.id = data.id;
     this.name = data.name;
     this._status = data.status;
-    this.pricePerNight = data.pricePerNight;
+    this.pricePerNightCents = data.pricePerNightCents;
     this.maxGuests = data.maxGuests ?? 2;
   }
 
@@ -79,7 +80,7 @@ export class Room {
       id: this.id,
       name: this.name,
       status: this._status,
-      pricePerNight: this.pricePerNight,
+      pricePerNightCents: this.pricePerNightCents,
       maxGuests: this.maxGuests,
     };
   }

@@ -62,7 +62,9 @@ State machines are the core invariant — see `FLOWS.md` for full diagrams.
 - Completing a cleaning task → room becomes Available
 - Cancellation of an occupied reservation → room goes to Cleaning
 
-**Payments:** Separate entity linked to reservation by ID. Partial payments allowed. Balance = reservation price − sum(payments). Cannot pay a cancelled reservation or exceed remaining balance.
+**Payments:** Separate entity linked to reservation by ID. Partial payments allowed. Balance = reservation price − sum(payments), computed only in `domain/balance.ts`. Cannot pay a cancelled reservation or exceed remaining balance.
+
+**Money:** stored and computed as integer cents (`pricePerNightCents`, `priceCents`, `amountCents`), so sums are exact. Typed amounts become cents at the form (`parseMoneyInput`); `formatMoney` turns cents back into currency text. Data from before database version 6 / backup format 2 held decimal amounts and is converted on upgrade or import (`domain/money.ts`).
 
 **Tasks:** Auto-generated daily from current state (cleaning needed, arrivals, outstanding payments). Deterministic IDs prevent duplicates on refresh. Completing a cleaning task triggers room → Available.
 

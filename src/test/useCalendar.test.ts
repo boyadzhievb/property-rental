@@ -60,13 +60,13 @@ describe('useCalendar', () => {
         departureDate: '2025-06-19',
         guestsCount: 2,
         status: 'Confirmed',
-        price: 300,
+        priceCents: 30000,
       }),
     ]
     mockGetReservationsByRange.mockResolvedValue(fetchedReservations)
 
     mockRooms = [
-      new Room({ id: 'room-1', name: 'Ocean Suite', status: RoomStatus.AVAILABLE, pricePerNight: 100, maxGuests: 2 }),
+      new Room({ id: 'room-1', name: 'Ocean Suite', status: RoomStatus.AVAILABLE, pricePerNightCents: 10000, maxGuests: 2 }),
     ]
     mockGuests = [
       new Guest({ id: 'guest-1', name: 'Jane Doe', phone: '+1 555-0100', email: 'jane@example.com', previousStays: 1, notes: '' }),
@@ -116,8 +116,8 @@ describe('useCalendar', () => {
     mockGetReservationsByRange.mockResolvedValue([])
 
     mockRooms = [
-      new Room({ id: 'room-1', name: 'Mountain View', status: RoomStatus.AVAILABLE, pricePerNight: 150, maxGuests: 3 }),
-      new Room({ id: 'room-2', name: 'Garden Room', status: RoomStatus.OCCUPIED, pricePerNight: 120, maxGuests: 2 }),
+      new Room({ id: 'room-1', name: 'Mountain View', status: RoomStatus.AVAILABLE, pricePerNightCents: 15000, maxGuests: 3 }),
+      new Room({ id: 'room-2', name: 'Garden Room', status: RoomStatus.OCCUPIED, pricePerNightCents: 12000, maxGuests: 2 }),
     ]
     mockGuests = [
       new Guest({ id: 'guest-1', name: 'Alice Walker', phone: '+1 555-0123', email: 'alice@example.com', previousStays: 3, notes: '' }),

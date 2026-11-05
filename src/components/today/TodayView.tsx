@@ -65,7 +65,7 @@ export default memo(function TodayView() {
     for (const res of todayReservations) {
       if (seen.has(res.id)) continue;
       seen.add(res.id);
-      if (reservationBalance(res.price, paymentsByReservation.get(res.id) ?? []).balance > 0) {
+      if (reservationBalance(res.priceCents, paymentsByReservation.get(res.id) ?? []).balanceCents > 0) {
         const guest = guestMap.get(res.guestId);
         pendingPayments.push({ reservationId: res.id, guestName: guest?.name ?? '' });
       }

@@ -3,9 +3,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { IDBFactory } from 'fake-indexeddb'
 import type { StoreName } from '../api/client'
 
-const room = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNight: 100, maxGuests: 2 } as const
+const room = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNightCents: 10000, maxGuests: 2 } as const
 const guest = { id: 'guest-1', name: 'Maria Ivanova', phone: '+359888123456', email: '', previousStays: 0, notes: '' }
-const booking = { id: 'res-1', roomId: 'room-1', guestId: 'guest-1', arrivalDate: '2026-12-01', departureDate: '2026-12-05', guestsCount: 1, status: 'Confirmed' as const, price: 400 }
+const booking = { id: 'res-1', roomId: 'room-1', guestId: 'guest-1', arrivalDate: '2026-12-01', departureDate: '2026-12-05', guestsCount: 1, status: 'Confirmed' as const, priceCents: 40000 }
 
 /** Load a fresh data layer and record every change announcement made in this tab. */
 async function setup() {

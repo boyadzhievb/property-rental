@@ -70,7 +70,7 @@ function seedReservation(overrides: Partial<any> = {}) {
   const data = {
     id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
     arrivalDate: '2026-09-10', departureDate: '2026-09-15',
-    guestsCount: 1, status: 'Confirmed', price: 500, ...overrides,
+    guestsCount: 1, status: 'Confirmed', priceCents: 50000, ...overrides,
   }
   resStore.set(data.id, data)
   return data
@@ -78,7 +78,7 @@ function seedReservation(overrides: Partial<any> = {}) {
 
 function makePaymentData(overrides: Partial<any> = {}) {
   return {
-    id: 'pay-1', reservationId: 'res-1', amount: 200,
+    id: 'pay-1', reservationId: 'res-1', amountCents: 20000,
     date: '2026-09-10', method: 'cash' as const, note: '', ...overrides,
   }
 }
@@ -92,26 +92,24 @@ describe('PaymentService', () => {
     service = new PaymentService()
   })
 
-  describe('createPayment amount rounding', () => {
-    it.each([[33.333, 33.33], [19.995, 20], [0.005, 0.01], [100.1, 100.1]])('stores %s as %s', async (typed, stored) => {
+  describe('createPayment amount', () => {
+    it('stores integer cents as given', async () => {
       seedReservation()
-
-      const payment = await service.createPayment(makePaymentData({ amount: typed }))
-
-      expect(payment.amount).toBe(stored)
-      expect(payStore.get('pay-1').amount).toBe(stored)
+      const payment = await service.createPayment(makePaymentData({ amountCents: 3333 }))
+      expect(payment.amountCents).toBe(3333)
+      expect(payStore.get('pay-1').amountCents).toBe(3333)
     })
 
-    it('still rejects an amount that rounds to zero', async () => {
+    it.each([0, 33.33])('rejects %s cents (forms convert typed amounts with parseMoneyInput)', async (amountCents) => {
       seedReservation()
-      await expect(service.createPayment(makePaymentData({ amount: 0.004 }))).rejects.toThrow()
+      await expect(service.createPayment(makePaymentData({ amountCents }))).rejects.toThrow()
     })
   })
 
   describe('getAllPayments', () => {
     it('returns all payments', async () => {
       payStore.set('pay-1', makePaymentData({ id: 'pay-1' }))
-      payStore.set('pay-2', makePaymentData({ id: 'pay-2', amount: 100 }))
+      payStore.set('pay-2', makePaymentData({ id: 'pay-2', amountCents: 10000 }))
       const payments = await service.getAllPayments()
       expect(payments).toHaveLength(2)
       expect(payments.map(p => p.id)).toContain('pay-1')
@@ -127,8 +125,8 @@ describe('PaymentService', () => {
   describe('getPaymentsByReservationId', () => {
     it('returns payments for a specific reservation', async () => {
       payStore.set('pay-1', makePaymentData({ id: 'pay-1', reservationId: 'res-1' }))
-      payStore.set('pay-2', makePaymentData({ id: 'pay-2', reservationId: 'res-1', amount: 50 }))
-      payStore.set('pay-3', makePaymentData({ id: 'pay-3', reservationId: 'res-2', amount: 300 }))
+      payStore.set('pay-2', makePaymentData({ id: 'pay-2', reservationId: 'res-1', amountCents: 5000 }))
+      payStore.set('pay-3', makePaymentData({ id: 'pay-3', reservationId: 'res-2', amountCents: 30000 }))
       const payments = await service.getPaymentsByReservationId('res-1')
       expect(payments).toHaveLength(2)
       expect(payments.every(p => p.reservationId === 'res-1')).toBe(true)
@@ -145,7 +143,7 @@ describe('PaymentService', () => {
     it('creates a valid payment', async () => {
       seedReservation()
       const result = await service.createPayment(makePaymentData())
-      expect(result.amount).toBe(200)
+      expect(result.amountCents).toBe(20000)
       expect(result.method).toBe('cash')
     })
 
@@ -161,32 +159,32 @@ describe('PaymentService', () => {
     })
 
     it('rejects payment exceeding remaining balance', async () => {
-      seedReservation({ price: 500 })
-      payStore.set('pay-0', { ...makePaymentData({ id: 'pay-0', amount: 400 }) })
-      await expect(service.createPayment(makePaymentData({ id: 'pay-1', amount: 200 })))
+      seedReservation({ priceCents: 50000 })
+      payStore.set('pay-0', { ...makePaymentData({ id: 'pay-0', amountCents: 40000 }) })
+      await expect(service.createPayment(makePaymentData({ id: 'pay-1', amountCents: 20000 })))
         .rejects.toThrow('exceeds remaining balance')
     })
 
     it('allows payment up to exact remaining balance', async () => {
-      seedReservation({ price: 500 })
-      payStore.set('pay-0', { ...makePaymentData({ id: 'pay-0', amount: 300 }) })
-      const result = await service.createPayment(makePaymentData({ id: 'pay-1', amount: 200 }))
-      expect(result.amount).toBe(200)
+      seedReservation({ priceCents: 50000 })
+      payStore.set('pay-0', { ...makePaymentData({ id: 'pay-0', amountCents: 30000 }) })
+      const result = await service.createPayment(makePaymentData({ id: 'pay-1', amountCents: 20000 }))
+      expect(result.amountCents).toBe(20000)
     })
 
     it('allows the exact remaining cents after split payments, and not one cent more', async () => {
-      seedReservation({ price: 100 })
-      payStore.set('pay-0', { ...makePaymentData({ id: 'pay-0', amount: 33.33 }) })
-      payStore.set('pay-1', { ...makePaymentData({ id: 'pay-1', amount: 33.33 }) })
-      await expect(service.createPayment(makePaymentData({ id: 'pay-2', amount: 33.35 })))
+      seedReservation({ priceCents: 10000 })
+      payStore.set('pay-0', { ...makePaymentData({ id: 'pay-0', amountCents: 3333 }) })
+      payStore.set('pay-1', { ...makePaymentData({ id: 'pay-1', amountCents: 3333 }) })
+      await expect(service.createPayment(makePaymentData({ id: 'pay-2', amountCents: 3335 })))
         .rejects.toThrow('exceeds remaining balance of 33.34')
-      const result = await service.createPayment(makePaymentData({ id: 'pay-3', amount: 33.34 }))
-      expect(result.amount).toBe(33.34)
+      const result = await service.createPayment(makePaymentData({ id: 'pay-3', amountCents: 3334 }))
+      expect(result.amountCents).toBe(3334)
     })
 
     it('rejects invalid payment data', async () => {
       seedReservation()
-      await expect(service.createPayment({ ...makePaymentData(), amount: -10 }))
+      await expect(service.createPayment({ ...makePaymentData(), amountCents: -1000 }))
         .rejects.toThrow()
     })
   })

@@ -3,6 +3,8 @@
  * Everything else in `src/api/` reaches the database through `getDB()`.
  */
 
+import { legacyRecordToCents, LEGACY_MONEY_FIELDS } from '../domain/money';
+
 export interface PropertySettings {
   id: string;
   name: string;
@@ -12,7 +14,7 @@ export interface PropertySettings {
 }
 
 const DB_NAME = 'property-rental';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 /** Every object store; whole-database operations (seed, reset, backup) span all of them. */
 export const ALL_STORES = ['rooms', 'guests', 'reservations', 'payments', 'tasks', 'settings'] as const;
@@ -66,6 +68,21 @@ function openDB(): Promise<IDBDatabase> {
         }
         if (!resStore.indexNames.contains('seriesId')) {
           resStore.createIndex('seriesId', 'seriesId', { unique: false });
+        }
+      }
+
+      // Version 6: money as integer cents instead of decimal amounts (see domain/money).
+      if (oldVersion >= 1 && oldVersion < 6) {
+        const tx = request.transaction!;
+        for (const [store, [legacyField, centsField]] of Object.entries(LEGACY_MONEY_FIELDS)) {
+          const cursorRequest = tx.objectStore(store).openCursor();
+          cursorRequest.onsuccess = () => {
+            const cursor = cursorRequest.result;
+            if (!cursor) return;
+            const upgraded = legacyRecordToCents(cursor.value, legacyField, centsField);
+            if (upgraded !== cursor.value) cursor.update(upgraded);
+            cursor.continue();
+          };
         }
       }
     };

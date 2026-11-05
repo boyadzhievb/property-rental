@@ -4,9 +4,9 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { IDBFactory } from 'fake-indexeddb'
 import React from 'react'
 
-const room = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNight: 100, maxGuests: 2 } as const
+const room = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNightCents: 10000, maxGuests: 2 } as const
 const guest = { id: 'guest-1', name: 'Maria Ivanova', phone: '+359888123456', email: '', previousStays: 0, notes: '' }
-const booking = { id: 'res-1', roomId: 'room-1', guestId: 'guest-1', arrivalDate: '2026-12-01', departureDate: '2026-12-05', guestsCount: 1, status: 'Confirmed' as const, price: 400 }
+const booking = { id: 'res-1', roomId: 'room-1', guestId: 'guest-1', arrivalDate: '2026-12-01', departureDate: '2026-12-05', guestsCount: 1, status: 'Confirmed' as const, priceCents: 40000 }
 
 /** Real providers, services and (fake) IndexedDB: nothing between a write and the lists is mocked. */
 async function renderWithProviders() {
@@ -77,7 +77,7 @@ describe('contexts reload by themselves after a write', () => {
         rooms: [{ ...room, id: 'room-2', name: 'Garden' }],
         guests: [{ ...guest, id: 'guest-2', name: 'Ivan Petrov' }],
         reservations: [{ ...booking, id: 'res-2', roomId: 'room-2', guestId: 'guest-2' }],
-        payments: [{ id: 'pay-1', reservationId: 'res-2', amount: 100, date: '2026-12-01', method: 'cash', note: '' }],
+        payments: [{ id: 'pay-1', reservationId: 'res-2', amountCents: 10000, date: '2026-12-01', method: 'cash', note: '' }],
       })
     })
 

@@ -10,7 +10,7 @@ function makeReservation(overrides: Partial<import('../Reservation').Reservation
     departureDate: '2025-06-05',
     guestsCount: 2,
     status: 'Confirmed',
-    price: 480,
+    priceCents: 48000,
     ...overrides,
   })
 }
@@ -160,7 +160,7 @@ describe('Reservation', () => {
       departureDate: '2025-06-05',
       guestsCount: 2,
       status: 'Confirmed',
-      price: 480,
+      priceCents: 48000,
       notes: 'Late arrival',
       recurrence: undefined,
       seriesId: undefined,
@@ -185,7 +185,7 @@ describe('Reservation', () => {
       departureDate: '2025-06-03',
       guestsCount: 2,
       status: 'Confirmed' as const,
-      price: 200,
+      priceCents: 20000,
     }
 
     it('generates weekly occurrences', () => {

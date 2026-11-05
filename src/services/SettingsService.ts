@@ -6,7 +6,7 @@ import { RoomSchema, type RoomData } from '../schemas/RoomSchema';
 
 /** Name used when the owner leaves the property name empty, and after a reset. */
 export const DEFAULT_PROPERTY_NAME = 'My Property';
-const DEFAULT_ROOM_PRICE = 100;
+const DEFAULT_ROOM_PRICE_CENTS = 10_000;
 const DEFAULT_ROOM_CAPACITY = 2;
 
 export interface PropertySettingsView {
@@ -65,7 +65,7 @@ export class SettingsService {
       id: `room-${index + 1}`,
       name: `Room ${index + 1}`,
       status: RoomStatus.AVAILABLE,
-      pricePerNight: DEFAULT_ROOM_PRICE,
+      pricePerNightCents: DEFAULT_ROOM_PRICE_CENTS,
       maxGuests: DEFAULT_ROOM_CAPACITY,
     }));
     await settingsRepository.configure(propertyName, rooms, currency);

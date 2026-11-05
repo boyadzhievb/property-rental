@@ -11,6 +11,7 @@ import { paymentService } from '../../services/PaymentService';
 import { type Guest } from '../../domain/Guest';
 import { type Reservation } from '../../domain/Reservation';
 import { groupPaymentsByReservation, reservationBalance } from '../../domain/balance';
+import { toCents } from '../../domain/money';
 import PageHeader from '../layout/PageHeader';
 import { errorMessage } from '../../i18n/errorMessage';
 
@@ -68,7 +69,7 @@ export default memo(function GuestsView() {
     paymentsByReservation.get(reservationId) ?? [];
 
   const getBalance = (reservation: Reservation) =>
-    reservationBalance(reservation.price, getPaymentsForReservation(reservation.id));
+    reservationBalance(reservation.priceCents, getPaymentsForReservation(reservation.id));
 
   const scrollToLetter = (letter: string) => {
     setActiveLetter(letter);
@@ -111,7 +112,7 @@ export default memo(function GuestsView() {
       await paymentService.createPayment({
         id: crypto.randomUUID(),
         reservationId: payingReservation.id,
-        amount,
+        amountCents: toCents(amount),
         date: format(new Date(), 'yyyy-MM-dd'),
         method: paymentMethod,
         note: paymentNote,
@@ -243,7 +244,7 @@ export default memo(function GuestsView() {
               ) : (
                 <div className="space-y-3">
                   {guestReservations.map(res => {
-                    const { paid, balance } = getBalance(res);
+                    const { paidCents, balanceCents } = getBalance(res);
                     return (
                       <div key={res.id} className="bg-ios-bg rounded-2xl p-4 border border-ios-border/40">
                         <div className="flex items-center justify-between mb-2">
@@ -262,21 +263,21 @@ export default memo(function GuestsView() {
                         <div className="flex items-center justify-between text-sm border-t border-ios-border/40 pt-2 mt-2">
                           <div className="space-y-0.5">
                             <div className="text-ios-text-secondary">
-                              {t.total}: <span className="font-semibold text-ios-text">{formatMoney(res.price)}</span>
+                              {t.total}: <span className="font-semibold text-ios-text">{formatMoney(res.priceCents)}</span>
                             </div>
                             <div className="text-ios-text-secondary">
-                              {t.paid}: <span className="font-semibold text-ios-green">{formatMoney(paid)}</span>
+                              {t.paid}: <span className="font-semibold text-ios-green">{formatMoney(paidCents)}</span>
                             </div>
-                            {balance > 0 && (
+                            {balanceCents > 0 && (
                               <div className="text-ios-text-secondary">
-                                {t.balance}: <span className="font-semibold text-ios-red">{formatMoney(balance)}</span>
+                                {t.balance}: <span className="font-semibold text-ios-red">{formatMoney(balanceCents)}</span>
                               </div>
                             )}
-                            {balance <= 0 && (
+                            {balanceCents <= 0 && (
                               <div className="text-xs font-semibold text-ios-green">{t.fullyPaid}</div>
                             )}
                           </div>
-                          {balance > 0 && res.status !== 'Cancelled' && (
+                          {balanceCents > 0 && res.status !== 'Cancelled' && (
                             <button
                               onClick={() => setPayingReservation(res)}
                               className="flex items-center gap-1 px-3 py-1.5 bg-ios-blue text-white text-xs font-semibold rounded-xl active:scale-95 transition-transform focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -295,7 +296,7 @@ export default memo(function GuestsView() {
                                   <span>{p.date}</span>
                                   <span className="capitalize bg-ios-gray-light px-1.5 py-0.5 rounded">{p.method}</span>
                                 </div>
-                                <span className="font-semibold text-ios-text">{formatMoney(p.amount)}</span>
+                                <span className="font-semibold text-ios-text">{formatMoney(p.amountCents)}</span>
                               </div>
                             ))}
                           </div>
@@ -332,7 +333,7 @@ export default memo(function GuestsView() {
               <div className="flex justify-between text-sm">
                 <span className="text-ios-text-secondary">{t.balanceRemaining}</span>
                 <span className="font-semibold text-ios-red">
-                  {formatMoney(getBalance(payingReservation).balance)}
+                  {formatMoney(getBalance(payingReservation).balanceCents)}
                 </span>
               </div>
 

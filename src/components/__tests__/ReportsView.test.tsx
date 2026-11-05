@@ -11,8 +11,8 @@ const currentMonthEnd = format(endOfMonth(new Date()), 'yyyy-MM-dd')
 const midMonthDate = format(new Date(), 'yyyy-MM-dd')
 
 const testRooms = [
-  makeRoom({ id: 'room-1', name: 'Ocean Suite', status: RoomStatus.AVAILABLE, pricePerNight: 100, maxGuests: 2 }),
-  makeRoom({ id: 'room-2', name: 'Mountain View', status: RoomStatus.OCCUPIED, pricePerNight: 150, maxGuests: 3 }),
+  makeRoom({ id: 'room-1', name: 'Ocean Suite', status: RoomStatus.AVAILABLE, pricePerNightCents: 10000, maxGuests: 2 }),
+  makeRoom({ id: 'room-2', name: 'Mountain View', status: RoomStatus.OCCUPIED, pricePerNightCents: 15000, maxGuests: 3 }),
 ]
 
 const testGuests = [
@@ -28,7 +28,7 @@ const testReservations = [
     arrivalDate: currentMonthStart,
     departureDate: currentMonthEnd,
     status: 'Confirmed',
-    price: 500,
+    priceCents: 50000,
   }),
   makeReservation({
     id: 'res-2',
@@ -37,14 +37,14 @@ const testReservations = [
     arrivalDate: currentMonthStart,
     departureDate: currentMonthEnd,
     status: 'Checked In',
-    price: 300,
+    priceCents: 30000,
   }),
 ]
 
 const testPayments = [
-  makePayment({ id: 'pay-1', reservationId: 'res-1', amount: 200, date: midMonthDate, method: 'cash', note: '' }),
-  makePayment({ id: 'pay-2', reservationId: 'res-1', amount: 100, date: midMonthDate, method: 'card', note: 'Deposit' }),
-  makePayment({ id: 'pay-3', reservationId: 'res-2', amount: 300, date: midMonthDate, method: 'transfer', note: '' }),
+  makePayment({ id: 'pay-1', reservationId: 'res-1', amountCents: 20000, date: midMonthDate, method: 'cash', note: '' }),
+  makePayment({ id: 'pay-2', reservationId: 'res-1', amountCents: 10000, date: midMonthDate, method: 'card', note: 'Deposit' }),
+  makePayment({ id: 'pay-3', reservationId: 'res-2', amountCents: 30000, date: midMonthDate, method: 'transfer', note: '' }),
 ]
 
 vi.mock('../../context/ReservationContext', () => ({

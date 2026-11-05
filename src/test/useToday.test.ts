@@ -65,7 +65,7 @@ describe('useToday', () => {
         departureDate: '2025-06-18',
         guestsCount: 2,
         status: 'Confirmed',
-        price: 450,
+        priceCents: 45000,
       }),
       new Reservation({
         id: 'res-tomorrow',
@@ -75,7 +75,7 @@ describe('useToday', () => {
         departureDate: '2025-06-19',
         guestsCount: 1,
         status: 'Confirmed',
-        price: 300,
+        priceCents: 30000,
       }),
     ]
 
@@ -95,7 +95,7 @@ describe('useToday', () => {
         departureDate: '2025-06-15',
         guestsCount: 2,
         status: 'Checked In',
-        price: 450,
+        priceCents: 45000,
       }),
       new Reservation({
         id: 'res-stays',
@@ -105,7 +105,7 @@ describe('useToday', () => {
         departureDate: '2025-06-17',
         guestsCount: 1,
         status: 'Checked In',
-        price: 400,
+        priceCents: 40000,
       }),
     ]
 
@@ -117,10 +117,10 @@ describe('useToday', () => {
 
   it('counts occupied and cleaning rooms', () => {
     mockRooms = [
-      new Room({ id: 'room-1', name: 'Suite 1', status: RoomStatus.OCCUPIED, pricePerNight: 200, maxGuests: 2 }),
-      new Room({ id: 'room-2', name: 'Suite 2', status: RoomStatus.OCCUPIED, pricePerNight: 200, maxGuests: 2 }),
-      new Room({ id: 'room-3', name: 'Suite 3', status: RoomStatus.CLEANING, pricePerNight: 150, maxGuests: 2 }),
-      new Room({ id: 'room-4', name: 'Suite 4', status: RoomStatus.AVAILABLE, pricePerNight: 100, maxGuests: 2 }),
+      new Room({ id: 'room-1', name: 'Suite 1', status: RoomStatus.OCCUPIED, pricePerNightCents: 20000, maxGuests: 2 }),
+      new Room({ id: 'room-2', name: 'Suite 2', status: RoomStatus.OCCUPIED, pricePerNightCents: 20000, maxGuests: 2 }),
+      new Room({ id: 'room-3', name: 'Suite 3', status: RoomStatus.CLEANING, pricePerNightCents: 15000, maxGuests: 2 }),
+      new Room({ id: 'room-4', name: 'Suite 4', status: RoomStatus.AVAILABLE, pricePerNightCents: 10000, maxGuests: 2 }),
     ]
 
     const { result } = renderHook(() => useToday())
@@ -139,7 +139,7 @@ describe('useToday', () => {
         departureDate: '2025-06-18',
         guestsCount: 2,
         status: 'Confirmed',
-        price: 450,
+        priceCents: 45000,
       }),
       new Reservation({
         id: 'res-departing',
@@ -149,7 +149,7 @@ describe('useToday', () => {
         departureDate: '2025-06-15',
         guestsCount: 1,
         status: 'Checked In',
-        price: 300,
+        priceCents: 30000,
       }),
     ]
 
@@ -174,7 +174,7 @@ describe('useToday', () => {
         departureDate: '2025-06-18',
         guestsCount: 2,
         status: 'Cancelled',
-        price: 450,
+        priceCents: 45000,
       }),
       new Reservation({
         id: 'res-confirmed-departure',
@@ -184,7 +184,7 @@ describe('useToday', () => {
         departureDate: '2025-06-15',
         guestsCount: 1,
         status: 'Confirmed',
-        price: 300,
+        priceCents: 30000,
       }),
     ]
 
@@ -197,7 +197,7 @@ describe('useToday', () => {
 
   it('passes rooms and guests through to the returned data', () => {
     mockRooms = [
-      new Room({ id: 'room-1', name: 'Garden Room', status: RoomStatus.AVAILABLE, pricePerNight: 120, maxGuests: 2 }),
+      new Room({ id: 'room-1', name: 'Garden Room', status: RoomStatus.AVAILABLE, pricePerNightCents: 12000, maxGuests: 2 }),
     ]
     mockGuests = [
       new Guest({ id: 'guest-1', name: 'Alice Walker', phone: '+1 555-0123', email: 'alice@example.com', previousStays: 3, notes: '' }),

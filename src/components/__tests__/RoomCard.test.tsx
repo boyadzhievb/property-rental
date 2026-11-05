@@ -40,7 +40,7 @@ describe('RoomCard', () => {
 
   describe('status badge rendering', () => {
     it('renders the room name and price', () => {
-      const room = makeRoom({ name: 'Ocean Suite', pricePerNight: 150, maxGuests: 3 })
+      const room = makeRoom({ name: 'Ocean Suite', pricePerNightCents: 15000, maxGuests: 3 })
       render(<RoomCard room={room} />)
 
       expect(screen.getByText('Ocean Suite')).toBeInTheDocument()
@@ -51,7 +51,7 @@ describe('RoomCard', () => {
     it('shows the price in the property currency', () => {
       propertyCurrency.value = 'EUR'
       try {
-        render(<RoomCard room={makeRoom({ pricePerNight: 150 })} />)
+        render(<RoomCard room={makeRoom({ pricePerNightCents: 15000 })} />)
         expect(screen.getByText('€150')).toBeInTheDocument()
       } finally {
         propertyCurrency.value = 'USD'
@@ -195,7 +195,7 @@ describe('RoomCard', () => {
     it('saves edits when the save button is clicked', async () => {
       const user = userEvent.setup()
       mockUpdateRoom.mockResolvedValue(undefined)
-      const room = makeRoom({ id: 'room-edit', name: 'Suite 101', pricePerNight: 100, maxGuests: 2 })
+      const room = makeRoom({ id: 'room-edit', name: 'Suite 101', pricePerNightCents: 10000, maxGuests: 2 })
       render(<RoomCard room={room} />)
 
       await user.click(screen.getByRole('button', { name: /Edit Suite 101/i }))
@@ -208,7 +208,7 @@ describe('RoomCard', () => {
 
       expect(mockUpdateRoom).toHaveBeenCalledWith('room-edit', {
         name: 'Grand Suite',
-        pricePerNight: 100,
+        pricePerNightCents: 10000,
         maxGuests: 2,
       })
     })

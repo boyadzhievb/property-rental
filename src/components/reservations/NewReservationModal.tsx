@@ -15,6 +15,7 @@ import StayDetailsStep from './StayDetailsStep';
 import { errorMessage } from '../../i18n/errorMessage';
 import { validationMessage } from '../../i18n/validationMessage';
 import type { TranslationKeys } from '../../i18n/en';
+import { fromCents, parseMoneyInput } from '../../domain/money';
 
 interface FormData {
   guestId: string;
@@ -63,13 +64,13 @@ function validateGuestStep(form: FormData, t: TranslationKeys): FormErrors {
   return errors;
 }
 
-/** Nights × the room's nightly rate, or null when room or dates are not chosen yet. */
-function suggestedPrice(form: FormData, rooms: { id: string; pricePerNight: number }[]): number | null {
+/** Nights × the room's nightly rate in cents, or null when room or dates are not chosen yet. */
+function suggestedPriceCents(form: FormData, rooms: { id: string; pricePerNightCents: number }[]): number | null {
   if (!form.roomId || !form.checkIn || !form.checkOut) return null;
   const room = rooms.find(candidate => candidate.id === form.roomId);
   if (!room) return null;
   const nights = differenceInCalendarDays(parseISO(form.checkOut), parseISO(form.checkIn));
-  return nights > 0 ? nights * room.pricePerNight : null;
+  return nights > 0 ? nights * room.pricePerNightCents : null;
 }
 
 function validateStayStep(form: FormData, t: TranslationKeys): FormErrors {
@@ -83,7 +84,7 @@ function validateStayStep(form: FormData, t: TranslationKeys): FormErrors {
     departureDate: form.checkOut,
     guestsCount: form.guestsCount,
     status: 'Confirmed',
-    price: form.price ? parseFloat(form.price) : 0,
+    priceCents: parseMoneyInput(form.price) ?? 0,
   });
 
   if (!resResult.success) {
@@ -92,7 +93,7 @@ function validateStayStep(form: FormData, t: TranslationKeys): FormErrors {
       if (field === 'roomId') errors.roomId = validationMessage(issue.message, t);
       else if (field === 'arrivalDate') errors.checkIn = validationMessage(issue.message, t);
       else if (field === 'departureDate') errors.checkOut = validationMessage(issue.message, t);
-      else if (field === 'price') errors.price = validationMessage(issue.message, t);
+      else if (field === 'priceCents') errors.price = validationMessage(issue.message, t);
     }
   }
 
@@ -138,8 +139,8 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
       }
       // Choosing a room or dates suggests a price (nights × nightly rate); the owner can still edit it.
       if (field === 'roomId' || field === 'checkIn' || field === 'checkOut') {
-        const suggested = suggestedPrice(updated, rooms);
-        if (suggested !== null) updated.price = String(suggested);
+        const suggestedCents = suggestedPriceCents(updated, rooms);
+        if (suggestedCents !== null) updated.price = String(fromCents(suggestedCents));
       }
       return updated;
     });
@@ -159,7 +160,7 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
           departureDate: form.checkOut,
           guestsCount: form.guestsCount,
           status: 'Confirmed',
-          price: parseFloat(form.price) || 0,
+          priceCents: parseMoneyInput(form.price) ?? 0,
         },
         { pattern: form.recurrencePattern, endDate: form.recurrenceEndDate },
       );
@@ -224,7 +225,7 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
         departureDate: form.checkOut,
         guestsCount: form.guestsCount,
         status: 'Confirmed',
-        price: parseFloat(form.price),
+        priceCents: parseMoneyInput(form.price) ?? 0,
       };
 
       if (form.recurrencePattern && form.recurrenceEndDate) {
@@ -240,7 +241,9 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
       if (e instanceof ZodError) {
         const zodErrors: FormErrors = {};
         for (const issue of e.issues) {
-          zodErrors[issue.path[0] as string] = validationMessage(issue.message, t);
+          const field = issue.path[0] as string;
+          // The form field holds the typed amount; the schema field holds it in cents.
+          zodErrors[field === 'priceCents' ? 'price' : field] = validationMessage(issue.message, t);
         }
         setErrors(zodErrors);
       } else {

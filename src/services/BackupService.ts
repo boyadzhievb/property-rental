@@ -6,7 +6,7 @@ import { GuestSchema } from '../schemas/GuestSchema';
 import { ReservationSchema } from '../schemas/ReservationSchema';
 import { PaymentSchema } from '../schemas/PaymentSchema';
 import { TaskSchema } from '../schemas/TaskSchema';
-import { roundToCents } from '../domain/money';
+import { legacyRecordToCents, LEGACY_MONEY_FIELDS } from '../domain/money';
 import { BACKUP_SCHEMA_VERSION, BackupFileSchema, type BackupFile } from '../schemas/BackupSchema';
 
 export type { BackupData, BackupFile };
@@ -135,13 +135,13 @@ function missingLink(kind: string, id: string | undefined, knownIds: Set<string>
 }
 
 /**
- * Older app versions saved payment amounts exactly as typed (e.g. 33.333). Round them to cents
- * so such payments are restored instead of being skipped by the 2-decimal rule.
+ * Format 1 stored money as decimal amounts (`price: 400`, sometimes as typed, e.g. 33.333);
+ * format 2 stores integer cents (`priceCents: 40000`). Upgrade a format-1 record list.
  */
-function withAmountInCents(record: unknown): unknown {
-  if (typeof record !== 'object' || record === null || !('amount' in record)) return record;
-  const { amount } = record;
-  return typeof amount === 'number' && Number.isFinite(amount) ? { ...record, amount: roundToCents(amount) } : record;
+function upgradeMoneyFields(records: unknown[] | undefined, store: keyof typeof LEGACY_MONEY_FIELDS, schemaVersion: number): unknown[] | undefined {
+  if (!records || schemaVersion >= 2) return records;
+  const [legacyField, centsField] = LEGACY_MONEY_FIELDS[store];
+  return records.map(record => legacyRecordToCents(record, legacyField, centsField));
 }
 
 function describeFormatError(error: z.ZodError): string {
@@ -177,17 +177,18 @@ function parseBackup(data: unknown): ParsedBackup {
   const format = checkFormat(data);
   if ('error' in format) throw new BackupImportError('invalidFormat', format.error);
   const { backup } = format;
+  const schemaVersion = backup.schemaVersion ?? 1;
 
-  const rooms = parseRecords(backup.rooms, RoomSchema);
+  const rooms = parseRecords(upgradeMoneyFields(backup.rooms, 'rooms', schemaVersion), RoomSchema);
   const guests = parseRecords(backup.guests, GuestSchema);
   const roomIds = idsOf(rooms);
   const guestIds = idsOf(guests);
 
   // Order matters: payments and tasks are checked against the reservations that survived.
-  const reservations = dropOrphans(parseRecords(backup.reservations, ReservationSchema), reservation =>
+  const reservations = dropOrphans(parseRecords(upgradeMoneyFields(backup.reservations, 'reservations', schemaVersion), ReservationSchema), reservation =>
     missingLink('room', reservation.roomId, roomIds) ?? missingLink('guest', reservation.guestId, guestIds));
   const reservationIds = idsOf(reservations);
-  const payments = dropOrphans(parseRecords(backup.payments?.map(withAmountInCents), PaymentSchema), payment =>
+  const payments = dropOrphans(parseRecords(upgradeMoneyFields(backup.payments, 'payments', schemaVersion), PaymentSchema), payment =>
     missingLink('reservation', payment.reservationId, reservationIds));
   const tasks = dropOrphans(parseRecords(backup.tasks, TaskSchema), task =>
     missingLink('room', task.linkedRoomId, roomIds)

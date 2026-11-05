@@ -24,7 +24,7 @@ describe('RoomRepository', () => {
       id: 'room-1',
       name: 'Deluxe Suite',
       status: RoomStatus.AVAILABLE,
-      pricePerNight: 200,
+      pricePerNightCents: 20000,
       maxGuests: 4,
     })
 
@@ -37,7 +37,7 @@ describe('RoomRepository', () => {
     expect(allRooms[0].id).toBe('room-1')
     expect(allRooms[0].name).toBe('Deluxe Suite')
     expect(allRooms[0].status).toBe(RoomStatus.AVAILABLE)
-    expect(allRooms[0].pricePerNight).toBe(200)
+    expect(allRooms[0].pricePerNightCents).toBe(20000)
     expect(allRooms[0].maxGuests).toBe(4)
   })
 
@@ -50,7 +50,7 @@ describe('RoomRepository', () => {
       id: 'room-1',
       name: 'Standard Room',
       status: RoomStatus.AVAILABLE,
-      pricePerNight: 100,
+      pricePerNightCents: 10000,
       maxGuests: 2,
     })
     await roomRepository.save(originalRoom)
@@ -59,7 +59,7 @@ describe('RoomRepository', () => {
       id: 'room-1',
       name: 'Premium Room',
       status: RoomStatus.AVAILABLE,
-      pricePerNight: 180,
+      pricePerNightCents: 18000,
       maxGuests: 3,
     })
     await roomRepository.save(updatedRoom)
@@ -67,7 +67,7 @@ describe('RoomRepository', () => {
     const allRooms = await roomRepository.getAll()
     expect(allRooms).toHaveLength(1)
     expect(allRooms[0].name).toBe('Premium Room')
-    expect(allRooms[0].pricePerNight).toBe(180)
+    expect(allRooms[0].pricePerNightCents).toBe(18000)
     expect(allRooms[0].maxGuests).toBe(3)
   })
 
@@ -80,7 +80,7 @@ describe('RoomRepository', () => {
       id: 'room-1',
       name: 'Ocean View',
       status: RoomStatus.AVAILABLE,
-      pricePerNight: 250,
+      pricePerNightCents: 25000,
       maxGuests: 2,
     })
     await roomRepository.save(room)
@@ -121,7 +121,7 @@ describe('ReservationRepository', () => {
       departureDate: '2025-07-05',
       guestsCount: 2,
       status: 'Confirmed',
-      price: 600,
+      priceCents: 60000,
     })
 
     const savedReservation = await reservationRepository.save(reservation)
@@ -136,7 +136,7 @@ describe('ReservationRepository', () => {
     expect(allReservations[0].arrivalDate).toBe('2025-07-01')
     expect(allReservations[0].departureDate).toBe('2025-07-05')
     expect(allReservations[0].guestsCount).toBe(2)
-    expect(allReservations[0].price).toBe(600)
+    expect(allReservations[0].priceCents).toBe(60000)
   })
 
   it('getByMonth filters reservations by date range', async () => {
@@ -152,7 +152,7 @@ describe('ReservationRepository', () => {
       departureDate: '2025-06-05',
       guestsCount: 2,
       status: 'Confirmed',
-      price: 400,
+      priceCents: 40000,
     })
 
     const midReservation = new Reservation({
@@ -163,7 +163,7 @@ describe('ReservationRepository', () => {
       departureDate: '2025-07-15',
       guestsCount: 1,
       status: 'Confirmed',
-      price: 500,
+      priceCents: 50000,
     })
 
     const lateReservation = new Reservation({
@@ -174,7 +174,7 @@ describe('ReservationRepository', () => {
       departureDate: '2025-08-25',
       guestsCount: 3,
       status: 'Confirmed',
-      price: 750,
+      priceCents: 75000,
     })
 
     await reservationRepository.save(earlyReservation)
@@ -344,7 +344,7 @@ describe('PaymentRepository', () => {
     const payment = new Payment({
       id: 'pay-1',
       reservationId: 'res-1',
-      amount: 250,
+      amountCents: 25000,
       date: '2025-07-01',
       method: 'cash',
       note: 'Advance payment',
@@ -352,13 +352,13 @@ describe('PaymentRepository', () => {
 
     const savedPayment = await paymentRepository.save(payment)
     expect(savedPayment.id).toBe('pay-1')
-    expect(savedPayment.amount).toBe(250)
+    expect(savedPayment.amountCents).toBe(25000)
 
     const allPayments = await paymentRepository.getAll()
     expect(allPayments).toHaveLength(1)
     expect(allPayments[0].id).toBe('pay-1')
     expect(allPayments[0].reservationId).toBe('res-1')
-    expect(allPayments[0].amount).toBe(250)
+    expect(allPayments[0].amountCents).toBe(25000)
     expect(allPayments[0].date).toBe('2025-07-01')
     expect(allPayments[0].method).toBe('cash')
     expect(allPayments[0].note).toBe('Advance payment')
@@ -372,7 +372,7 @@ describe('PaymentRepository', () => {
     const paymentForReservationOne = new Payment({
       id: 'pay-1',
       reservationId: 'res-1',
-      amount: 200,
+      amountCents: 20000,
       date: '2025-07-01',
       method: 'cash',
       note: 'First payment',
@@ -381,7 +381,7 @@ describe('PaymentRepository', () => {
     const secondPaymentForReservationOne = new Payment({
       id: 'pay-2',
       reservationId: 'res-1',
-      amount: 150,
+      amountCents: 15000,
       date: '2025-07-03',
       method: 'card',
       note: 'Second payment',
@@ -390,7 +390,7 @@ describe('PaymentRepository', () => {
     const paymentForReservationTwo = new Payment({
       id: 'pay-3',
       reservationId: 'res-2',
-      amount: 500,
+      amountCents: 50000,
       date: '2025-07-05',
       method: 'transfer',
       note: 'Full payment',
@@ -421,7 +421,7 @@ describe('PaymentRepository', () => {
     const payment = new Payment({
       id: 'pay-1',
       reservationId: 'res-1',
-      amount: 250,
+      amountCents: 25000,
       date: '2025-07-01',
       method: 'cash',
       note: 'Advance payment',
@@ -431,7 +431,7 @@ describe('PaymentRepository', () => {
     const foundPayment = await paymentRepository.getById('pay-1')
     expect(foundPayment).not.toBeNull()
     expect(foundPayment!.id).toBe('pay-1')
-    expect(foundPayment!.amount).toBe(250)
+    expect(foundPayment!.amountCents).toBe(25000)
   })
 
   it('getById returns null for non-existent payment', async () => {
@@ -450,7 +450,7 @@ describe('PaymentRepository', () => {
     const payment = new Payment({
       id: 'pay-1',
       reservationId: 'res-1',
-      amount: 250,
+      amountCents: 25000,
       date: '2025-07-01',
       method: 'cash',
       note: 'Advance payment',

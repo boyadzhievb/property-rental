@@ -20,7 +20,7 @@ describe('BackupRepository', () => {
   describe('exportAll', () => {
     it('delegates to api/client exportBackup', async () => {
       const backupData: BackupData = {
-        rooms: [{ id: 'room-1', name: 'Suite', status: 'Available', pricePerNight: 100, maxGuests: 2 }],
+        rooms: [{ id: 'room-1', name: 'Suite', status: 'Available', pricePerNightCents: 10000, maxGuests: 2 }],
         guests: [],
         reservations: [],
         payments: [],
@@ -38,8 +38,8 @@ describe('BackupRepository', () => {
     it('returns the full backup data from exportBackup', async () => {
       const backupData: BackupData = {
         rooms: [
-          { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNight: 200, maxGuests: 4 },
-          { id: 'room-2', name: 'Standard', status: 'Occupied', pricePerNight: 100, maxGuests: 2 },
+          { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNightCents: 20000, maxGuests: 4 },
+          { id: 'room-2', name: 'Standard', status: 'Occupied', pricePerNightCents: 10000, maxGuests: 2 },
         ],
         guests: [
           { id: 'guest-1', name: 'Maria Ivanova', phone: '+359888123456', email: 'maria@example.com', previousStays: 3, notes: '' },
@@ -69,7 +69,7 @@ describe('BackupRepository', () => {
   describe('importAll', () => {
     it('delegates to api/client importBackup with the provided data', async () => {
       const backupData: BackupData = {
-        rooms: [{ id: 'room-1', name: 'Suite', status: 'Available', pricePerNight: 100, maxGuests: 2 }],
+        rooms: [{ id: 'room-1', name: 'Suite', status: 'Available', pricePerNightCents: 10000, maxGuests: 2 }],
         guests: [],
         reservations: [],
         payments: [],

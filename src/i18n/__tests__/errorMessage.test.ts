@@ -31,9 +31,9 @@ describe('errorMessage', () => {
   })
 
   it('domain transitions throw coded errors', () => {
-    const room = new Room({ id: 'r', name: 'R', status: RoomStatus.AVAILABLE, pricePerNight: 1, maxGuests: 1 })
+    const room = new Room({ id: 'r', name: 'R', status: RoomStatus.AVAILABLE, pricePerNightCents: 100, maxGuests: 1 })
     expect(() => room.vacate()).toThrow(expect.objectContaining({ code: 'roomNotInCleaning' }))
-    const reservation = new Reservation({ id: 'x', roomId: 'r', guestId: 'g', arrivalDate: '2026-12-01', departureDate: '2026-12-02', guestsCount: 1, status: 'Cancelled', price: 1 })
+    const reservation = new Reservation({ id: 'x', roomId: 'r', guestId: 'g', arrivalDate: '2026-12-01', departureDate: '2026-12-02', guestsCount: 1, status: 'Cancelled', priceCents: 100 })
     expect(() => reservation.checkIn()).toThrow(expect.objectContaining({ code: 'reservationNotConfirmed' }))
   })
 

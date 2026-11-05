@@ -1,6 +1,5 @@
 import { Payment, type PaymentData } from '../domain/Payment';
 import { PaymentSchema } from '../schemas/PaymentSchema';
-import { roundToCents } from '../domain/money';
 import { reservationBalance } from '../domain/balance';
 import { paymentRepository } from '../repositories/PaymentRepository';
 import { atomicReadWrite } from '../api/client';
@@ -17,9 +16,8 @@ export class PaymentService {
   }
 
   async createPayment(data: PaymentData): Promise<Payment> {
-    // Amount fields accept any decimals (step="0.01" is not enforced without a native form
-    // submit), so normalize to cents here rather than rejecting e.g. 33.333.
-    const validated = PaymentSchema.parse({ ...data, amount: roundToCents(data.amount) });
+    // Amounts arrive as integer cents; forms convert typed decimals with parseMoneyInput.
+    const validated = PaymentSchema.parse(data);
 
     const payment = await atomicReadWrite<Payment>(
       ['reservations', 'payments'],
@@ -35,9 +33,9 @@ export class PaymentService {
         const existing = await stores.payments.getAllByIndex<PaymentData>(
           'reservationId', validated.reservationId
         );
-        const { balance } = reservationBalance(reservation.price, existing);
-        if (validated.amount > balance) {
-          throw new DomainError('paymentExceedsBalance', { remaining: balance });
+        const { balanceCents } = reservationBalance(reservation.priceCents, existing);
+        if (validated.amountCents > balanceCents) {
+          throw new DomainError('paymentExceedsBalance', { remaining: balanceCents });
         }
 
         const newPayment = new Payment(validated);

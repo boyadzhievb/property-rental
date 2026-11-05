@@ -5,7 +5,7 @@ function makePayment(overrides: Partial<import('../Payment').PaymentData> = {}) 
   return new Payment({
     id: 'pay-1',
     reservationId: 'r1',
-    amount: 200,
+    amountCents: 20000,
     date: '2025-06-01',
     method: 'cash',
     note: 'Advance deposit',
@@ -18,7 +18,7 @@ describe('Payment', () => {
     const p = makePayment()
     expect(p.id).toBe('pay-1')
     expect(p.reservationId).toBe('r1')
-    expect(p.amount).toBe(200)
+    expect(p.amountCents).toBe(20000)
     expect(p.date).toBe('2025-06-01')
     expect(p.method).toBe('cash')
     expect(p.note).toBe('Advance deposit')
@@ -35,7 +35,7 @@ describe('Payment', () => {
     expect(p.toData()).toEqual({
       id: 'pay-1',
       reservationId: 'r1',
-      amount: 200,
+      amountCents: 20000,
       date: '2025-06-01',
       method: 'cash',
       note: 'Advance deposit',

@@ -1,20 +1,20 @@
 import { z } from 'zod';
 import { localDate } from './localDate';
 
-/** Sanity ceiling for a single payment; guards against typos such as an extra digit or pasted text. */
-export const MAX_PAYMENT_AMOUNT = 1_000_000;
+/** Sanity ceiling for a single payment (1,000,000.00); guards against typos such as an extra digit. */
+export const MAX_PAYMENT_CENTS = 100_000_000;
 
 export const PaymentMethodSchema = z.enum(['cash', 'card', 'transfer']);
 
 export const PaymentSchema = z.object({
   id: z.string().min(1),
   reservationId: z.string().min(1, 'Reservation is required'),
-  amount: z
+  /** Integer cents (see domain/money). */
+  amountCents: z
     .number()
+    .int()
     .positive('Amount must be greater than 0')
-    .max(MAX_PAYMENT_AMOUNT, `Amount cannot exceed ${MAX_PAYMENT_AMOUNT}`)
-    // Tolerance absorbs binary float noise (19.99 * 100 = 1998.9999999999998).
-    .refine(amount => Math.abs(Math.round(amount * 100) - amount * 100) < 1e-6, 'Amount can have at most 2 decimal places'),
+    .max(MAX_PAYMENT_CENTS, 'Amount is too large'),
   date: localDate('Date is required'),
   method: PaymentMethodSchema,
   note: z.string(),

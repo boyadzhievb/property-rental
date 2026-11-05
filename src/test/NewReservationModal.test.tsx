@@ -11,8 +11,8 @@ const mockRefreshGuests = vi.fn()
 vi.mock('../hooks/useRooms', () => ({
   useRooms: () => ({
     rooms: [
-      new Room({ id: 'room-1', name: 'Suite 101', status: RoomStatus.AVAILABLE, pricePerNight: 150, maxGuests: 3 }),
-      new Room({ id: 'room-2', name: 'Ocean View', status: RoomStatus.AVAILABLE, pricePerNight: 200, maxGuests: 2 }),
+      new Room({ id: 'room-1', name: 'Suite 101', status: RoomStatus.AVAILABLE, pricePerNightCents: 15000, maxGuests: 3 }),
+      new Room({ id: 'room-2', name: 'Ocean View', status: RoomStatus.AVAILABLE, pricePerNightCents: 20000, maxGuests: 2 }),
     ],
     loading: false,
     error: null,

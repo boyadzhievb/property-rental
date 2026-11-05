@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { IDBFactory } from 'fake-indexeddb'
 
-const room = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNight: 120, maxGuests: 2 } as const
+const room = { id: 'room-1', name: 'Deluxe', status: 'Available', pricePerNightCents: 12000, maxGuests: 2 } as const
 
 describe('atomicReadWrite', () => {
   beforeEach(() => {

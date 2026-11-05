@@ -4,6 +4,7 @@ import { type Room, RoomStatus, type RoomStatusAction } from '../../domain/Room'
 import { roomService } from '../../services/RoomService';
 import { useLocale } from '../../context/LocaleContext';
 import { useMoney } from '../../hooks/useMoney';
+import { fromCents, parseMoneyInput } from '../../domain/money';
 
 interface RoomCardProps {
   room: Room;
@@ -29,7 +30,7 @@ export default function RoomCard({ room }: RoomCardProps) {
   const startEdit = () => {
     setEditing(true);
     setEditName(room.name);
-    setEditPrice(String(room.pricePerNight));
+    setEditPrice(String(fromCents(room.pricePerNightCents)));
     setEditMaxGuests(String(room.maxGuests));
   };
 
@@ -38,7 +39,7 @@ export default function RoomCard({ room }: RoomCardProps) {
   const saveEdit = async () => {
     await roomService.updateRoom(room.id, {
       name: editName.trim() || room.name,
-      pricePerNight: parseFloat(editPrice) || room.pricePerNight,
+      pricePerNightCents: parseMoneyInput(editPrice) || room.pricePerNightCents,
       maxGuests: parseInt(editMaxGuests) || room.maxGuests,
     });
     setEditing(false);
@@ -131,7 +132,7 @@ export default function RoomCard({ room }: RoomCardProps) {
               <span>{room.maxGuests} {t.guestsMax}</span>
             </div>
             <div className="text-right">
-              <span className="font-semibold text-ios-text">{formatMoney(room.pricePerNight)}</span>
+              <span className="font-semibold text-ios-text">{formatMoney(room.pricePerNightCents)}</span>
               <span className="text-xs text-ios-text-secondary"> {t.perNight}</span>
             </div>
           </div>

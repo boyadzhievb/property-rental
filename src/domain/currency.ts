@@ -1,4 +1,6 @@
-/** Currencies the owner can pick. One currency per property; amounts are stored as plain numbers. */
+import { fromCents } from './money';
+
+/** Currencies the owner can pick. One currency per property; amounts are stored as integer cents. */
 export const SUPPORTED_CURRENCIES = [
   'EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK', 'HUF', 'RON', 'TRY',
 ] as const;
@@ -43,15 +45,15 @@ export function detectCurrency(languageTags: readonly string[]): CurrencyCode {
   return FALLBACK_CURRENCY;
 }
 
-/** Format an amount for display, e.g. `$500`, `$33.30`, `1.234,50 €`. Whole amounts omit decimals. */
-export function formatMoney(amount: number, currency: CurrencyCode, locale: string): string {
-  const fractionDigits = Number.isInteger(amount) ? 0 : 2;
+/** Format integer cents for display, e.g. `$500`, `$33.30`, `1.234,50 €`. Whole amounts omit decimals. */
+export function formatMoney(cents: number, currency: CurrencyCode, locale: string): string {
+  const fractionDigits = cents % 100 === 0 ? 0 : 2;
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
-  }).format(amount);
+  }).format(fromCents(cents));
 }
 
 /** "EUR · Euro" in the given language; falls back to the bare code. */

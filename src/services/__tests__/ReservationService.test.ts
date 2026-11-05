@@ -117,7 +117,7 @@ vi.mock('../../api/client', async () => ({
 }))
 
 function seedRoom(overrides: Partial<any> = {}) {
-  const data = { id: 'room-1', name: 'Suite 1', status: RoomStatus.AVAILABLE, pricePerNight: 100, maxGuests: 2, ...overrides }
+  const data = { id: 'room-1', name: 'Suite 1', status: RoomStatus.AVAILABLE, pricePerNightCents: 10000, maxGuests: 2, ...overrides }
   roomStore.set(data.id, data)
   return data
 }
@@ -132,7 +132,7 @@ function seedReservation(overrides: Partial<any> = {}) {
   const data = {
     id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
     arrivalDate: '2026-09-10', departureDate: '2026-09-15',
-    guestsCount: 1, status: 'Confirmed', price: 500, ...overrides,
+    guestsCount: 1, status: 'Confirmed', priceCents: 50000, ...overrides,
   }
   resStore.set(data.id, data)
   return data
@@ -157,7 +157,7 @@ describe('ReservationService', () => {
       const result = await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-09-10', departureDate: '2026-09-15',
-        guestsCount: 1, status: 'Confirmed', price: 500,
+        guestsCount: 1, status: 'Confirmed', priceCents: 50000,
       })
       expect(result.id).toBe('res-1')
       expect(result.status).toBe('Confirmed')
@@ -168,7 +168,7 @@ describe('ReservationService', () => {
       await expect(service.createReservation({
         id: 'res-1', roomId: 'no-room', guestId: 'guest-1',
         arrivalDate: '2026-09-10', departureDate: '2026-09-15',
-        guestsCount: 1, status: 'Confirmed', price: 500,
+        guestsCount: 1, status: 'Confirmed', priceCents: 50000,
       })).rejects.toThrow('Room not found')
     })
 
@@ -177,7 +177,7 @@ describe('ReservationService', () => {
       await expect(service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'no-guest',
         arrivalDate: '2026-09-10', departureDate: '2026-09-15',
-        guestsCount: 1, status: 'Confirmed', price: 500,
+        guestsCount: 1, status: 'Confirmed', priceCents: 50000,
       })).rejects.toThrow('Guest not found')
     })
 
@@ -187,7 +187,7 @@ describe('ReservationService', () => {
       await expect(service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-09-10', departureDate: '2026-09-15',
-        guestsCount: 5, status: 'Confirmed', price: 500,
+        guestsCount: 5, status: 'Confirmed', priceCents: 50000,
       })).rejects.toThrow('exceeds room capacity')
     })
 
@@ -199,7 +199,7 @@ describe('ReservationService', () => {
       await expect(service.createReservation({
         id: 'res-2', roomId: 'room-1', guestId: 'guest-2',
         arrivalDate: '2026-09-12', departureDate: '2026-09-18',
-        guestsCount: 1, status: 'Confirmed', price: 600,
+        guestsCount: 1, status: 'Confirmed', priceCents: 60000,
       })).rejects.toThrow('already booked')
     })
 
@@ -211,7 +211,7 @@ describe('ReservationService', () => {
       const result = await service.createReservation({
         id: 'res-2', roomId: 'room-1', guestId: 'guest-2',
         arrivalDate: '2026-09-12', departureDate: '2026-09-18',
-        guestsCount: 1, status: 'Confirmed', price: 600,
+        guestsCount: 1, status: 'Confirmed', priceCents: 60000,
       })
       expect(result.id).toBe('res-2')
     })
@@ -222,7 +222,7 @@ describe('ReservationService', () => {
       await expect(service.createReservation({
         id: '', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-09-10', departureDate: '2026-09-15',
-        guestsCount: 1, status: 'Confirmed', price: 500,
+        guestsCount: 1, status: 'Confirmed', priceCents: 50000,
       })).rejects.toThrow()
     })
 
@@ -232,7 +232,7 @@ describe('ReservationService', () => {
       await expect(service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-09-15', departureDate: '2026-09-10',
-        guestsCount: 1, status: 'Confirmed', price: 500,
+        guestsCount: 1, status: 'Confirmed', priceCents: 50000,
       })).rejects.toThrow()
     })
   })
@@ -312,7 +312,7 @@ describe('ReservationService', () => {
       const result = await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
-        guestsCount: 1, status: 'Confirmed', price: 200,
+        guestsCount: 1, status: 'Confirmed', priceCents: 20000,
         recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
       })
       expect(result.id).toBe('res-1')
@@ -325,7 +325,7 @@ describe('ReservationService', () => {
       await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
-        guestsCount: 1, status: 'Confirmed', price: 200,
+        guestsCount: 1, status: 'Confirmed', priceCents: 20000,
         recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
       })
       const seriesIds = [...resStore.values()].map(r => r.seriesId)
@@ -340,7 +340,7 @@ describe('ReservationService', () => {
       await expect(service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
-        guestsCount: 1, status: 'Confirmed', price: 200,
+        guestsCount: 1, status: 'Confirmed', priceCents: 20000,
         recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
       })).rejects.toThrow('conflicts')
     })
@@ -351,7 +351,7 @@ describe('ReservationService', () => {
       await expect(service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
-        guestsCount: 5, status: 'Confirmed', price: 200,
+        guestsCount: 5, status: 'Confirmed', priceCents: 20000,
         recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
       })).rejects.toThrow('exceeds room capacity')
     })
@@ -364,7 +364,7 @@ describe('ReservationService', () => {
       await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
-        guestsCount: 1, status: 'Confirmed', price: 200,
+        guestsCount: 1, status: 'Confirmed', priceCents: 20000,
         recurrence: { pattern: 'weekly', endDate: '2026-10-22' },
       })
 
@@ -382,7 +382,7 @@ describe('ReservationService', () => {
       await service.createReservation({
         id: 'res-1', roomId: 'room-1', guestId: 'guest-1',
         arrivalDate: '2026-10-01', departureDate: '2026-10-03',
-        guestsCount: 1, status: 'Confirmed', price: 200,
+        guestsCount: 1, status: 'Confirmed', priceCents: 20000,
         recurrence: { pattern: 'weekly', endDate: '2026-10-15' },
       })
 
@@ -398,8 +398,8 @@ describe('ReservationService', () => {
       seedRoom()
       seedGuest()
       seedReservation()
-      payStore.set('pay-1', { id: 'pay-1', reservationId: 'res-1', amount: 100, date: '2026-09-10', method: 'cash', note: '' })
-      payStore.set('pay-2', { id: 'pay-2', reservationId: 'res-1', amount: 200, date: '2026-09-11', method: 'card', note: '' })
+      payStore.set('pay-1', { id: 'pay-1', reservationId: 'res-1', amountCents: 10000, date: '2026-09-10', method: 'cash', note: '' })
+      payStore.set('pay-2', { id: 'pay-2', reservationId: 'res-1', amountCents: 20000, date: '2026-09-11', method: 'card', note: '' })
 
       await service.deleteReservation('res-1')
 

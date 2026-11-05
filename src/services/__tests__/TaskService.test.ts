@@ -79,7 +79,7 @@ function seedTask(overrides: Partial<any> = {}) {
 }
 
 function seedRoom(overrides: Partial<any> = {}) {
-  const data = { id: 'room-1', name: 'Suite 1', status: RoomStatus.CLEANING, pricePerNight: 100, maxGuests: 2, ...overrides }
+  const data = { id: 'room-1', name: 'Suite 1', status: RoomStatus.CLEANING, pricePerNightCents: 10000, maxGuests: 2, ...overrides }
   roomStore.set(data.id, data)
   return data
 }

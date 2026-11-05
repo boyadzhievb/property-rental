@@ -35,13 +35,13 @@ const roomStore = (roomRepository as any)._store as Map<string, any>
 const resStore = (reservationRepository as any)._store as Map<string, any>
 
 function seedRoom(id: string, status: RoomStatus = RoomStatus.AVAILABLE) {
-  roomStore.set(id, { id, name: `Room ${id}`, status, pricePerNight: 100, maxGuests: 2 })
+  roomStore.set(id, { id, name: `Room ${id}`, status, pricePerNightCents: 10000, maxGuests: 2 })
 }
 
 function seedReservation(id: string, roomId: string, arrival: string, departure: string, status = 'Confirmed') {
   resStore.set(id, {
     id, roomId, guestId: 'g-1', arrivalDate: arrival, departureDate: departure,
-    guestsCount: 1, status, price: 500,
+    guestsCount: 1, status, priceCents: 50000,
   })
 }
 

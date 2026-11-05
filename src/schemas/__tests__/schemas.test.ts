@@ -7,7 +7,7 @@ import { TaskSchema } from '../TaskSchema'
 import { RoomStatus } from '../../domain/Room'
 
 describe('RoomSchema', () => {
-  const valid = { id: 'r-1', name: 'Suite', status: RoomStatus.AVAILABLE, pricePerNight: 100, maxGuests: 2 }
+  const valid = { id: 'r-1', name: 'Suite', status: RoomStatus.AVAILABLE, pricePerNightCents: 10000, maxGuests: 2 }
 
   it('accepts valid room data', () => {
     expect(() => RoomSchema.parse(valid)).not.toThrow()
@@ -18,8 +18,8 @@ describe('RoomSchema', () => {
   })
 
   it('rejects non-positive price', () => {
-    expect(() => RoomSchema.parse({ ...valid, pricePerNight: 0 })).toThrow()
-    expect(() => RoomSchema.parse({ ...valid, pricePerNight: -10 })).toThrow()
+    expect(() => RoomSchema.parse({ ...valid, pricePerNightCents: 0 })).toThrow()
+    expect(() => RoomSchema.parse({ ...valid, pricePerNightCents: -1000 })).toThrow()
   })
 
   it('rejects maxGuests less than 1', () => {
@@ -67,7 +67,7 @@ describe('ReservationSchema', () => {
   const valid = {
     id: 'r-1', roomId: 'room-1', guestId: 'guest-1',
     arrivalDate: '2026-09-10', departureDate: '2026-09-15',
-    guestsCount: 1, status: 'Confirmed', price: 500,
+    guestsCount: 1, status: 'Confirmed', priceCents: 50000,
   }
 
   it('accepts valid reservation data', () => {
@@ -87,7 +87,7 @@ describe('ReservationSchema', () => {
   })
 
   it('rejects non-positive price', () => {
-    expect(() => ReservationSchema.parse({ ...valid, price: 0 })).toThrow()
+    expect(() => ReservationSchema.parse({ ...valid, priceCents: 0 })).toThrow()
   })
 
   it('rejects invalid status', () => {
@@ -104,7 +104,7 @@ describe('ReservationSchema', () => {
 })
 
 describe('PaymentSchema', () => {
-  const valid = { id: 'p-1', reservationId: 'r-1', amount: 200, date: '2026-09-10', method: 'cash', note: '' }
+  const valid = { id: 'p-1', reservationId: 'r-1', amountCents: 20000, date: '2026-09-10', method: 'cash', note: '' }
 
   it('accepts valid payment data', () => {
     expect(() => PaymentSchema.parse(valid)).not.toThrow()
@@ -116,8 +116,8 @@ describe('PaymentSchema', () => {
   })
 
   it('rejects non-positive amount', () => {
-    expect(() => PaymentSchema.parse({ ...valid, amount: 0 })).toThrow()
-    expect(() => PaymentSchema.parse({ ...valid, amount: -10 })).toThrow()
+    expect(() => PaymentSchema.parse({ ...valid, amountCents: 0 })).toThrow()
+    expect(() => PaymentSchema.parse({ ...valid, amountCents: -1000 })).toThrow()
   })
 
   it('rejects invalid method', () => {
@@ -163,9 +163,9 @@ describe('local date fields (yyyy-MM-dd)', () => {
   const reservation = {
     id: 'r-1', roomId: 'room-1', guestId: 'guest-1',
     arrivalDate: '2026-09-10', departureDate: '2026-09-15',
-    guestsCount: 1, status: 'Confirmed', price: 500,
+    guestsCount: 1, status: 'Confirmed', priceCents: 50000,
   }
-  const payment = { id: 'p-1', reservationId: 'r-1', amount: 200, date: '2026-09-10', method: 'cash', note: '' }
+  const payment = { id: 'p-1', reservationId: 'r-1', amountCents: 20000, date: '2026-09-10', method: 'cash', note: '' }
   const task = { id: 't-1', title: 'Clean room', category: 'cleaning', completed: false, date: '2026-09-10', auto: false }
 
   const badDates = ['2026-9-10', '10/09/2026', '2026-09-10T00:00:00.000Z', '2026-02-30', '2026-13-01', 'tomorrow']
@@ -195,14 +195,19 @@ describe('local date fields (yyyy-MM-dd)', () => {
   })
 })
 
-describe('PaymentSchema amount', () => {
-  const payment = { id: 'p-1', reservationId: 'r-1', amount: 200, date: '2026-09-10', method: 'cash', note: '' }
+describe('PaymentSchema amountCents', () => {
+  const payment = { id: 'p-1', reservationId: 'r-1', amountCents: 20000, date: '2026-09-10', method: 'cash', note: '' }
 
-  it.each([19.99, 0.01, 1_000_000])('accepts %s', (amount) => {
-    expect(PaymentSchema.safeParse({ ...payment, amount }).success).toBe(true)
+  it.each([1999, 1, 100_000_000])('accepts %s cents', (amountCents) => {
+    expect(PaymentSchema.safeParse({ ...payment, amountCents }).success).toBe(true)
   })
 
-  it.each([33.333, 0.001, 1_000_000.01, Number.POSITIVE_INFINITY, Number.NaN])('rejects %s', (amount) => {
-    expect(PaymentSchema.safeParse({ ...payment, amount }).success).toBe(false)
+  it.each([19.99, 0, -100, 100_000_001, Number.POSITIVE_INFINITY, Number.NaN])('rejects %s', (amountCents) => {
+    expect(PaymentSchema.safeParse({ ...payment, amountCents }).success).toBe(false)
+  })
+
+  it('rejects a decimal amount without cents', () => {
+    const { amountCents: _amountCents, ...withoutCents } = payment
+    expect(PaymentSchema.safeParse({ ...withoutCents, amount: 200 }).success).toBe(false)
   })
 })
