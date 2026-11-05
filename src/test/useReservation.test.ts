@@ -16,6 +16,18 @@ vi.mock('../services/ReservationService', () => ({
   },
 }))
 
+// Plays the data layer: a committed write announces the stores it changed.
+let reservationChangeHandlers: (() => void)[] = []
+vi.mock('../services/DataChangeService', () => ({
+  dataChangeService: {
+    subscribe: (stores: string[], handler: () => void) => {
+      if (stores.includes('reservations')) reservationChangeHandlers.push(handler)
+      return () => { reservationChangeHandlers = reservationChangeHandlers.filter(h => h !== handler) }
+    },
+  },
+}))
+const announceReservationChange = async () => { for (const handler of reservationChangeHandlers) handler() }
+
 import { useReservation } from '../hooks/useReservation'
 
 const sampleReservation = new Reservation({
@@ -36,9 +48,10 @@ describe('useReservation', () => {
     mockCheckOut.mockReset()
     mockCancel.mockReset()
     mockGetById.mockResolvedValue(sampleReservation)
-    mockCheckIn.mockResolvedValue(undefined)
-    mockCheckOut.mockResolvedValue(undefined)
-    mockCancel.mockResolvedValue(undefined)
+    mockCheckIn.mockImplementation(announceReservationChange)
+    mockCheckOut.mockImplementation(announceReservationChange)
+    mockCancel.mockImplementation(announceReservationChange)
+    reservationChangeHandlers = []
   })
 
   it('returns null reservation and loading=false when no id provided', async () => {
@@ -78,7 +91,7 @@ describe('useReservation', () => {
     expect(result.current.reservation).toBeNull()
   })
 
-  it('checkIn calls service and refreshes', async () => {
+  it('checkIn calls service and reloads once the change is announced', async () => {
     const checkedInReservation = new Reservation({
       ...sampleReservation.toData(),
       status: 'Checked In',
@@ -98,11 +111,11 @@ describe('useReservation', () => {
     })
 
     expect(mockCheckIn).toHaveBeenCalledWith('res-1')
+    await waitFor(() => expect(result.current.reservation!.status).toBe('Checked In'))
     expect(mockGetById).toHaveBeenCalledTimes(2)
-    expect(result.current.reservation!.status).toBe('Checked In')
   })
 
-  it('checkOut calls service and refreshes', async () => {
+  it('checkOut calls service and reloads once the change is announced', async () => {
     const checkedOutReservation = new Reservation({
       ...sampleReservation.toData(),
       status: 'Checked Out',
@@ -122,11 +135,11 @@ describe('useReservation', () => {
     })
 
     expect(mockCheckOut).toHaveBeenCalledWith('res-1')
+    await waitFor(() => expect(result.current.reservation!.status).toBe('Checked Out'))
     expect(mockGetById).toHaveBeenCalledTimes(2)
-    expect(result.current.reservation!.status).toBe('Checked Out')
   })
 
-  it('cancel calls service and refreshes', async () => {
+  it('cancel calls service and reloads once the change is announced', async () => {
     const cancelledReservation = new Reservation({
       ...sampleReservation.toData(),
       status: 'Cancelled',
@@ -146,8 +159,8 @@ describe('useReservation', () => {
     })
 
     expect(mockCancel).toHaveBeenCalledWith('res-1')
+    await waitFor(() => expect(result.current.reservation!.status).toBe('Cancelled'))
     expect(mockGetById).toHaveBeenCalledTimes(2)
-    expect(result.current.reservation!.status).toBe('Cancelled')
   })
 
   it('checkIn, checkOut, and cancel do nothing when id is undefined', async () => {
@@ -167,5 +180,19 @@ describe('useReservation', () => {
     expect(mockCheckOut).not.toHaveBeenCalled()
     expect(mockCancel).not.toHaveBeenCalled()
     expect(mockGetById).not.toHaveBeenCalled()
+  })
+
+  it('reloads when another tab changes reservations', async () => {
+    const changedElsewhere = new Reservation({ ...sampleReservation.toData(), status: 'Checked In' })
+    mockGetById
+      .mockResolvedValueOnce(sampleReservation)
+      .mockResolvedValueOnce(changedElsewhere)
+
+    const { result } = renderHook(() => useReservation('res-1'))
+    await waitFor(() => expect(result.current.reservation).toBe(sampleReservation))
+
+    act(() => { announceReservationChange() })
+
+    await waitFor(() => expect(result.current.reservation).toBe(changedElsewhere))
   })
 })

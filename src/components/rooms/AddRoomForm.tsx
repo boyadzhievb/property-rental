@@ -4,11 +4,10 @@ import { roomService } from '../../services/RoomService';
 import { useLocale } from '../../context/LocaleContext';
 
 interface AddRoomFormProps {
-  onAdded: () => Promise<void>;
   onCancel: () => void;
 }
 
-export default function AddRoomForm({ onAdded, onCancel }: AddRoomFormProps) {
+export default function AddRoomForm({ onCancel }: AddRoomFormProps) {
   const { t } = useLocale();
   const [name, setName] = useState('');
   const [price, setPrice] = useState('100');
@@ -23,7 +22,6 @@ export default function AddRoomForm({ onAdded, onCancel }: AddRoomFormProps) {
       pricePerNight: parseFloat(price) || 100,
       maxGuests: parseInt(maxGuests) || 2,
     });
-    await onAdded();
     onCancel();
   };
 

@@ -3,8 +3,6 @@ import { format } from 'date-fns';
 import { LogIn, LogOut, SprayCan, CreditCard, CheckCircle2, Plus, X, Phone, MessageSquare, Sparkles, Home } from 'lucide-react';
 import { useToday } from '../../hooks/useToday';
 import { usePropertyContext } from '../../context/PropertyContext';
-import { useReservationContext } from '../../context/ReservationContext';
-import { useRoomContext } from '../../context/RoomContext';
 import { usePaymentContext } from '../../context/PaymentContext';
 import { useTaskContext } from '../../context/TaskContext';
 import { useLocale } from '../../context/LocaleContext';
@@ -24,10 +22,8 @@ import { useCurrentDate } from '../../hooks/useCurrentDate';
 export default memo(function TodayView() {
   const { data, loading } = useToday();
   const { propertyName } = usePropertyContext();
-  const { refresh: refreshReservations } = useReservationContext();
-  const { refresh: refreshRooms } = useRoomContext();
   const { payments } = usePaymentContext();
-  const { tasks, refresh: refreshTasks } = useTaskContext();
+  const { tasks } = useTaskContext();
   const { t } = useLocale();
   type StatFilter = 'arrivals' | 'departures' | 'occupied' | 'cleaning' | 'tasks' | null;
   const [activeFilter, setActiveFilter] = useState<StatFilter>(null);
@@ -77,7 +73,6 @@ export default memo(function TodayView() {
     }
 
     await taskService.ensureAutoTasks({ cleaningRoomIds, preparationRoomIds, pendingPayments });
-    await refreshTasks();
 
     notificationService.scheduleDailyNotifications({
       arrivals: data.arrivals.map(res => ({
@@ -104,7 +99,7 @@ export default memo(function TodayView() {
       // Reminders are best effort; a failure here must not break the Today screen.
       console.error('Scheduling notifications failed:', error);
     });
-  }, [data, payments, refreshTasks, guestMap, roomMap, t]);
+  }, [data, payments, guestMap, roomMap, t]);
 
   useEffect(() => {
     if (data) generateAutoTasks().catch(reportFailure);
@@ -114,7 +109,6 @@ export default memo(function TodayView() {
     setLoadingId(task.id);
     try {
       await taskService.toggleTask(task.id);
-      await Promise.all([refreshTasks(), refreshRooms()]);
     } catch (error: unknown) {
       reportFailure(error);
     } finally {
@@ -127,7 +121,6 @@ export default memo(function TodayView() {
     setLoadingId(reservationId);
     try {
       await reservationService.checkIn(reservationId);
-      await Promise.all([refreshReservations(), refreshRooms()]);
     } catch (error: unknown) {
       reportFailure(error);
     } finally {
@@ -140,7 +133,6 @@ export default memo(function TodayView() {
     setLoadingId(reservationId);
     try {
       await reservationService.checkOut(reservationId);
-      await Promise.all([refreshReservations(), refreshRooms(), refreshTasks()]);
     } catch (error: unknown) {
       reportFailure(error);
     } finally {
@@ -160,7 +152,6 @@ export default memo(function TodayView() {
         date: todayStr,
         auto: false,
       });
-      await refreshTasks();
     } catch (error: unknown) {
       reportFailure(error);
       return;

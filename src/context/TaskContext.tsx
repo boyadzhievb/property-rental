@@ -4,6 +4,7 @@ import { createEntityContext } from './createEntityContext';
 
 const { Provider, useEntityContext } = createEntityContext<Task>(
   'Task',
+  ['tasks'],
   () => taskService.getTodayTasks(),
 );
 

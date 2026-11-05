@@ -7,11 +7,6 @@ import { APP_VERSION } from '../../version';
 import { useTheme, type ThemeMode } from '../../context/ThemeContext';
 import { useLocale } from '../../context/LocaleContext';
 import { LOCALE_LABELS, type Locale } from '../../i18n';
-import { useRoomContext } from '../../context/RoomContext';
-import { useGuestContext } from '../../context/GuestContext';
-import { useReservationContext } from '../../context/ReservationContext';
-import { usePaymentContext } from '../../context/PaymentContext';
-import { useTaskContext } from '../../context/TaskContext';
 import { backupService, BackupImportError, type BackupData } from '../../services/BackupService';
 import { notificationService } from '../../services/NotificationService';
 import { SUPPORTED_CURRENCIES, currencyLabel, type CurrencyCode } from '../../domain/currency';
@@ -19,14 +14,9 @@ import { SettingsGroup, SettingsItem } from '../ui/SettingsGroup';
 import PageHeader from '../layout/PageHeader';
 
 export default function SettingsView() {
-  const { propertyName, updateName, resetData, currency, updateCurrency, refreshSettings } = usePropertyContext();
+  const { propertyName, updateName, resetData, currency, updateCurrency } = usePropertyContext();
   const { mode, setMode } = useTheme();
   const { locale, setLocale, t } = useLocale();
-  const { refresh: refreshRooms } = useRoomContext();
-  const { refresh: refreshGuests } = useGuestContext();
-  const { refresh: refreshReservations } = useReservationContext();
-  const { refresh: refreshPayments } = usePaymentContext();
-  const { refresh: refreshTasks } = useTaskContext();
   const [editing, setEditing] = useState(false);
   const [nameInput, setNameInput] = useState(propertyName);
   const [showThemePicker, setShowThemePicker] = useState(false);
@@ -157,7 +147,6 @@ export default function SettingsView() {
 
       // The user has seen and accepted the skipped-record count in the confirmation above.
       const report = await backupService.import(backup, { allowPartial: true });
-      await Promise.all([refreshSettings(), refreshRooms(), refreshGuests(), refreshReservations(), refreshPayments(), refreshTasks()]);
       if (report.total > 0) {
         console.warn('Import skipped records:', report.skippedDetails);
         setRestoreStatus(`${t.backupRestored} (${report.total} ${t.invalidRecordsSkipped})`);

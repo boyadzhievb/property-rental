@@ -4,8 +4,6 @@ import { type Reservation } from '../../domain/Reservation';
 import { type Room } from '../../domain/Room';
 import { type Guest } from '../../domain/Guest';
 import { reservationService } from '../../services/ReservationService';
-import { useReservationContext } from '../../context/ReservationContext';
-import { useRoomContext } from '../../context/RoomContext';
 import { useLocale } from '../../context/LocaleContext';
 import { reservationStatusLabel } from '../../i18n/reservationStatus';
 
@@ -22,8 +20,6 @@ interface TimelineProps {
 }
 
 export default function Timeline({ events, rooms, guests }: TimelineProps) {
-  const { refresh: refreshReservations } = useReservationContext();
-  const { refresh: refreshRooms } = useRoomContext();
   const { t } = useLocale();
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
@@ -32,7 +28,6 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
     setLoadingId(id);
     try {
       await reservationService.checkIn(id);
-      await Promise.all([refreshReservations(), refreshRooms()]);
     } finally {
       setLoadingId(null);
     }
@@ -43,7 +38,6 @@ export default function Timeline({ events, rooms, guests }: TimelineProps) {
     setLoadingId(id);
     try {
       await reservationService.checkOut(id);
-      await Promise.all([refreshReservations(), refreshRooms()]);
     } finally {
       setLoadingId(null);
     }

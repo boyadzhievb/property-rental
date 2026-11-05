@@ -4,6 +4,7 @@ import { createEntityContext } from './createEntityContext';
 
 const { Provider, useEntityContext } = createEntityContext<Room>(
   'Room',
+  ['rooms'],
   () => roomService.getRooms(),
   (rooms) => rooms.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })),
 );

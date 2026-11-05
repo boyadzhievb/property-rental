@@ -2,8 +2,6 @@ import { useState, useMemo, memo } from 'react';
 import { format, addDays, subDays, startOfWeek, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight, LogIn, LogOut, X, XCircle, Banknote, Plus } from 'lucide-react';
 import { useCalendar } from '../../hooks/useCalendar';
-import { useReservationContext } from '../../context/ReservationContext';
-import { useRoomContext } from '../../context/RoomContext';
 import { usePaymentContext } from '../../context/PaymentContext';
 import { useLocale } from '../../context/LocaleContext';
 import { useMoney } from '../../hooks/useMoney';
@@ -22,10 +20,8 @@ import { useCurrentDate } from '../../hooks/useCurrentDate';
 export default memo(function CalendarView() {
   const today = useCurrentDate();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(today, { weekStartsOn: 1 }));
-  const { data, loading, refresh: refreshCalendar } = useCalendar(weekStart);
-  const { refresh: refreshReservations } = useReservationContext();
-  const { refresh: refreshRooms } = useRoomContext();
-  const { payments, refresh: refreshPayments } = usePaymentContext();
+  const { data, loading } = useCalendar(weekStart);
+  const { payments } = usePaymentContext();
   const { t } = useLocale();
   const formatMoney = useMoney();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -37,15 +33,12 @@ export default memo(function CalendarView() {
   const [paymentNote, setPaymentNote] = useState('');
   const days = useMemo(() => Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i)), [weekStart]);
 
-  const refreshAll = () => Promise.all([refreshCalendar(), refreshReservations(), refreshRooms(), refreshPayments()]);
-
   const handleCheckIn = async () => {
     if (!selectedReservation) return;
     if (!confirm(t.confirmCheckIn)) return;
     setActionLoading(true);
     try {
       await reservationService.checkIn(selectedReservation.id);
-      await refreshAll();
       setSelectedReservation(null);
     } catch (error: unknown) {
       console.error('Reservation action failed:', error);
@@ -61,7 +54,6 @@ export default memo(function CalendarView() {
     setActionLoading(true);
     try {
       await reservationService.checkOut(selectedReservation.id);
-      await refreshAll();
       setSelectedReservation(null);
     } catch (error: unknown) {
       console.error('Reservation action failed:', error);
@@ -77,7 +69,6 @@ export default memo(function CalendarView() {
     setActionLoading(true);
     try {
       await reservationService.cancel(selectedReservation.id);
-      await refreshAll();
       setSelectedReservation(null);
     } catch (error: unknown) {
       console.error('Reservation action failed:', error);
@@ -104,7 +95,6 @@ export default memo(function CalendarView() {
         method: paymentMethod,
         note: paymentNote,
       });
-      await refreshPayments();
       setShowPaymentForm(false);
       setPaymentAmount('');
       setPaymentMethod('cash');

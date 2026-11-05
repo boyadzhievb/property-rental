@@ -241,8 +241,6 @@ describe('Timeline', () => {
       await user.click(screen.getByRole('button', { name: /Check In/i }))
 
       expect(mockCheckIn).toHaveBeenCalledWith('res-checkin')
-      expect(mockRefreshReservations).toHaveBeenCalled()
-      expect(mockRefreshRooms).toHaveBeenCalled()
     })
 
     it('calls reservationService.checkOut when Check Out button is clicked', async () => {
@@ -255,8 +253,6 @@ describe('Timeline', () => {
       await user.click(screen.getByRole('button', { name: /Check Out/i }))
 
       expect(mockCheckOut).toHaveBeenCalledWith('res-checkout')
-      expect(mockRefreshReservations).toHaveBeenCalled()
-      expect(mockRefreshRooms).toHaveBeenCalled()
     })
 
     it('does not call checkIn when confirm dialog is cancelled', async () => {

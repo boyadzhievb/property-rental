@@ -4,6 +4,7 @@ import { createEntityContext } from './createEntityContext';
 
 const { Provider, useEntityContext } = createEntityContext<Reservation>(
   'Reservation',
+  ['reservations'],
   () => reservationService.getAllReservations(),
 );
 

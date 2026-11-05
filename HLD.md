@@ -8,11 +8,18 @@ Offline-first PWA for short-term rental owners. Daily operating tool to manage r
 
 ```
 UI (React 19 Components)
-  → Context (one provider per entity — state + actions)
-    → Services (business logic, cross-entity orchestration)
-      → Repositories (IndexedDB CRUD, one per entity)
-        → IndexedDB via src/api/client.ts
+  ├─ reads state ─→ Context (one provider per entity — state, loading, errors)
+  └─ calls actions ─→ Services (business operations, cross-entity orchestration)
+                        → Repositories (IndexedDB CRUD, one per entity)
+                          → IndexedDB via src/api/client.ts
+                              │ after each commit: "these stores changed"
+Context ←── reloads its own store ──┘ (same tab and other tabs)
 ```
+
+- **Contexts own state and loading.** Each loads its list on mount and reloads by itself when its store changes. Screens never refresh lists after an action; `refresh()` remains for retrying after an error.
+- **Services own business operations.** Screens call them directly (`reservationService.checkIn(id)`); they never touch React.
+- **The data layer announces committed changes.** After a transaction commits, `src/api/sync.ts` announces which stores were written: to this tab directly and to other tabs over a `BroadcastChannel` (which does not deliver a tab's own messages). Failed transactions announce nothing; bulk operations (seed, reset, setup, restore) announce once. Contexts and hooks subscribe through `services/DataChangeService`, never `api/` directly.
+- Overlapping reloads are safe: only the most recent load may update a context's state.
 
 Validation at the boundary: Zod schemas in `src/schemas/` validate before writes.
 
@@ -95,6 +102,6 @@ Auto-deploys to GitHub Pages on push to `master` via `.github/workflows/deploy.y
 - **No backend by design** — privacy-first, works offline, zero infrastructure cost.
 - **No OS cloud backups** — Android `allowBackup="false"` + `res/xml/data_extraction_rules.xml` (no Google backup, no device transfer); iOS excludes `Library/WebKit` from backup in `AppDelegate.swift`. Guest PII never reaches a Google/Apple account; the trade-off is that a lost phone without a manual export means lost data.
 - **Domain models enforce rules** — UI cannot bypass state machine; services call domain methods that throw on invalid transitions.
-- **One context per entity** — keeps re-renders scoped; contexts hold both state and dispatch methods.
+- **One context per entity** — keeps re-renders scoped; contexts hold state and reload on data-change announcements, services hold the actions (decided 2026-11-05: automatic refresh instead of moving every action into a context).
 - **Mobile via Capacitor** — same build output wrapped in native shell, no code changes needed. Native-only features (local notifications, filesystem export) are guarded by `Capacitor.isNativePlatform()`.
 - **i18n without a framework** — simple key-value objects per locale, switched via LocaleContext.

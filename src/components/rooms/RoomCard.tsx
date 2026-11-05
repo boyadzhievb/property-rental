@@ -7,7 +7,6 @@ import { useMoney } from '../../hooks/useMoney';
 
 interface RoomCardProps {
   room: Room;
-  onUpdated: () => Promise<void>;
 }
 
 const getStatusColor = (status: RoomStatus) => {
@@ -19,7 +18,7 @@ const getStatusColor = (status: RoomStatus) => {
   }
 };
 
-export default function RoomCard({ room, onUpdated }: RoomCardProps) {
+export default function RoomCard({ room }: RoomCardProps) {
   const { t } = useLocale();
   const formatMoney = useMoney();
   const [editing, setEditing] = useState(false);
@@ -43,12 +42,10 @@ export default function RoomCard({ room, onUpdated }: RoomCardProps) {
       maxGuests: parseInt(editMaxGuests) || room.maxGuests,
     });
     setEditing(false);
-    await onUpdated();
   };
 
   const handleStatusAction = async (action: RoomStatusAction) => {
     await roomService.updateRoomStatus(room.id, action);
-    await onUpdated();
   };
 
   const statusLabel = (status: RoomStatus) => {

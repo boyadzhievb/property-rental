@@ -33,7 +33,6 @@ vi.mock('../../context/LocaleContext', async () => {
 import RoomCard from '../rooms/RoomCard'
 
 describe('RoomCard', () => {
-  const onUpdated = vi.fn().mockResolvedValue(undefined)
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -42,7 +41,7 @@ describe('RoomCard', () => {
   describe('status badge rendering', () => {
     it('renders the room name and price', () => {
       const room = makeRoom({ name: 'Ocean Suite', pricePerNight: 150, maxGuests: 3 })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       expect(screen.getByText('Ocean Suite')).toBeInTheDocument()
       expect(screen.getByText('$150')).toBeInTheDocument()
@@ -52,7 +51,7 @@ describe('RoomCard', () => {
     it('shows the price in the property currency', () => {
       propertyCurrency.value = 'EUR'
       try {
-        render(<RoomCard room={makeRoom({ pricePerNight: 150 })} onUpdated={onUpdated} />)
+        render(<RoomCard room={makeRoom({ pricePerNight: 150 })} />)
         expect(screen.getByText('€150')).toBeInTheDocument()
       } finally {
         propertyCurrency.value = 'USD'
@@ -61,28 +60,28 @@ describe('RoomCard', () => {
 
     it('shows "Mark as Available" badge for an available room', () => {
       const room = makeRoom({ status: RoomStatus.AVAILABLE })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       expect(screen.getByText('Mark as Available')).toBeInTheDocument()
     })
 
     it('shows "Occupied" badge for an occupied room', () => {
       const room = makeRoom({ status: RoomStatus.OCCUPIED })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       expect(screen.getByText('Occupied')).toBeInTheDocument()
     })
 
     it('shows "Cleaning" badge for a room in cleaning status', () => {
       const room = makeRoom({ status: RoomStatus.CLEANING })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       expect(screen.getByText('Cleaning')).toBeInTheDocument()
     })
 
     it('shows "Mark for Maintenance" badge for a room in maintenance status', () => {
       const room = makeRoom({ status: RoomStatus.MAINTENANCE })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       // The status label for maintenance is 'Mark for Maintenance'
       // It appears both as badge and as the action button for available rooms
@@ -94,7 +93,7 @@ describe('RoomCard', () => {
   describe('action button visibility', () => {
     it('shows "Mark for Maintenance" button when room is available', () => {
       const room = makeRoom({ status: RoomStatus.AVAILABLE })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       const maintenanceButton = screen.getByRole('button', { name: /Mark for Maintenance/i })
       expect(maintenanceButton).toBeInTheDocument()
@@ -102,7 +101,7 @@ describe('RoomCard', () => {
 
     it('shows "Mark as Cleaned" button when room is in cleaning status', () => {
       const room = makeRoom({ status: RoomStatus.CLEANING })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       const cleanButton = screen.getByRole('button', { name: /Mark as Cleaned/i })
       expect(cleanButton).toBeInTheDocument()
@@ -110,7 +109,7 @@ describe('RoomCard', () => {
 
     it('shows "Mark as Available" button when room is in maintenance status', () => {
       const room = makeRoom({ status: RoomStatus.MAINTENANCE })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       const availableButton = screen.getByRole('button', { name: /Mark as Available/i })
       expect(availableButton).toBeInTheDocument()
@@ -118,7 +117,7 @@ describe('RoomCard', () => {
 
     it('does not show any action button when room is occupied', () => {
       const room = makeRoom({ status: RoomStatus.OCCUPIED })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       expect(screen.queryByRole('button', { name: /Mark as Cleaned/i })).not.toBeInTheDocument()
       expect(screen.queryByRole('button', { name: /Mark for Maintenance/i })).not.toBeInTheDocument()
@@ -131,19 +130,18 @@ describe('RoomCard', () => {
       const user = userEvent.setup()
       mockUpdateRoomStatus.mockResolvedValue(undefined)
       const room = makeRoom({ id: 'room-abc', status: RoomStatus.CLEANING })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       await user.click(screen.getByRole('button', { name: /Mark as Cleaned/i }))
 
       expect(mockUpdateRoomStatus).toHaveBeenCalledWith('room-abc', 'clean')
-      expect(onUpdated).toHaveBeenCalled()
     })
 
     it('calls roomService.updateRoomStatus with "maintenance" when Mark for Maintenance is clicked', async () => {
       const user = userEvent.setup()
       mockUpdateRoomStatus.mockResolvedValue(undefined)
       const room = makeRoom({ id: 'room-xyz', status: RoomStatus.AVAILABLE })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       // Find the action button (not the badge)
       const buttons = screen.getAllByText('Mark for Maintenance')
@@ -152,14 +150,13 @@ describe('RoomCard', () => {
       await user.click(actionButton!.closest('button')!)
 
       expect(mockUpdateRoomStatus).toHaveBeenCalledWith('room-xyz', 'maintenance')
-      expect(onUpdated).toHaveBeenCalled()
     })
 
     it('calls roomService.updateRoomStatus with "available" when Mark as Available is clicked', async () => {
       const user = userEvent.setup()
       mockUpdateRoomStatus.mockResolvedValue(undefined)
       const room = makeRoom({ id: 'room-mnt', status: RoomStatus.MAINTENANCE })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       // Find the action button (not the badge)
       const buttons = screen.getAllByText('Mark as Available')
@@ -168,7 +165,6 @@ describe('RoomCard', () => {
       await user.click(actionButton!.closest('button')!)
 
       expect(mockUpdateRoomStatus).toHaveBeenCalledWith('room-mnt', 'available')
-      expect(onUpdated).toHaveBeenCalled()
     })
   })
 
@@ -176,7 +172,7 @@ describe('RoomCard', () => {
     it('enters edit mode when the edit button is clicked', async () => {
       const user = userEvent.setup()
       const room = makeRoom({ name: 'Suite 101' })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       await user.click(screen.getByRole('button', { name: /Edit Suite 101/i }))
 
@@ -187,7 +183,7 @@ describe('RoomCard', () => {
     it('cancels edit mode without saving', async () => {
       const user = userEvent.setup()
       const room = makeRoom({ name: 'Suite 101' })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       await user.click(screen.getByRole('button', { name: /Edit Suite 101/i }))
       await user.click(screen.getByRole('button', { name: /Cancel/i }))
@@ -200,7 +196,7 @@ describe('RoomCard', () => {
       const user = userEvent.setup()
       mockUpdateRoom.mockResolvedValue(undefined)
       const room = makeRoom({ id: 'room-edit', name: 'Suite 101', pricePerNight: 100, maxGuests: 2 })
-      render(<RoomCard room={room} onUpdated={onUpdated} />)
+      render(<RoomCard room={room} />)
 
       await user.click(screen.getByRole('button', { name: /Edit Suite 101/i }))
 
@@ -215,7 +211,6 @@ describe('RoomCard', () => {
         pricePerNight: 100,
         maxGuests: 2,
       })
-      expect(onUpdated).toHaveBeenCalled()
     })
   })
 })

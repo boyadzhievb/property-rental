@@ -17,6 +17,8 @@ const DB_VERSION = 5;
 /** Every object store; whole-database operations (seed, reset, backup) span all of them. */
 export const ALL_STORES = ['rooms', 'guests', 'reservations', 'payments', 'tasks', 'settings'] as const;
 
+export type StoreName = (typeof ALL_STORES)[number];
+
 /** Stores holding entity records, i.e. everything except settings. */
 export const ENTITY_STORES = ['rooms', 'guests', 'reservations', 'payments', 'tasks'] as const;
 

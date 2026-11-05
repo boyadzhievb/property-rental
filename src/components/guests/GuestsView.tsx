@@ -17,7 +17,7 @@ export default memo(function GuestsView() {
   const { guests, loading } = useGuests();
   const { reservations } = useReservationContext();
   const { rooms } = useRoomContext();
-  const { payments, refresh: refreshPayments } = usePaymentContext();
+  const { payments } = usePaymentContext();
   const { t } = useLocale();
   const formatMoney = useMoney();
   const [search, setSearch] = useState('');
@@ -123,7 +123,6 @@ export default memo(function GuestsView() {
         method: paymentMethod,
         note: paymentNote,
       });
-      await refreshPayments();
       setPayingReservation(null);
       setPaymentAmount('');
       setPaymentMethod('cash');

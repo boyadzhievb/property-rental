@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react';
 import { backupService, type BackupData } from '../services/BackupService';
 import { useLocale } from './LocaleContext';
 import { settingsService, DEFAULT_PROPERTY_NAME } from '../services/SettingsService';
+import { dataChangeService } from '../services/DataChangeService';
 import type { CurrencyCode } from '../domain/currency';
 import { errorMessage } from '../i18n/errorMessage';
 
@@ -16,7 +17,6 @@ interface PropertyContextValue {
   updateName: (name: string) => Promise<void>;
   /** Change the display currency; existing amounts are not converted. */
   updateCurrency: (currency: CurrencyCode) => Promise<void>;
-  refreshSettings: () => Promise<void>;
   configureApp: (name: string, roomCount: number, currency: CurrencyCode) => Promise<void>;
   seedData: () => Promise<void>;
   importData: (data: BackupData) => Promise<void>;
@@ -35,18 +35,30 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
 
   const clearError = useCallback(() => setError(null), []);
 
-  useEffect(() => {
-    settingsService.getPropertySettings().then((settings) => {
+  // Only the most recent load may update state (settings can change in quick succession).
+  const latestLoad = useRef(0);
+
+  /** Load name, currency and setup state. Saves a currency guess if none is stored. */
+  const loadSettings = useCallback(async () => {
+    const loadId = ++latestLoad.current;
+    try {
+      const settings = await settingsService.getPropertySettings();
+      if (loadId !== latestLoad.current) return;
       setPropertyName(settings.name);
       setIsConfigured(settings.isConfigured);
       setCurrency(settings.currency);
-      setLoading(false);
-    }).catch((e: unknown) => {
+    } catch (e: unknown) {
+      if (loadId !== latestLoad.current) return;
       console.error(e);
       setError(errorMessage(e, t, String));
-      setLoading(false);
-    });
+    } finally {
+      if (loadId === latestLoad.current) setLoading(false);
+    }
   }, [t]);
+
+  useEffect(() => { loadSettings(); }, [loadSettings]);
+  // Setup, reset, restore or a rename in this tab or another one.
+  useEffect(() => dataChangeService.subscribe(['settings'], () => { loadSettings(); }), [loadSettings]);
 
   const updateName = useCallback(async (name: string) => {
     try {
@@ -68,13 +80,6 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     }
   }, [t]);
 
-  /** Reload name and currency from storage, e.g. after a restore. Saves a currency guess if none is stored. */
-  const refreshSettings = useCallback(async () => {
-    const settings = await settingsService.getPropertySettings();
-    setPropertyName(settings.name);
-    setCurrency(settings.currency);
-  }, []);
-
   const configureApp = useCallback(async (name: string, roomCount: number, chosenCurrency: CurrencyCode) => {
     try {
       const savedName = await settingsService.configureProperty(name, roomCount, chosenCurrency);
@@ -91,24 +96,22 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     try {
       await settingsService.seedDemoData();
       setIsConfigured(true);
-      await refreshSettings();
     } catch (e: unknown) {
       console.error(e);
       setError(errorMessage(e, t, String));
     }
-  }, [refreshSettings, t]);
+  }, [t]);
 
   const importData = useCallback(async (data: BackupData) => {
     try {
       // First-run import: nothing stored yet, so keep valid records even if some are skipped.
       await backupService.import(data, { allowPartial: true });
       setIsConfigured(true);
-      await refreshSettings();
     } catch (e: unknown) {
       console.error(e);
       setError(errorMessage(e, t, String));
     }
-  }, [refreshSettings, t]);
+  }, [t]);
 
   const resetData = useCallback(async () => {
     let backup: BackupData;
@@ -146,7 +149,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
   }, [t]);
 
   return (
-    <PropertyContext.Provider value={useMemo(() => ({ propertyName, isConfigured, currency, loading, error, clearError, updateName, updateCurrency, refreshSettings, configureApp, seedData, importData, resetData }), [propertyName, isConfigured, currency, loading, error, clearError, updateName, updateCurrency, refreshSettings, configureApp, seedData, importData, resetData])}>
+    <PropertyContext.Provider value={useMemo(() => ({ propertyName, isConfigured, currency, loading, error, clearError, updateName, updateCurrency, configureApp, seedData, importData, resetData }), [propertyName, isConfigured, currency, loading, error, clearError, updateName, updateCurrency, configureApp, seedData, importData, resetData])}>
       {children}
     </PropertyContext.Provider>
   );

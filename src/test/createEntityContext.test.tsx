@@ -2,14 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import React from 'react'
 
-vi.mock('../api/sync', () => ({
-  onCrossTabRefresh: vi.fn(() => vi.fn()),
+vi.mock('../services/DataChangeService', () => ({
+  dataChangeService: { subscribe: vi.fn() },
 }))
 
 import { createEntityContext } from '../context/createEntityContext'
-import { onCrossTabRefresh } from '../api/sync'
+import { dataChangeService, type StoreName } from '../services/DataChangeService'
 
-const mockedOnCrossTabRefresh = vi.mocked(onCrossTabRefresh)
+const mockedSubscribe = vi.mocked(dataChangeService.subscribe)
+
+/** Handlers the context registered, so a test can play the part of the data layer. */
+let changeHandlers: { stores: readonly StoreName[]; handler: () => void }[] = []
+
+function announceChange(store: StoreName) {
+  for (const { stores, handler } of changeHandlers) if (stores.includes(store)) handler()
+}
 
 interface TestItem {
   id: string
@@ -21,9 +28,13 @@ describe('createEntityContext', () => {
 
   beforeEach(() => {
     mockLoadFunction = vi.fn<() => Promise<TestItem[]>>()
-    mockedOnCrossTabRefresh.mockClear()
-    // Default: return a cleanup function
-    mockedOnCrossTabRefresh.mockReturnValue(vi.fn())
+    changeHandlers = []
+    mockedSubscribe.mockReset()
+    mockedSubscribe.mockImplementation((stores, handler) => {
+      const entry = { stores, handler }
+      changeHandlers.push(entry)
+      return () => { changeHandlers = changeHandlers.filter(e => e !== entry) }
+    })
   })
 
   function createTestContext(
@@ -31,7 +42,7 @@ describe('createEntityContext', () => {
     postProcess?: (data: TestItem[]) => TestItem[],
   ) {
     const actualLoadFunction = loadFunction ?? (() => mockLoadFunction())
-    return createEntityContext<TestItem>('Test', actualLoadFunction, postProcess)
+    return createEntityContext<TestItem>('Test', ['rooms'], actualLoadFunction, postProcess)
   }
 
   it('starts in loading state and resolves with data', async () => {
@@ -208,7 +219,7 @@ describe('createEntityContext', () => {
     consoleSpy.mockRestore()
   })
 
-  it('registers cross-tab refresh handler on mount', async () => {
+  it('subscribes to its own stores on mount', async () => {
     mockLoadFunction.mockResolvedValue([])
 
     const { Provider, useEntityContext } = createTestContext()
@@ -219,15 +230,72 @@ describe('createEntityContext', () => {
     renderHook(() => useEntityContext(), { wrapper })
 
     await waitFor(() => {
-      expect(mockedOnCrossTabRefresh).toHaveBeenCalledWith(expect.any(Function))
+      expect(mockedSubscribe).toHaveBeenCalledWith(['rooms'], expect.any(Function))
     })
   })
 
-  it('unsubscribes cross-tab handler on unmount', async () => {
+  it('reloads without a loading state when its store changes', async () => {
+    mockLoadFunction
+      .mockResolvedValueOnce([{ id: '1', name: 'Before' }])
+      .mockResolvedValueOnce([{ id: '1', name: 'After' }])
+
+    const { Provider, useEntityContext } = createTestContext()
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Provider>{children}</Provider>
+    )
+
+    const { result } = renderHook(() => useEntityContext(), { wrapper })
+    await waitFor(() => expect(result.current.data).toEqual([{ id: '1', name: 'Before' }]))
+
+    act(() => announceChange('rooms'))
+
+    expect(result.current.loading).toBe(false)
+    await waitFor(() => expect(result.current.data).toEqual([{ id: '1', name: 'After' }]))
+    expect(mockLoadFunction).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not reload when an unrelated store changes', async () => {
     mockLoadFunction.mockResolvedValue([])
 
-    const unsubscribeMock = vi.fn()
-    mockedOnCrossTabRefresh.mockReturnValue(unsubscribeMock)
+    const { Provider, useEntityContext } = createTestContext()
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Provider>{children}</Provider>
+    )
+
+    const { result } = renderHook(() => useEntityContext(), { wrapper })
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    act(() => announceChange('guests'))
+
+    expect(mockLoadFunction).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the newest data when an older reload finishes last', async () => {
+    let resolveSlowLoad: (value: TestItem[]) => void = () => {}
+    mockLoadFunction
+      .mockResolvedValueOnce([{ id: '1', name: 'Initial' }])
+      .mockReturnValueOnce(new Promise<TestItem[]>((resolve) => { resolveSlowLoad = resolve }))
+      .mockResolvedValueOnce([{ id: '1', name: 'Newest' }])
+
+    const { Provider, useEntityContext } = createTestContext()
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Provider>{children}</Provider>
+    )
+
+    const { result } = renderHook(() => useEntityContext(), { wrapper })
+    await waitFor(() => expect(result.current.data).toEqual([{ id: '1', name: 'Initial' }]))
+
+    act(() => announceChange('rooms')) // slow load starts
+    act(() => announceChange('rooms')) // newer load starts
+    await waitFor(() => expect(result.current.data).toEqual([{ id: '1', name: 'Newest' }]))
+
+    await act(async () => { resolveSlowLoad([{ id: '1', name: 'Stale' }]) })
+
+    expect(result.current.data).toEqual([{ id: '1', name: 'Newest' }])
+  })
+
+  it('unsubscribes on unmount', async () => {
+    mockLoadFunction.mockResolvedValue([])
 
     const { Provider, useEntityContext } = createTestContext()
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -235,14 +303,11 @@ describe('createEntityContext', () => {
     )
 
     const { unmount } = renderHook(() => useEntityContext(), { wrapper })
-
-    await waitFor(() => {
-      expect(mockedOnCrossTabRefresh).toHaveBeenCalled()
-    })
+    await waitFor(() => expect(changeHandlers).toHaveLength(1))
 
     unmount()
 
-    expect(unsubscribeMock).toHaveBeenCalled()
+    expect(changeHandlers).toHaveLength(0)
   })
 
   it('returns empty data array when loadFn returns empty', async () => {

@@ -1,14 +1,14 @@
 /**
  * Per-store reads and writes, atomic multi-store transactions, and the `api` object that
- * repositories use. Every successful write tells other tabs to refresh.
+ * repositories use. Every committed write announces the stores it changed (see sync.ts).
  */
 import type { RoomData } from '../schemas/RoomSchema';
 import type { GuestData } from '../schemas/GuestSchema';
 import type { ReservationData } from '../schemas/ReservationSchema';
 import type { PaymentData } from '../schemas/PaymentSchema';
 import type { TaskData } from '../schemas/TaskSchema';
-import { getDB, waitForTransaction, unconfiguredSettings, SETTINGS_KEY, type PropertySettings } from './db';
-import { notifyOtherTabs } from './sync';
+import { getDB, waitForTransaction, unconfiguredSettings, SETTINGS_KEY, type PropertySettings, type StoreName } from './db';
+import { announceChanges } from './sync';
 
 function wrapRequest<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -17,33 +17,33 @@ function wrapRequest<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
-async function getAll<T>(storeName: string): Promise<T[]> {
+async function getAll<T>(storeName: StoreName): Promise<T[]> {
   const db = await getDB();
   return wrapRequest<T[]>(db.transaction(storeName, 'readonly').objectStore(storeName).getAll());
 }
 
-async function getById<T>(storeName: string, id: string): Promise<T | undefined> {
+async function getById<T>(storeName: StoreName, id: string): Promise<T | undefined> {
   const db = await getDB();
   return wrapRequest<T | undefined>(db.transaction(storeName, 'readonly').objectStore(storeName).get(id));
 }
 
-async function getByIndex<T>(storeName: string, indexName: string, key: IDBValidKey): Promise<T[]> {
+async function getByIndex<T>(storeName: StoreName, indexName: string, key: IDBValidKey): Promise<T[]> {
   const db = await getDB();
   return wrapRequest<T[]>(db.transaction(storeName, 'readonly').objectStore(storeName).index(indexName).getAll(key));
 }
 
-async function put<T>(storeName: string, item: T): Promise<T> {
+async function put<T>(storeName: StoreName, item: T): Promise<T> {
   const db = await getDB();
   const tx = db.transaction(storeName, 'readwrite');
   const done = waitForTransaction(tx);
   tx.objectStore(storeName).put(item);
   await done;
-  notifyOtherTabs();
+  announceChanges([storeName]);
   return item;
 }
 
 /** Merge `data` into an existing record, reading and writing in one transaction. Throws if the record is missing. */
-async function updateById<T extends object>(storeName: string, id: string, data: Partial<T>): Promise<T> {
+async function updateById<T extends object>(storeName: StoreName, id: string, data: Partial<T>): Promise<T> {
   return atomicReadWrite([storeName], async (stores) => {
     const existing = await stores[storeName].get<T>(id);
     if (existing === undefined) throw new Error(`${storeName} record "${id}" not found`);
@@ -53,17 +53,17 @@ async function updateById<T extends object>(storeName: string, id: string, data:
   });
 }
 
-async function deleteById(storeName: string, id: string): Promise<void> {
+async function deleteById(storeName: StoreName, id: string): Promise<void> {
   const db = await getDB();
   const tx = db.transaction(storeName, 'readwrite');
   const done = waitForTransaction(tx);
   tx.objectStore(storeName).delete(id);
   await done;
-  notifyOtherTabs();
+  announceChanges([storeName]);
 }
 
 export interface BatchOperation {
-  store: string;
+  store: StoreName;
   data: unknown;
 }
 
@@ -77,20 +77,22 @@ export interface StoreAccessor {
 
 /**
  * Run `callback` inside one readwrite transaction. If the callback throws, the transaction is
- * aborted and none of its writes are kept.
+ * aborted and none of its writes are kept. After a commit, only the stores the callback wrote
+ * to are announced as changed.
  *
  * The callback may only await requests made through `stores`: awaiting anything else (another
  * getDB() call, a timer, fetch) lets the transaction auto-commit, after which further requests
  * fail with TransactionInactiveError.
  */
 export async function atomicReadWrite<T>(
-  storeNames: string[],
+  storeNames: StoreName[],
   callback: (stores: Record<string, StoreAccessor>) => Promise<T>,
 ): Promise<T> {
   const database = await getDB();
   const transaction = database.transaction(storeNames, 'readwrite');
   const done = waitForTransaction(transaction);
 
+  const writtenStores = new Set<StoreName>();
   const stores: Record<string, StoreAccessor> = {};
   for (const name of storeNames) {
     const objectStore = transaction.objectStore(name);
@@ -99,8 +101,8 @@ export async function atomicReadWrite<T>(
       getAll: <V>() => wrapRequest<V[]>(objectStore.getAll()),
       getAllByIndex: <V>(indexName: string, key: IDBValidKey) =>
         wrapRequest<V[]>(objectStore.index(indexName).getAll(key)),
-      put: (data: unknown) => { objectStore.put(data); },
-      delete: (key: string) => { objectStore.delete(key); },
+      put: (data: unknown) => { objectStore.put(data); writtenStores.add(name); },
+      delete: (key: string) => { objectStore.delete(key); writtenStores.add(name); },
     };
   }
 
@@ -120,7 +122,7 @@ export async function atomicReadWrite<T>(
   }
 
   await done;
-  notifyOtherTabs();
+  announceChanges(writtenStores);
   return result;
 }
 
@@ -133,7 +135,7 @@ export async function batchPut(operations: BatchOperation[]): Promise<void> {
     transaction.objectStore(operation.store).put(operation.data);
   }
   await done;
-  notifyOtherTabs();
+  announceChanges(storeNames);
 }
 
 export const api = {

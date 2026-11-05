@@ -7,7 +7,7 @@ import RoomCard from './RoomCard';
 import AddRoomForm from './AddRoomForm';
 
 export default function RoomsView() {
-  const { rooms, loading, refresh } = useRooms();
+  const { rooms, loading } = useRooms();
   const { t } = useLocale();
   const [showForm, setShowForm] = useState(false);
 
@@ -35,11 +35,11 @@ export default function RoomsView() {
         }
       />
 
-      {showForm && <AddRoomForm onAdded={refresh} onCancel={() => setShowForm(false)} />}
+      {showForm && <AddRoomForm onCancel={() => setShowForm(false)} />}
 
       <div className="px-5 space-y-5 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
         {rooms.map(room => (
-          <RoomCard key={room.id} room={room} onUpdated={refresh} />
+          <RoomCard key={room.id} room={room} />
         ))}
       </div>
     </div>

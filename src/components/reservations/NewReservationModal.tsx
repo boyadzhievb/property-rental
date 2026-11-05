@@ -4,7 +4,6 @@ import { ZodError } from 'zod';
 import { useRooms } from '../../hooks/useRooms';
 import { useGuests } from '../../hooks/useGuests';
 import { useReservationContext } from '../../context/ReservationContext';
-import { useGuestContext } from '../../context/GuestContext';
 import { useLocale } from '../../context/LocaleContext';
 import { reservationService } from '../../services/ReservationService';
 import { guestService } from '../../services/GuestService';
@@ -108,10 +107,9 @@ function validateStayStep(form: FormData, t: TranslationKeys): FormErrors {
 }
 
 export default memo(function NewReservationModal({ onClose }: { onClose: () => void }) {
-  const { rooms, refresh: refreshRooms } = useRooms();
+  const { rooms } = useRooms();
   const { guests } = useGuests();
-  const { reservations, refresh: refreshReservations } = useReservationContext();
-  const { refresh: refreshGuests } = useGuestContext();
+  const { reservations } = useReservationContext();
   const { t } = useLocale();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -237,8 +235,6 @@ export default memo(function NewReservationModal({ onClose }: { onClose: () => v
       }
 
       await reservationService.createReservation(reservationData);
-
-      await Promise.all([refreshReservations(), refreshGuests(), refreshRooms()]);
       onClose();
     } catch (e: unknown) {
       if (e instanceof ZodError) {

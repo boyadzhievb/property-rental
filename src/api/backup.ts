@@ -9,6 +9,7 @@ import type { PaymentData } from '../schemas/PaymentSchema';
 import type { TaskData } from '../schemas/TaskSchema';
 import { BACKUP_SCHEMA_VERSION } from '../schemas/BackupSchema';
 import { getDB, waitForTransaction, ALL_STORES, ENTITY_STORES, SETTINGS_KEY, DEFAULT_SETTINGS_NAME, type PropertySettings } from './db';
+import { announceChanges } from './sync';
 
 export interface BackupPreferences {
   locale?: string;
@@ -61,8 +62,9 @@ export async function exportBackup(): Promise<BackupData> {
 }
 
 /**
- * Replace all stored records with `data` in one transaction. Callers must pass records that
- * were already validated and parsed (see BackupService.import); nothing is validated here.
+ * Replace all stored records with `data` in one transaction, then announce one change for all
+ * stores. Callers must pass records that were already validated and parsed (see
+ * BackupService.import); nothing is validated here.
  */
 export async function importBackup(data: BackupData): Promise<void> {
   const db = await getDB();
@@ -84,6 +86,7 @@ export async function importBackup(data: BackupData): Promise<void> {
   });
 
   await done;
+  announceChanges(ALL_STORES);
 
   if (data.preferences) {
     if (data.preferences.locale) localStorage.setItem('app-locale', data.preferences.locale);

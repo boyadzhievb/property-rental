@@ -1,6 +1,6 @@
 /**
  * Whole-property writes for the setup screen and Settings: demo data, first-run
- * configuration and reset. Each runs in one transaction.
+ * configuration and reset. Each runs in one transaction and announces its changes once.
  */
 import { format, addDays, subDays } from 'date-fns';
 import type { RoomData } from '../schemas/RoomSchema';
@@ -8,6 +8,7 @@ import type { GuestData } from '../schemas/GuestSchema';
 import type { ReservationData } from '../schemas/ReservationSchema';
 import type { PaymentData } from '../schemas/PaymentSchema';
 import { getDB, waitForTransaction, unconfiguredSettings, ALL_STORES, ENTITY_STORES, SETTINGS_KEY } from './db';
+import { announceChanges } from './sync';
 
 const toLocalDate = (date: Date) => format(date, 'yyyy-MM-dd');
 
@@ -58,6 +59,7 @@ export async function seedDemoData() {
   for (const payment of payments) tx.objectStore('payments').put(payment);
   tx.objectStore('settings').put({ id: SETTINGS_KEY, name: 'Villa Blanca', isConfigured: true });
   await done;
+  announceChanges(['rooms', 'guests', 'reservations', 'payments', 'settings']);
 }
 
 /** Delete every record and return the settings to the unconfigured state. */
@@ -68,6 +70,7 @@ export async function resetData() {
   for (const store of ENTITY_STORES) tx.objectStore(store).clear();
   tx.objectStore('settings').put(unconfiguredSettings());
   await done;
+  announceChanges(ALL_STORES);
 }
 
 /** Write the initial rooms and mark the property configured, in one transaction. Rooms must be validated. */
@@ -78,4 +81,5 @@ export async function configureProperty(name: string, rooms: RoomData[], currenc
   for (const room of rooms) tx.objectStore('rooms').put(room);
   tx.objectStore('settings').put({ id: SETTINGS_KEY, name, isConfigured: true, currency });
   await done;
+  announceChanges(['rooms', 'settings']);
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { type Reservation } from '../domain/Reservation';
 import { reservationService } from '../services/ReservationService';
+import { dataChangeService } from '../services/DataChangeService';
 
 export function useReservation(id?: string) {
   const [reservation, setReservation] = useState<Reservation | null>(null);
@@ -26,24 +27,23 @@ export function useReservation(id?: string) {
   }, [id]);
 
   useEffect(() => { refresh(); }, [refresh]);
+  // Changes from this tab's actions and from other tabs reload the reservation by themselves.
+  useEffect(() => dataChangeService.subscribe(['reservations'], () => { refresh(); }), [refresh]);
 
   const checkIn = useCallback(async () => {
     if (!id) return;
     await reservationService.checkIn(id);
-    await refresh();
-  }, [id, refresh]);
+  }, [id]);
 
   const checkOut = useCallback(async () => {
     if (!id) return;
     await reservationService.checkOut(id);
-    await refresh();
-  }, [id, refresh]);
+  }, [id]);
 
   const cancel = useCallback(async () => {
     if (!id) return;
     await reservationService.cancel(id);
-    await refresh();
-  }, [id, refresh]);
+  }, [id]);
 
   return { reservation, loading, error, refresh, checkIn, checkOut, cancel };
 }
