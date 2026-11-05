@@ -38,7 +38,7 @@ describe('SettingsService currency', () => {
     expect((await settingsService.getPropertySettings()).currency).toBe('CHF')
     expect((await client.api.settings.getProperty()).currency).toBeUndefined()
 
-    await client.configureProperty('Chalet', 2, 'EUR')
+    await settingsService.configureProperty('Chalet', 2, 'EUR')
     expect((await client.api.settings.getProperty()).currency).toBe('EUR')
   })
 
@@ -73,5 +73,71 @@ describe('SettingsService currency', () => {
     const result = backupService.validate({ rooms: [], settings: { name: 'Villa', currency: 'XYZ' } })
     expect(result.valid).toBe(true)
     expect(result.data?.settings).toEqual({ name: 'Villa' })
+  })
+})
+
+describe('SettingsService setup and reset', () => {
+  beforeEach(() => {
+    globalThis.indexedDB = new IDBFactory()
+    vi.resetModules()
+  })
+
+  async function load() {
+    vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-US'])
+    const client = await import('../api/client')
+    const { settingsService } = await import('../services/SettingsService')
+    return { client, settingsService }
+  }
+
+  it('configures the property with the chosen name, rooms and currency', async () => {
+    const { client, settingsService } = await load()
+
+    await settingsService.configureProperty('Chalet', 3, 'EUR')
+
+    const settings = await client.api.settings.getProperty()
+    expect(settings).toMatchObject({ name: 'Chalet', isConfigured: true, currency: 'EUR' })
+    const rooms = await client.api.rooms.getAll()
+    expect(rooms.map((room) => room.name).sort()).toEqual(['Room 1', 'Room 2', 'Room 3'])
+    expect(rooms.every((room) => room.status === 'Available')).toBe(true)
+  })
+
+  it('falls back to a default name when none is given', async () => {
+    const { client, settingsService } = await load()
+    await settingsService.configureProperty('  ', 1, 'USD')
+    expect((await client.api.settings.getProperty()).name).toBe('My Property')
+  })
+
+  it('rejects an invalid room count or currency and writes nothing', async () => {
+    const { client, settingsService } = await load()
+
+    await expect(settingsService.configureProperty('Chalet', 0, 'EUR')).rejects.toThrow()
+    await expect(settingsService.configureProperty('Chalet', 1.5, 'EUR')).rejects.toThrow()
+    await expect(settingsService.configureProperty('Chalet', 2, 'XYZ')).rejects.toThrow()
+
+    expect(await client.api.rooms.getAll()).toEqual([])
+    expect((await client.api.settings.getProperty()).isConfigured).toBe(false)
+  })
+
+  it('loads demo data and marks the property configured', async () => {
+    const { client, settingsService } = await load()
+
+    await settingsService.seedDemoData()
+
+    expect((await client.api.settings.getProperty()).isConfigured).toBe(true)
+    expect((await client.api.rooms.getAll()).length).toBeGreaterThan(0)
+    expect((await client.api.reservations.getAll()).length).toBeGreaterThan(0)
+  })
+
+  it('reset clears all data and returns to setup', async () => {
+    const { client, settingsService } = await load()
+    await settingsService.seedDemoData()
+
+    await settingsService.resetAllData()
+
+    expect(await client.api.rooms.getAll()).toEqual([])
+    expect(await client.api.guests.getAll()).toEqual([])
+    expect(await client.api.reservations.getAll()).toEqual([])
+    expect(await client.api.payments.getAll()).toEqual([])
+    expect((await client.api.settings.getProperty())).toMatchObject({ name: 'My Property', isConfigured: false })
   })
 })

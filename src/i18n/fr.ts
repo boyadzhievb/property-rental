@@ -173,6 +173,7 @@ const fr: TranslationKeys = {
   dark: 'Sombre',
   system: 'Système',
   failedToExport: "Échec de l'export de la sauvegarde",
+  resetExportFailed: "Échec de l'export de la sauvegarde. Réinitialisation annulée.",
   backupSavedToDevice: 'Sauvegarde enregistrée dans Documents :',
   fileMustBeJson: 'Erreur : le fichier doit être un .json',
   fileNotValidJson: "Erreur : le fichier n'est pas un JSON valide",

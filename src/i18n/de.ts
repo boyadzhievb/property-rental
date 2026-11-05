@@ -173,6 +173,7 @@ const de: TranslationKeys = {
   dark: 'Dunkel',
   system: 'System',
   failedToExport: 'Backup-Export fehlgeschlagen',
+  resetExportFailed: 'Backup-Export fehlgeschlagen. Zurücksetzen abgebrochen.',
   backupSavedToDevice: 'Backup in Dokumente gespeichert:',
   fileMustBeJson: 'Fehler: Datei muss eine .json-Datei sein',
   fileNotValidJson: 'Fehler: Datei ist kein gültiges JSON',

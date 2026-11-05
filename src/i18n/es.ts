@@ -182,6 +182,7 @@ const es = {
   dark: 'Oscuro',
   system: 'Sistema',
   failedToExport: 'Error al exportar la copia de seguridad',
+  resetExportFailed: 'Error al exportar la copia de seguridad. Restablecimiento cancelado.',
   backupSavedToDevice: 'Copia guardada en Documentos:',
   fileMustBeJson: 'Error: el archivo debe ser .json',
   fileNotValidJson: 'Error: el archivo no es un JSON válido',

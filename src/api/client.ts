@@ -307,18 +307,12 @@ export async function resetData() {
   });
 }
 
-export async function configureProperty(name: string, roomCount: number, currency?: string) {
+/** Write the initial rooms and mark the property configured, in one transaction. Rooms must be validated. */
+export async function configureProperty(name: string, rooms: Room[], currency: string) {
   const db = await getDB();
-  const rooms: Room[] = Array.from({ length: roomCount }).map((_, i) => ({
-    id: `room-${i + 1}`,
-    name: `Room ${i + 1}`,
-    status: 'Available' as Room['status'],
-    pricePerNight: 100,
-    maxGuests: 2,
-  }));
   const tx = db.transaction(['rooms', 'settings'], 'readwrite');
   for (const room of rooms) tx.objectStore('rooms').put(room);
-  tx.objectStore('settings').put({ id: 'property', name: name || 'My Property', isConfigured: true, ...(currency ? { currency } : {}) });
+  tx.objectStore('settings').put({ id: 'property', name, isConfigured: true, currency });
   await new Promise<void>((resolve, reject) => {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);

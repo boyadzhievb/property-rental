@@ -173,6 +173,7 @@ const bg: TranslationKeys = {
   dark: 'Тъмна',
   system: 'Системна',
   failedToExport: 'Неуспешен експорт на резервно копие',
+  resetExportFailed: 'Неуспешен експорт на резервно копие. Нулирането е прекратено.',
   backupSavedToDevice: 'Копието е запазено в Документи:',
   fileMustBeJson: 'Грешка: файлът трябва да е .json',
   fileNotValidJson: 'Грешка: файлът не е валиден JSON',

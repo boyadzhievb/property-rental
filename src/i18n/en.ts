@@ -182,6 +182,7 @@ const en = {
   dark: 'Dark',
   system: 'System',
   failedToExport: 'Failed to export backup',
+  resetExportFailed: 'Failed to export backup. Reset aborted.',
   backupSavedToDevice: 'Backup saved to Documents:',
   fileMustBeJson: 'Error: file must be a .json file',
   fileNotValidJson: 'Error: file is not valid JSON',

@@ -202,7 +202,8 @@ Each fix starts with a failing test.
 
 - [ ] Single source of truth for types — derive from Zod (`z.infer`); remove duplicate interfaces in `client.ts` and `domain/*Data`.
 - [ ] Split `src/api/client.ts` (536 lines) into `db.ts` (open/migrations), `seed.ts`, `backup.ts`, `crud.ts`.
-- [ ] Remove the `PropertyContext` → `api/client` layer violation — route through a `PropertyService` / `BackupService`.
+- [x] Remove the `PropertyContext` → `api/client` layer violation — route through a `PropertyService` / `BackupService`.
+  - Done 2026-11-05: setup, demo seed and reset go through `SettingsService` → `SettingsRepository`. Setup rooms are built in the service and validated with `RoomSchema`; the room count and currency are checked first. The reset-abort message is translated (`resetExportFailed`). `npm run lint` is clean.
 - [ ] Decide the context pattern: contexts expose actions (per HLD) vs components calling services directly (current practice in `TodayView`, etc.). Implement one, update `HLD.md`.
 - [ ] Move balance/paid calculations out of components (`TodayView.tsx:57`, `CalendarView`, `ReportsView`) into domain/`PaymentService`.
 - [ ] Store money as integer cents (DB migration v6) to remove float rounding patches.
@@ -247,8 +248,8 @@ Each fix starts with a failing test.
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 8 | ✅ Complete |
 | 2 | MS17 Error Handling & i18n Leaks | 7 | 7 | ✅ Complete |
-| 3 | MS18 Structure & Enforcement | 8 | 0 | ⬜ Not started |
+| 3 | MS18 Structure & Enforcement | 8 | 1 | 🟨 In progress |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **68** | **48** | 🟨 71% complete |
+| | **Total** | **68** | **49** | 🟨 72% complete |

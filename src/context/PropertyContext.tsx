@@ -1,8 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
-import { seedDemoData, configureProperty, resetData as resetDataDb } from '../api/client';
 import { backupService, type BackupData } from '../services/BackupService';
 import { useLocale } from './LocaleContext';
-import { settingsService } from '../services/SettingsService';
+import { settingsService, DEFAULT_PROPERTY_NAME } from '../services/SettingsService';
 import type { CurrencyCode } from '../domain/currency';
 import { errorMessage } from '../i18n/errorMessage';
 
@@ -78,9 +77,9 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
 
   const configureApp = useCallback(async (name: string, roomCount: number, chosenCurrency: CurrencyCode) => {
     try {
-      await configureProperty(name, roomCount, chosenCurrency);
+      const savedName = await settingsService.configureProperty(name, roomCount, chosenCurrency);
       setCurrency(chosenCurrency);
-      setPropertyName(name || 'My Property');
+      setPropertyName(savedName);
       setIsConfigured(true);
     } catch (e: unknown) {
       console.error(e);
@@ -90,7 +89,7 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
 
   const seedData = useCallback(async () => {
     try {
-      await seedDemoData();
+      await settingsService.seedDemoData();
       setIsConfigured(true);
       await refreshSettings();
     } catch (e: unknown) {
@@ -115,8 +114,9 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     let backup: BackupData;
     try {
       backup = await backupService.export();
-    } catch {
-      setError('Failed to export backup. Reset aborted.');
+    } catch (e: unknown) {
+      console.error(e);
+      setError(t.resetExportFailed);
       return;
     }
 
@@ -135,8 +135,8 @@ export function PropertyProvider({ children }: { children: ReactNode }) {
     if (!confirmed) return;
 
     try {
-      await resetDataDb();
-      setPropertyName('My Property');
+      await settingsService.resetAllData();
+      setPropertyName(DEFAULT_PROPERTY_NAME);
       setCurrency(settingsService.detectCurrency());
       setIsConfigured(false);
     } catch (e: unknown) {
