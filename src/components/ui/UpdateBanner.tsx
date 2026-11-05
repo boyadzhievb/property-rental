@@ -1,6 +1,7 @@
 import { RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useLocale } from '../../context/LocaleContext';
+import { UPDATE_AVAILABLE_EVENT, applyUpdate } from '../../pwa';
 
 export default function UpdateBanner() {
   const { t } = useLocale();
@@ -8,8 +9,8 @@ export default function UpdateBanner() {
 
   useEffect(() => {
     const handler = () => setUpdateAvailable(true);
-    window.addEventListener('sw-updated', handler);
-    return () => window.removeEventListener('sw-updated', handler);
+    window.addEventListener(UPDATE_AVAILABLE_EVENT, handler);
+    return () => window.removeEventListener(UPDATE_AVAILABLE_EVENT, handler);
   }, []);
 
   if (!updateAvailable) return null;
@@ -19,7 +20,7 @@ export default function UpdateBanner() {
       <RefreshCw size={16} className="shrink-0 text-ios-blue" />
       <p className="flex-1 text-sm text-ios-text">{t.newVersionAvailable}</p>
       <button
-        onClick={() => window.location.reload()}
+        onClick={applyUpdate}
         className="shrink-0 rounded-lg bg-ios-blue px-3 py-1.5 text-xs font-semibold text-white active:scale-95 transition-transform focus-visible:ring-2 focus-visible:ring-ios-blue focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {t.refresh}

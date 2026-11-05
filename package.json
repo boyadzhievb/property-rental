@@ -14,7 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:smoke": "playwright test --project=chromium e2e/setup-and-navigation.spec.ts e2e/reservation-flow.spec.ts e2e/checkin-checkout.spec.ts e2e/payments.spec.ts e2e/tasks.spec.ts e2e/multi-tab.spec.ts",
+    "test:e2e:smoke": "playwright test --project=chromium e2e/setup-and-navigation.spec.ts e2e/reservation-flow.spec.ts e2e/checkin-checkout.spec.ts e2e/payments.spec.ts e2e/tasks.spec.ts e2e/multi-tab.spec.ts e2e/offline.spec.ts",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "tsc --noEmit",
@@ -60,6 +60,7 @@
     "tailwindcss": "^4.0.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
+    "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.0.5"
   }
 }

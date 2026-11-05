@@ -101,7 +101,7 @@ grep -rn 'backdrop-blur\|animate-\|transition-all' src/components/ --include="*.
 
 ```bash
 ls -lh public/
-ls -lh icons/
+ls -lh public/icons/
 ls -lh assets/
 ```
 
