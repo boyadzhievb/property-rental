@@ -225,6 +225,7 @@ Each fix starts with a failing test.
 
 - [x] Deploy workflow must depend on CI passing; add `npm run typecheck` to deploy.
   - Done 2026-11-05: deploy runs on `workflow_run` after CI succeeds for a push to master and builds CI's exact commit (`head_sha`); manual `workflow_dispatch` still works and repeats typecheck, lint and unit tests.
+  - Follow-up 2026-11-05: GitHub skipped the push workflows for `403cf5e`, so CI got a manual trigger (`gh workflow run CI --ref master`); a successful manual CI run on master also deploys.
 - [x] Restore an E2E smoke job in CI (Chromium, critical flows) — removed in `51ab0c4`.
   - Done 2026-11-05: `npm run test:e2e:smoke` (setup/navigation, booking, check-in/out, payments, tasks, multi-tab — 22 tests) against the production build (`E2E_SERVER=preview`), 2 workers, 15-minute timeout, report uploaded on failure. About 20 s locally vs. 40+ min for the old full-suite job.
 - [x] Pin GitHub Actions by commit SHA; pin `aquasecurity/trivy-action` to a release (currently `@master`) and decide whether HIGH/CRITICAL should fail (`exit-code: 0`).

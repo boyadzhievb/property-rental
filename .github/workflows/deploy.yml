@@ -1,7 +1,8 @@
 name: Build and Deploy PWA to GitHub Pages
 
-# Deploys only after CI succeeded for a push to master, and builds exactly the commit CI
-# checked. Manual runs (workflow_dispatch) skip that gate, so the build job repeats the checks.
+# Deploys only after CI succeeded on master (for a push, or a manual CI run), and builds exactly
+# the commit CI checked. Manual deploys (workflow_dispatch) skip that gate, so the build job
+# repeats the checks.
 on:
   workflow_run:
     workflows: [CI]
@@ -20,7 +21,7 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && contains(fromJSON('["push", "workflow_dispatch"]'), github.event.workflow_run.event))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

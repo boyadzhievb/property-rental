@@ -5,6 +5,8 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  # Manual run (Actions tab or `gh workflow run CI --ref master`), e.g. when GitHub missed a push.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
