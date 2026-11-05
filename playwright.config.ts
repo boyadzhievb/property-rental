@@ -26,7 +26,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
+    // CI runs against the production build (`E2E_SERVER=preview`, after `npm run build`): pages
+    // load faster than from the dev server and it is what ships.
+    command: process.env.E2E_SERVER === 'preview' ? 'npm run preview -- --strictPort' : 'npm run dev',
     url: 'http://localhost:8443',
     reuseExistingServer: !process.env.CI,
   },

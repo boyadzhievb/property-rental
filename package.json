@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test --project=chromium e2e/setup-and-navigation.spec.ts e2e/reservation-flow.spec.ts e2e/checkin-checkout.spec.ts e2e/payments.spec.ts e2e/tasks.spec.ts e2e/multi-tab.spec.ts",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "tsc --noEmit",

@@ -26,6 +26,7 @@ Before implementing or changing any state transition or multi-step action (check
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | oxlint: React hooks rules and layer boundaries (`.oxlintrc.json`) |
 | `npm run test:e2e` | Playwright end-to-end tests |
+| `npm run test:e2e:smoke` | Critical-flow E2E subset, Chromium only (what CI runs; set `E2E_SERVER=preview` after `npm run build` to test the production build) |
 | `npm run build` | Production build to `dist/` |
 | `./scripts/build-mobile.sh [android\|ios\|all]` | Bump native versions, cap sync, produce AAB/archive |
 

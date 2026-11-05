@@ -223,10 +223,13 @@ Each fix starts with a failing test.
 
 ### MS19: CI/CD
 
-- [ ] Deploy workflow must depend on CI passing; add `npm run typecheck` to deploy.
-- [ ] Restore an E2E smoke job in CI (Chromium, critical flows) — removed in `51ab0c4`.
-- [ ] Pin GitHub Actions by commit SHA; pin `aquasecurity/trivy-action` to a release (currently `@master`) and decide whether HIGH/CRITICAL should fail (`exit-code: 0`).
-- [ ] Raise `npm audit` level from `critical` to `high`.
+- [x] Deploy workflow must depend on CI passing; add `npm run typecheck` to deploy.
+  - Done 2026-11-05: deploy runs on `workflow_run` after CI succeeds for a push to master and builds CI's exact commit (`head_sha`); manual `workflow_dispatch` still works and repeats typecheck, lint and unit tests.
+- [x] Restore an E2E smoke job in CI (Chromium, critical flows) — removed in `51ab0c4`.
+  - Done 2026-11-05: `npm run test:e2e:smoke` (setup/navigation, booking, check-in/out, payments, tasks, multi-tab — 22 tests) against the production build (`E2E_SERVER=preview`), 2 workers, 15-minute timeout, report uploaded on failure. About 20 s locally vs. 40+ min for the old full-suite job.
+- [x] Pin GitHub Actions by commit SHA; pin `aquasecurity/trivy-action` to a release (currently `@master`) and decide whether HIGH/CRITICAL should fail (`exit-code: 0`).
+  - Done 2026-11-05: every action pinned to a verified release commit with the tag in a comment (Dependabot `github-actions` keeps them current); Trivy at v0.36.0. Decision (owner): CRITICAL fails the Trivy job, HIGH is reported to the Security tab only; exceptions go in `.trivyignore` with a reason.
+- [x] Raise `npm audit` level from `critical` to `high`. — done 2026-11-05 (production dependencies: 0 findings).
 
 ### MS20: PWA & Mobile Build
 
@@ -255,7 +258,7 @@ Each fix starts with a failing test.
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 8 | ✅ Complete |
 | 2 | MS17 Error Handling & i18n Leaks | 7 | 7 | ✅ Complete |
 | 3 | MS18 Structure & Enforcement | 8 | 8 | ✅ Complete |
-| 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
+| 4 | MS19 CI/CD | 4 | 4 | ✅ Complete |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **68** | **56** | 🟨 82% complete |
+| | **Total** | **68** | **60** | 🟨 88% complete |
