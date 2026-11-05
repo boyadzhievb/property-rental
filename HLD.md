@@ -37,7 +37,7 @@ src/
     layout/        PageHeader, TabBar
     ui/            Reusable primitives (StatCard, ErrorBanner, SettingsGroup)
   i18n/            Translations (en, bg, de, el, fr, es)
-  api/             DB client, seed data, backup/restore
+  api/             Data layer behind client.ts: db (connection, migrations), crud, seed, backup, sync (cross-tab)
 e2e/               Playwright tests (setup, navigation, reservations, rooms, seed)
 ```
 

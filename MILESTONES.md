@@ -202,7 +202,8 @@ Each fix starts with a failing test.
 
 - [x] Single source of truth for types — derive from Zod (`z.infer`); remove duplicate interfaces in `client.ts` and `domain/*Data`.
   - Done 2026-11-05: each schema exports `RoomData`/`GuestData`/`ReservationData`/`PaymentData`/`TaskData` (plus status, recurrence, category, template and method types) via `z.infer`; `domain/*` re-exports them and `client.ts` uses them, so the duplicate interfaces are gone. `RoomStatus` is a const object instead of an enum, so `'Available'` and `RoomStatus.AVAILABLE` are the same type; the casts in `RoomRepository` went away. `PropertySettings` stays in `client.ts` (no schema yet).
-- [ ] Split `src/api/client.ts` (536 lines) into `db.ts` (open/migrations), `seed.ts`, `backup.ts`, `crud.ts`.
+- [x] Split `src/api/client.ts` (536 lines) into `db.ts` (open/migrations), `seed.ts`, `backup.ts`, `crud.ts`.
+  - Done 2026-11-05: `client.ts` is now a 13-line facade that re-exports the four modules, so repositories, services and test mocks are unchanged. Lint blocks importing the internal modules from outside `src/api/`. Repeated store lists and default settings became `ALL_STORES`/`ENTITY_STORES`/`unconfiguredSettings()`; seed, reset, configure and backup now use `waitForTransaction` (also rejects on abort), and backup export rejects on a read error instead of hanging.
 - [x] Remove the `PropertyContext` → `api/client` layer violation — route through a `PropertyService` / `BackupService`.
   - Done 2026-11-05: setup, demo seed and reset go through `SettingsService` → `SettingsRepository`. Setup rooms are built in the service and validated with `RoomSchema`; the room count and currency are checked first. The reset-abort message is translated (`resetExportFailed`). `npm run lint` is clean.
 - [ ] Decide the context pattern: contexts expose actions (per HLD) vs components calling services directly (current practice in `TodayView`, etc.). Implement one, update `HLD.md`.
@@ -249,8 +250,8 @@ Each fix starts with a failing test.
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 8 | ✅ Complete |
 | 2 | MS17 Error Handling & i18n Leaks | 7 | 7 | ✅ Complete |
-| 3 | MS18 Structure & Enforcement | 8 | 3 | 🟨 In progress |
+| 3 | MS18 Structure & Enforcement | 8 | 4 | 🟨 In progress |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **68** | **51** | 🟨 75% complete |
+| | **Total** | **68** | **52** | 🟨 76% complete |

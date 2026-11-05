@@ -23,7 +23,7 @@
         "no-restricted-imports": ["error", {
           "patterns": [
             { "group": ["**/repositories/**"], "message": "UI, contexts and hooks go through services, never repositories (CLAUDE.md layers)." },
-            { "group": ["**/api/client"], "message": "UI, contexts and hooks go through services, never api/client (CLAUDE.md layers)." }
+            { "group": ["**/api/client", "**/api/db", "**/api/crud", "**/api/seed", "**/api/backup"], "message": "UI, contexts and hooks go through services, never the data layer (CLAUDE.md layers)." }
           ]
         }]
       }
@@ -33,7 +33,8 @@
       "rules": {
         "no-restricted-imports": ["error", {
           "patterns": [
-            { "group": ["**/components/**", "**/context/**", "**/hooks/**"], "message": "Services never import UI, contexts or hooks (CLAUDE.md layers)." }
+            { "group": ["**/components/**", "**/context/**", "**/hooks/**"], "message": "Services never import UI, contexts or hooks (CLAUDE.md layers)." },
+            { "group": ["**/api/db", "**/api/crud", "**/api/seed", "**/api/backup"], "message": "Import the data layer through api/client, not its internal modules." }
           ]
         }]
       }
@@ -43,7 +44,8 @@
       "rules": {
         "no-restricted-imports": ["error", {
           "patterns": [
-            { "group": ["**/services/**", "**/components/**", "**/context/**", "**/hooks/**"], "message": "Repositories only talk to api/client." }
+            { "group": ["**/services/**", "**/components/**", "**/context/**", "**/hooks/**"], "message": "Repositories only talk to api/client." },
+            { "group": ["**/api/db", "**/api/crud", "**/api/seed", "**/api/backup"], "message": "Import the data layer through api/client, not its internal modules." }
           ]
         }]
       }
