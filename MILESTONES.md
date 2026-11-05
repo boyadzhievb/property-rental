@@ -237,8 +237,10 @@ Each fix starts with a failing test.
   - Done 2026-11-05: `vite-plugin-pwa` 2.0 generates `sw.js` with a hashed precache of the app shell (screenshots excluded), `index.html` navigation fallback (landing/privacy/support excluded) and outdated-cache cleanup. `registerType: 'prompt'` keeps the update banner: a new version waits until Refresh (`src/pwa.ts`). Registered on the web only — native apps unregister any worker left by older builds. The old `property-rental-v2` cache is deleted. Tests: `src/test/pwa.test.ts`, `e2e/offline.spec.ts` (offline reload, standalone pages, manifest icons; part of the CI smoke job).
 - [x] Manifest icons — `../icons/` resolves outside scope on GitHub Pages; `.webp` files contain PNG data; `index.html` links a non-existent `icons/icon.svg`.
   - Done 2026-11-05: icons moved to `public/icons/` as `.png` (they were never copied into the build, so the deployed manifest had no icons); manifest generated with relative paths; `index.html` links real PNGs. Also fixed: `landing.html` used absolute `/screenshots/…`, `/icons/…`, `/privacy-policy.html` links that 404 under `/property-rental/` (verified on the live site).
-- [ ] Document the bundle-ID mismatch — Android `com.boyadboz.propertyrental` vs iOS/`capacitor.config.ts` `com.boyadboz.property-rental` (cannot change post-publish).
-- [ ] `scripts/build-mobile.sh` — bump versions only after a successful build; stop `echo` output polluting the captured version code.
+- [x] Document the bundle-ID mismatch — Android `com.boyadboz.propertyrental` vs iOS/`capacitor.config.ts` `com.boyadboz.property-rental` (cannot change post-publish).
+  - Done 2026-11-05: README → Mobile explains why they differ, where each is set, and not to align them; comment at `appId` in `capacitor.config.ts`.
+- [x] `scripts/build-mobile.sh` — bump versions only after a successful build; stop `echo` output polluting the captured version code.
+  - Done 2026-11-05: native tools read the number from the files while building, so each file is backed up before its bump and restored on any exit before that platform's build succeeded (`all`: a finished Android build keeps its bump if iOS fails). Progress goes to stderr, so the captured code is just the number. Stale AAB/archive removed before building; native builds run in subshells. Verified with stubbed `npm`/`npx`/`gradlew`/`xcodebuild` (success, Gradle/sync/Xcode failure, missing output). README → Release builds.
 
 ### MS21: Final Validation (run after each milestone)
 
@@ -261,6 +263,6 @@ Each fix starts with a failing test.
 | 2 | MS17 Error Handling & i18n Leaks | 7 | 7 | ✅ Complete |
 | 3 | MS18 Structure & Enforcement | 8 | 8 | ✅ Complete |
 | 4 | MS19 CI/CD | 4 | 4 | ✅ Complete |
-| 4 | MS20 PWA & Mobile Build | 4 | 2 | 🟨 In progress |
+| 4 | MS20 PWA & Mobile Build | 4 | 4 | ✅ Complete |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **68** | **62** | 🟨 91% complete |
+| | **Total** | **68** | **64** | 🟨 94% complete |

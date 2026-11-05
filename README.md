@@ -148,6 +148,16 @@ App IDs (fixed — both apps are published):
 - Android: `com.boyadboz.propertyrental`
 - iOS: `com.boyadboz.property-rental`
 
+They differ on purpose and must stay that way: Android package names cannot contain `-`, and a published app's ID can never change (a new ID is a new app with no users or reviews). `capacitor.config.ts` holds the iOS form (`appId`); Android's ID comes from `applicationId` in `android/app/build.gradle`, which `cap sync` does not touch. Do not "align" either one.
+
+### Release builds
+
+```bash
+./scripts/build-mobile.sh [android|ios|all]   # default: all
+```
+
+Builds the web app, bumps the native build number (Android `versionCode`, iOS `CURRENT_PROJECT_VERSION`; the version name comes from `package.json`), runs `cap sync` and produces `android/app/build/outputs/bundle/release/app-release.aab` and `ios/App/build/App.xcarchive`. If a platform's build fails, its version bump is undone, so a failed build never uses up a number. With `all`, a successful Android build keeps its bump even if iOS fails afterwards.
+
 ### App Icons
 
 App icons are generated from `assets/icon-only.png` using:
