@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.2.0 — 2026-11-05
+
+> **Play Store:** Money amounts are now stored more precisely, the app updates more smoothly, and several small bugs are fixed.
+
+### Features
+- Store money as integer cents (pricePerNightCents / priceCents / amountCents); IndexedDB schema version 6 converts existing records on upgrade
+- Backup file format 2 stores cents; format-1 backups are converted on import
+- Replace the hand-written service worker with vite-plugin-pwa (Workbox precache, update banner prompts for refresh); registered on the web only, native apps unregister old workers; PWA icons moved to public/icons/*.png
+- Contexts reload automatically when their store changes, in the same tab and in other tabs
+
+### Bug Fixes
+- Guests payment form showed an unrounded balance with a hardcoded "$"
+- Pressing Enter in the property-name field reopened the editor
+- Landing page links returned 404 under /property-rental/
+
+### Refactoring
+- Centralise balance calculations in src/domain/balance.ts
+- Split api/client.ts into db, crud, seed and backup modules; derive entity types from Zod schemas; route setup, demo seed and reset through SettingsService
+
+### CI
+- Gate deploys on CI, restore the E2E smoke job, pin actions by SHA, fail Trivy on CRITICAL findings, allow manual CI runs
+
 ## 1.1.26 — 2026-10-19
 
 ### Bug Fixes

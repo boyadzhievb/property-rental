@@ -1,7 +1,7 @@
 {
   "name": "property-rental",
   "private": true,
-  "version": "1.1.26",
+  "version": "1.2.0",
   "type": "module",
   "engines": {
     "node": ">=22"
