@@ -3,7 +3,7 @@ import { Property } from '../Property'
 import { Room, RoomStatus } from '../Room'
 import { Reservation } from '../Reservation'
 
-function makeRoom(id: string, status = RoomStatus.AVAILABLE) {
+function makeRoom(id: string, status: RoomStatus = RoomStatus.AVAILABLE) {
   return new Room({ id, name: `Room ${id}`, status, pricePerNight: 100, maxGuests: 2 })
 }
 

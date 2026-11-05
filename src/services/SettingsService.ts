@@ -2,7 +2,7 @@ import { settingsRepository } from '../repositories/SettingsRepository';
 import { detectCurrency, isSupportedCurrency, type CurrencyCode } from '../domain/currency';
 import { DomainError } from '../domain/errors';
 import { RoomStatus } from '../domain/Room';
-import { RoomSchema, type RoomInput } from '../schemas/RoomSchema';
+import { RoomSchema, type RoomData } from '../schemas/RoomSchema';
 
 /** Name used when the owner leaves the property name empty, and after a reset. */
 export const DEFAULT_PROPERTY_NAME = 'My Property';
@@ -61,7 +61,7 @@ export class SettingsService {
     if (!isSupportedCurrency(currency)) throw new DomainError('unsupportedCurrency', { currency });
     if (!Number.isInteger(roomCount) || roomCount < 1) throw new RangeError(`Invalid room count: ${roomCount}`);
     const propertyName = name.trim() || DEFAULT_PROPERTY_NAME;
-    const rooms: RoomInput[] = Array.from({ length: roomCount }, (_, index) => RoomSchema.parse({
+    const rooms: RoomData[] = Array.from({ length: roomCount }, (_, index) => RoomSchema.parse({
       id: `room-${index + 1}`,
       name: `Room ${index + 1}`,
       status: RoomStatus.AVAILABLE,

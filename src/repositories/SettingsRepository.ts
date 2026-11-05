@@ -1,4 +1,5 @@
-import { api, configureProperty, seedDemoData, resetData, type PropertySettings, type Room } from '../api/client';
+import { api, configureProperty, seedDemoData, resetData, type PropertySettings} from '../api/client';
+import type { RoomData } from '../domain/Room';
 
 export class SettingsRepository {
   async getProperty(): Promise<PropertySettings> {
@@ -10,7 +11,7 @@ export class SettingsRepository {
   }
 
   /** Save validated rooms and the configured settings atomically. */
-  async configure(name: string, rooms: Room[], currency: string): Promise<void> {
+  async configure(name: string, rooms: RoomData[], currency: string): Promise<void> {
     return configureProperty(name, rooms, currency);
   }
 

@@ -9,4 +9,5 @@ export const GuestSchema = z.object({
   notes: z.string(),
 });
 
-export type GuestInput = z.infer<typeof GuestSchema>;
+/** A guest as stored and validated. Single source of truth for the guest shape. */
+export type GuestData = z.infer<typeof GuestSchema>;

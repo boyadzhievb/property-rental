@@ -3,7 +3,7 @@ import { PaymentSchema } from '../schemas/PaymentSchema';
 import { roundToCents } from '../domain/money';
 import { paymentRepository } from '../repositories/PaymentRepository';
 import { atomicReadWrite } from '../api/client';
-import type { Reservation as ReservationRecord, Payment as PaymentRecord } from '../api/client';
+import type { ReservationData } from '../domain/Reservation';
 import { DomainError } from '../domain/errors';
 
 export class PaymentService {
@@ -23,7 +23,7 @@ export class PaymentService {
     const payment = await atomicReadWrite<Payment>(
       ['reservations', 'payments'],
       async (stores) => {
-        const reservation = await stores.reservations.get<ReservationRecord>(validated.reservationId);
+        const reservation = await stores.reservations.get<ReservationData>(validated.reservationId);
         if (!reservation) {
           throw new DomainError('reservationNotFound');
         }
@@ -31,7 +31,7 @@ export class PaymentService {
           throw new DomainError('paymentOnCancelled');
         }
 
-        const existing = await stores.payments.getAllByIndex<PaymentRecord>(
+        const existing = await stores.payments.getAllByIndex<PaymentData>(
           'reservationId', validated.reservationId
         );
         const totalPaid = Math.round(existing.reduce((sum, record) => sum + record.amount, 0) * 100) / 100;

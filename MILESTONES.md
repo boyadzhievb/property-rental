@@ -200,7 +200,8 @@ Each fix starts with a failing test.
 
 ### MS18: Structure & Enforcement
 
-- [ ] Single source of truth for types — derive from Zod (`z.infer`); remove duplicate interfaces in `client.ts` and `domain/*Data`.
+- [x] Single source of truth for types — derive from Zod (`z.infer`); remove duplicate interfaces in `client.ts` and `domain/*Data`.
+  - Done 2026-11-05: each schema exports `RoomData`/`GuestData`/`ReservationData`/`PaymentData`/`TaskData` (plus status, recurrence, category, template and method types) via `z.infer`; `domain/*` re-exports them and `client.ts` uses them, so the duplicate interfaces are gone. `RoomStatus` is a const object instead of an enum, so `'Available'` and `RoomStatus.AVAILABLE` are the same type; the casts in `RoomRepository` went away. `PropertySettings` stays in `client.ts` (no schema yet).
 - [ ] Split `src/api/client.ts` (536 lines) into `db.ts` (open/migrations), `seed.ts`, `backup.ts`, `crud.ts`.
 - [x] Remove the `PropertyContext` → `api/client` layer violation — route through a `PropertyService` / `BackupService`.
   - Done 2026-11-05: setup, demo seed and reset go through `SettingsService` → `SettingsRepository`. Setup rooms are built in the service and validated with `RoomSchema`; the room count and currency are checked first. The reset-abort message is translated (`resetExportFailed`). `npm run lint` is clean.
@@ -248,8 +249,8 @@ Each fix starts with a failing test.
 | 1 | MS15 Transactional Integrity | 8 | 8 | ✅ Complete |
 | 2 | MS16 Domain & Scheduling Bugs | 8 | 8 | ✅ Complete |
 | 2 | MS17 Error Handling & i18n Leaks | 7 | 7 | ✅ Complete |
-| 3 | MS18 Structure & Enforcement | 8 | 2 | 🟨 In progress |
+| 3 | MS18 Structure & Enforcement | 8 | 3 | 🟨 In progress |
 | 4 | MS19 CI/CD | 4 | 0 | ⬜ Not started |
 | 4 | MS20 PWA & Mobile Build | 4 | 0 | ⬜ Not started |
 | — | MS21 Final Validation | 4 | 0 | ⬜ Not started |
-| | **Total** | **68** | **50** | 🟨 74% complete |
+| | **Total** | **68** | **51** | 🟨 75% complete |

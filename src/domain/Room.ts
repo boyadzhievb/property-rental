@@ -1,21 +1,20 @@
 import { DomainError } from './errors';
 
-export enum RoomStatus {
-  AVAILABLE = 'Available',
-  OCCUPIED = 'Occupied',
-  CLEANING = 'Cleaning',
-  MAINTENANCE = 'Maintenance',
-}
+import type { RoomData } from '../schemas/RoomSchema';
+
+export type { RoomData };
+
+/** Room states. A const object (not an enum) so plain strings such as `'Available'` also type-check. */
+export const RoomStatus = {
+  AVAILABLE: 'Available',
+  OCCUPIED: 'Occupied',
+  CLEANING: 'Cleaning',
+  MAINTENANCE: 'Maintenance',
+} as const;
+
+export type RoomStatus = (typeof RoomStatus)[keyof typeof RoomStatus];
 
 export type RoomStatusAction = 'clean' | 'maintenance' | 'available';
-
-export interface RoomData {
-  id: string;
-  name: string;
-  status: RoomStatus;
-  pricePerNight: number;
-  maxGuests: number;
-}
 
 export class Room {
   readonly id: string;

@@ -1,56 +1,8 @@
-
-export interface Room {
-  id: string;
-  name: string;
-  status: 'Available' | 'Occupied' | 'Cleaning' | 'Maintenance';
-  pricePerNight: number;
-  maxGuests: number;
-}
-
-export interface Guest {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  previousStays: number;
-  notes: string;
-}
-
-export interface Reservation {
-  id: string;
-  roomId: string;
-  guestId: string;
-  arrivalDate: string;
-  departureDate: string;
-  guestsCount: number;
-  status: 'Confirmed' | 'Checked In' | 'Checked Out' | 'Cancelled';
-  price: number;
-  notes?: string;
-  recurrence?: { pattern: 'weekly' | 'biweekly' | 'monthly'; endDate: string };
-  seriesId?: string;
-}
-
-export interface Payment {
-  id: string;
-  reservationId: string;
-  amount: number;
-  date: string;
-  method: 'cash' | 'card' | 'transfer';
-  note: string;
-}
-
-export interface Task {
-  id: string;
-  title: string;
-  category: 'cleaning' | 'preparation' | 'payment' | 'communication' | 'custom';
-  completed: boolean;
-  date: string;
-  linkedRoomId?: string;
-  linkedReservationId?: string;
-  linkedGuestId?: string;
-  auto: boolean;
-  template?: { kind: 'clean' | 'prepare' | 'checkPayment'; roomName?: string; guestName?: string };
-}
+import type { RoomData } from '../schemas/RoomSchema';
+import type { GuestData } from '../schemas/GuestSchema';
+import type { ReservationData } from '../schemas/ReservationSchema';
+import type { PaymentData } from '../schemas/PaymentSchema';
+import type { TaskData } from '../schemas/TaskSchema';
 
 export interface PropertySettings {
   id: string;
@@ -72,7 +24,7 @@ const fmt = (d: Date) => fmtDate(d, 'yyyy-MM-dd');
 function getSeedData() {
   const today = new Date();
 
-  const rooms: Room[] = [
+  const rooms: RoomData[] = [
     { id: '101', name: 'Suite 1', status: 'Occupied', pricePerNight: 250, maxGuests: 4 },
     { id: '102', name: 'Ocean View', status: 'Available', pricePerNight: 200, maxGuests: 2 },
     { id: '103', name: 'Standard Room', status: 'Cleaning', pricePerNight: 150, maxGuests: 2 },
@@ -80,7 +32,7 @@ function getSeedData() {
     { id: '105', name: 'Penthouse', status: 'Available', pricePerNight: 400, maxGuests: 4 },
   ];
 
-  const guests: Guest[] = [
+  const guests: GuestData[] = [
     { id: 'g1', name: 'John Smith', phone: '+1 555-0100', email: 'john@example.com', previousStays: 2, notes: 'Prefers extra pillows.' },
     { id: 'g2', name: 'Mary Brown', phone: '+1 555-0101', email: 'mary@example.com', previousStays: 0, notes: 'Allergic to feathers.' },
     { id: 'g3', name: 'Peter Jones', phone: '+1 555-0102', email: 'peter@example.com', previousStays: 5, notes: 'VIP Guest.' },
@@ -88,7 +40,7 @@ function getSeedData() {
     { id: 'g5', name: 'Carlos Rivera', phone: '+34 612-345-678', email: 'carlos@example.com', previousStays: 0, notes: 'Late check-in expected.' },
   ];
 
-  const reservations: Reservation[] = [
+  const reservations: ReservationData[] = [
     { id: 'r1', roomId: '101', guestId: 'g1', arrivalDate: fmt(subDays(today, 1)), departureDate: fmt(addDays(today, 2)), guestsCount: 2, status: 'Checked In', price: 750 },
     { id: 'r2', roomId: '104', guestId: 'g2', arrivalDate: fmt(today), departureDate: fmt(addDays(today, 4)), guestsCount: 1, status: 'Checked In', price: 1200 },
     { id: 'r3', roomId: '103', guestId: 'g3', arrivalDate: fmt(subDays(today, 3)), departureDate: fmt(today), guestsCount: 2, status: 'Checked Out', price: 450 },
@@ -96,7 +48,7 @@ function getSeedData() {
     { id: 'r5', roomId: '105', guestId: 'g5', arrivalDate: fmt(addDays(today, 3)), departureDate: fmt(addDays(today, 7)), guestsCount: 3, status: 'Confirmed', price: 1600 },
   ];
 
-  const payments: Payment[] = [
+  const payments: PaymentData[] = [
     { id: 'pay-1', reservationId: 'r1', amount: 500, date: fmt(subDays(today, 1)), method: 'card', note: 'Advance payment' },
     { id: 'pay-2', reservationId: 'r3', amount: 450, date: fmt(subDays(today, 1)), method: 'cash', note: '' },
     { id: 'pay-3', reservationId: 'r2', amount: 600, date: fmt(today), method: 'transfer', note: 'First installment' },
@@ -218,11 +170,11 @@ export interface BackupPreferences {
 export interface BackupData {
   schemaVersion?: number;
   settings?: Partial<Pick<PropertySettings, 'name' | 'currency'>>;
-  rooms?: Room[];
-  guests?: Guest[];
-  reservations?: Reservation[];
-  payments?: Payment[];
-  tasks?: Task[];
+  rooms?: RoomData[];
+  guests?: GuestData[];
+  reservations?: ReservationData[];
+  payments?: PaymentData[];
+  tasks?: TaskData[];
   preferences?: BackupPreferences;
 }
 
@@ -231,11 +183,11 @@ export async function exportBackup(): Promise<BackupData> {
   const tx = db.transaction(['rooms', 'guests', 'reservations', 'payments', 'tasks', 'settings'], 'readonly');
 
   const [rooms, guests, reservations, payments, tasks, settings] = await Promise.all([
-    new Promise<Room[]>((resolve) => { const r = tx.objectStore('rooms').getAll(); r.onsuccess = () => resolve(r.result); }),
-    new Promise<Guest[]>((resolve) => { const r = tx.objectStore('guests').getAll(); r.onsuccess = () => resolve(r.result); }),
-    new Promise<Reservation[]>((resolve) => { const r = tx.objectStore('reservations').getAll(); r.onsuccess = () => resolve(r.result); }),
-    new Promise<Payment[]>((resolve) => { const r = tx.objectStore('payments').getAll(); r.onsuccess = () => resolve(r.result); }),
-    new Promise<Task[]>((resolve) => { const r = tx.objectStore('tasks').getAll(); r.onsuccess = () => resolve(r.result); }),
+    new Promise<RoomData[]>((resolve) => { const r = tx.objectStore('rooms').getAll(); r.onsuccess = () => resolve(r.result); }),
+    new Promise<GuestData[]>((resolve) => { const r = tx.objectStore('guests').getAll(); r.onsuccess = () => resolve(r.result); }),
+    new Promise<ReservationData[]>((resolve) => { const r = tx.objectStore('reservations').getAll(); r.onsuccess = () => resolve(r.result); }),
+    new Promise<PaymentData[]>((resolve) => { const r = tx.objectStore('payments').getAll(); r.onsuccess = () => resolve(r.result); }),
+    new Promise<TaskData[]>((resolve) => { const r = tx.objectStore('tasks').getAll(); r.onsuccess = () => resolve(r.result); }),
     new Promise<PropertySettings | undefined>((resolve) => { const r = tx.objectStore('settings').get('property'); r.onsuccess = () => resolve(r.result); }),
   ]);
 
@@ -308,7 +260,7 @@ export async function resetData() {
 }
 
 /** Write the initial rooms and mark the property configured, in one transaction. Rooms must be validated. */
-export async function configureProperty(name: string, rooms: Room[], currency: string) {
+export async function configureProperty(name: string, rooms: RoomData[], currency: string) {
   const db = await getDB();
   const tx = db.transaction(['rooms', 'settings'], 'readwrite');
   for (const room of rooms) tx.objectStore('rooms').put(room);
@@ -495,44 +447,44 @@ export async function batchPut(operations: BatchOperation[]): Promise<void> {
 
 export const api = {
   rooms: {
-    getAll: () => getAll<Room>('rooms'),
-    getById: (id: string) => getById<Room>('rooms', id),
-    create: (room: Room) => put('rooms', room),
-    update: (id: string, data: Partial<Room>) => updateById<Room>('rooms', id, data),
+    getAll: () => getAll<RoomData>('rooms'),
+    getById: (id: string) => getById<RoomData>('rooms', id),
+    create: (room: RoomData) => put('rooms', room),
+    update: (id: string, data: Partial<RoomData>) => updateById<RoomData>('rooms', id, data),
     delete: (id: string) => deleteById('rooms', id),
   },
   guests: {
-    getAll: () => getAll<Guest>('guests'),
-    getById: (id: string) => getById<Guest>('guests', id),
-    create: (guest: Guest) => put('guests', guest),
-    update: (id: string, data: Partial<Guest>) => updateById<Guest>('guests', id, data),
+    getAll: () => getAll<GuestData>('guests'),
+    getById: (id: string) => getById<GuestData>('guests', id),
+    create: (guest: GuestData) => put('guests', guest),
+    update: (id: string, data: Partial<GuestData>) => updateById<GuestData>('guests', id, data),
     delete: (id: string) => deleteById('guests', id),
   },
   reservations: {
     getAll: (params?: { from?: string; to?: string }) =>
-      getAll<Reservation>('reservations').then(all => {
+      getAll<ReservationData>('reservations').then(all => {
         if (!params?.from || !params?.to) return all;
         return all.filter(r => r.departureDate >= params.from! && r.arrivalDate <= params.to!);
       }),
-    getById: (id: string) => getById<Reservation>('reservations', id),
-    create: (reservation: Reservation) => put('reservations', reservation),
-    update: (id: string, data: Partial<Reservation>) => updateById<Reservation>('reservations', id, data),
+    getById: (id: string) => getById<ReservationData>('reservations', id),
+    create: (reservation: ReservationData) => put('reservations', reservation),
+    update: (id: string, data: Partial<ReservationData>) => updateById<ReservationData>('reservations', id, data),
     delete: (id: string) => deleteById('reservations', id),
   },
   payments: {
-    getAll: () => getAll<Payment>('payments'),
+    getAll: () => getAll<PaymentData>('payments'),
     getByReservationId: (reservationId: string) =>
-      getByIndex<Payment>('payments', 'reservationId', reservationId),
-    getById: (id: string) => getById<Payment>('payments', id),
-    create: (payment: Payment) => put('payments', payment),
+      getByIndex<PaymentData>('payments', 'reservationId', reservationId),
+    getById: (id: string) => getById<PaymentData>('payments', id),
+    create: (payment: PaymentData) => put('payments', payment),
     delete: (id: string) => deleteById('payments', id),
   },
   tasks: {
-    getAll: () => getAll<Task>('tasks'),
+    getAll: () => getAll<TaskData>('tasks'),
     getByDate: (date: string) =>
-      getByIndex<Task>('tasks', 'date', date),
-    getById: (id: string) => getById<Task>('tasks', id),
-    put: (task: Task) => put('tasks', task),
+      getByIndex<TaskData>('tasks', 'date', date),
+    getById: (id: string) => getById<TaskData>('tasks', id),
+    put: (task: TaskData) => put('tasks', task),
     delete: (id: string) => deleteById('tasks', id),
   },
   settings: {

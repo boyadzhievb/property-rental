@@ -1,27 +1,6 @@
-export type TaskCategory = 'cleaning' | 'preparation' | 'payment' | 'communication' | 'custom';
+import type { TaskData, TaskCategory, TaskTemplate } from '../schemas/TaskSchema';
 
-/**
- * What an automatic task says, stored as data so its title can be translated when shown
- * (see i18n/taskTitle). `title` keeps an English copy for older app versions.
- */
-export interface TaskTemplate {
-  kind: 'clean' | 'prepare' | 'checkPayment';
-  roomName?: string;
-  guestName?: string;
-}
-
-export interface TaskData {
-  id: string;
-  title: string;
-  category: TaskCategory;
-  completed: boolean;
-  date: string;
-  linkedRoomId?: string;
-  linkedReservationId?: string;
-  linkedGuestId?: string;
-  auto: boolean;
-  template?: TaskTemplate;
-}
+export type { TaskData, TaskCategory, TaskTemplate };
 
 export class Task {
   readonly id: string;

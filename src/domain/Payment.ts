@@ -1,11 +1,6 @@
-export interface PaymentData {
-  id: string;
-  reservationId: string;
-  amount: number;
-  date: string;
-  method: 'cash' | 'card' | 'transfer';
-  note: string;
-}
+import type { PaymentData, PaymentMethod } from '../schemas/PaymentSchema';
+
+export type { PaymentData, PaymentMethod };
 
 export class Payment {
   readonly id: string;

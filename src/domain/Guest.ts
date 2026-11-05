@@ -1,11 +1,6 @@
-export interface GuestData {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  previousStays: number;
-  notes: string;
-}
+import type { GuestData } from '../schemas/GuestSchema';
+
+export type { GuestData };
 
 export class Guest {
   readonly id: string;

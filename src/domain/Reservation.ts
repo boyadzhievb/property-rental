@@ -1,27 +1,9 @@
 import { addDays, addMonths, addWeeks, addYears, differenceInCalendarDays, format, parseISO } from 'date-fns';
 import { DomainError } from './errors';
 
-export type ReservationStatus = 'Confirmed' | 'Checked In' | 'Checked Out' | 'Cancelled';
-export type RecurrencePattern = 'weekly' | 'biweekly' | 'monthly';
+import type { ReservationData, ReservationStatus, RecurrencePattern, RecurrenceRule } from '../schemas/ReservationSchema';
 
-export interface RecurrenceRule {
-  pattern: RecurrencePattern;
-  endDate: string;
-}
-
-export interface ReservationData {
-  id: string;
-  roomId: string;
-  guestId: string;
-  arrivalDate: string;
-  departureDate: string;
-  guestsCount: number;
-  status: ReservationStatus;
-  price: number;
-  notes?: string;
-  recurrence?: RecurrenceRule;
-  seriesId?: string;
-}
+export type { ReservationData, ReservationStatus, RecurrencePattern, RecurrenceRule };
 
 export class Reservation {
   readonly id: string;

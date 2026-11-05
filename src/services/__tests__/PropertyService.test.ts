@@ -34,7 +34,7 @@ import { reservationRepository } from '../../repositories/ReservationRepository'
 const roomStore = (roomRepository as any)._store as Map<string, any>
 const resStore = (reservationRepository as any)._store as Map<string, any>
 
-function seedRoom(id: string, status = RoomStatus.AVAILABLE) {
+function seedRoom(id: string, status: RoomStatus = RoomStatus.AVAILABLE) {
   roomStore.set(id, { id, name: `Room ${id}`, status, pricePerNight: 100, maxGuests: 2 })
 }
 

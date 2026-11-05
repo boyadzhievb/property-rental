@@ -1,8 +1,11 @@
 import { z } from 'zod';
 import { localDate } from './localDate';
 
+export const ReservationStatusSchema = z.enum(['Confirmed', 'Checked In', 'Checked Out', 'Cancelled']);
+export const RecurrencePatternSchema = z.enum(['weekly', 'biweekly', 'monthly']);
+
 export const RecurrenceRuleSchema = z.object({
-  pattern: z.enum(['weekly', 'biweekly', 'monthly']),
+  pattern: RecurrencePatternSchema,
   endDate: localDate('End date is required'),
 });
 
@@ -13,7 +16,7 @@ export const ReservationSchema = z.object({
   arrivalDate: localDate('Check-in date is required'),
   departureDate: localDate('Check-out date is required'),
   guestsCount: z.number().int().min(1, 'At least 1 guest required'),
-  status: z.enum(['Confirmed', 'Checked In', 'Checked Out', 'Cancelled']),
+  status: ReservationStatusSchema,
   price: z.number().positive('Price must be greater than 0'),
   notes: z.string().optional(),
   recurrence: RecurrenceRuleSchema.optional(),
@@ -23,4 +26,8 @@ export const ReservationSchema = z.object({
   path: ['departureDate'],
 });
 
-export type ReservationInput = z.infer<typeof ReservationSchema>;
+/** A reservation as stored and validated. Single source of truth for the reservation shape. */
+export type ReservationData = z.infer<typeof ReservationSchema>;
+export type ReservationStatus = z.infer<typeof ReservationStatusSchema>;
+export type RecurrencePattern = z.infer<typeof RecurrencePatternSchema>;
+export type RecurrenceRule = z.infer<typeof RecurrenceRuleSchema>;
