@@ -24,10 +24,10 @@
     "cap:open:ios": "npx cap open ios"
   },
   "dependencies": {
-    "@capacitor/android": "^8.6.0",
-    "@capacitor/core": "^8.5.3",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
     "@capacitor/filesystem": "^8.1.5",
-    "@capacitor/ios": "^8.6.0",
+    "@capacitor/ios": "^8.6.2",
     "@capacitor/local-notifications": "^8.3.1",
     "date-fns": "^4.4.0",
     "lucide-react": "^1.65.0",
